@@ -1,0 +1,13 @@
+#PyCharm
+.idea/
+*.pyc
+~*/
+
+#Python
+__pycache__/
+
+# Bot files
+config.py
+animotes.json
+*.png
+*.log

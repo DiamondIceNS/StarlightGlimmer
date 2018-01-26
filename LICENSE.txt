@@ -1,0 +1,5 @@
+"animotes.py" and its contents copyright (C) 2017 Valentijn <ev1l0rd>
+and distributed under the GNU Public License 3.0 as described in GPL3.txt.
+
+All other code is authored by DiamondIceNS and is distributed under the
+Creative Commons Public Domain Dedication 0 as described in CCO.txt.
