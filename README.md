@@ -1,5 +1,7 @@
 # Starlight Glimmer
-A [Pixelcanvas.io](http://pixelcanvas.io/) template utility bot based on [Alastair](Make-Alastair-Great-Again) and [Pinkie Pie](https://pastebin.com/Tg1p5AnW).
+A template utility bot based on [Alastair](Make-Alastair-Great-Again) and [Pinkie Pie](https://pastebin.com/Tg1p5AnW).
+
+Currently supports both [Pixelcanvas.io](http://pixelcanvas.io/) and [Pixelz.io](http://pixelz.io/).
 
 #### Requires:
 - Python 3.5
@@ -13,8 +15,10 @@ A [Pixelcanvas.io](http://pixelcanvas.io/) template utility bot based on [Alasta
 4. `python glimmer.py`
 
 #### Features:
-- Pixelcanvas preview
+- Live canvas preview
 - Live template checking
+- Above two features can be toggled to trigger any time a link/valid template is posted (instead of requiring a command)
 - [Animotes](https://github.com/ev1l0rd/animotes) support, just because
+- Use of cross-server emoji through Animotes (must opt-in)
 
 **Invite:** `https://discordapp.com/oauth2/authorize?&client_id=405480380930588682&scope=bot&permissions=35840`

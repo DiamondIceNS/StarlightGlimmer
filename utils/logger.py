@@ -8,7 +8,7 @@ class Log:
     def __init__(self, name):
         self.logger = logging.getLogger(name)
         self.logger.setLevel(logging.DEBUG)
-        handler = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='w+')
+        handler = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='a')
         handler.setFormatter(logging.Formatter('{asctime} [{levelname}] {name}: {message}', style='{'))
         self.logger.addHandler(handler)
 

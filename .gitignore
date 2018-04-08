@@ -11,6 +11,7 @@ config.json
 animotes.json
 *.png
 *.log
+*.db
 
 # Scripts
 *.sh

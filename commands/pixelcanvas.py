@@ -1,21 +1,21 @@
 import re
 from discord.ext import commands
 
-from utils.render import preview, diff
+from utils.render import pixelcanvasio_preview, pixelcanvasio_diff
 
 
-class Pixelcanvas():
+class Pixelcanvas:
     def __init__(self, bot):
         self.bot = bot
 
     @commands.command()
-    async def diff(self, ctx, *, coordinates: str):
+    async def pcdiff(self, ctx, *, coordinates: str):
         """Takes an uploaded template and checks the canvas to see how complete it is.
         Add -e at the end to check against the experimental canvas.
 
-        You do not need to explicitly invoke this command -- any valid coordinates in the same message as a attachment
-        will trigger this command.
-        If triggered implicitly, the preview command will take precedence over this one if they both match the input.
+        If autoscan is enabled and Pixelcanvas is set to your default canvas, you do not need to explicitly invoke this
+        command -- any valid coordinates in the same message as a attachment will trigger this command automatically.
+        See help for 'autoscan' and 'setdefaultcanvas' commands for more information.
 
         Usage examples (with uploaded attachment):
         - 0,0
@@ -28,16 +28,17 @@ class Pixelcanvas():
             y = int(m.group(2))
             att = ctx.message.attachments[0]
             is_exp = m.group(3) is not None
-            await diff(ctx, x, y, att, is_exp)
+            await pixelcanvasio_diff(ctx, x, y, att, is_exp)
 
     @commands.command()
-    async def preview(self, ctx, *, coordinates: str):
+    async def pcpreview(self, ctx, *, coordinates: str):
         """Render a preview of the canvas centered at the given url/coordinates.
-        Add #2, #4, or #8 to the end of the url/coordinates to zoom the preview by the corresponding factor.
+        Add a number like #2 to the end of the url/coordinates to zoom the preview by the corresponding factor. (Max 16)
         Add the experimental subdomain to the URL or add -e at the end to render on the experimental canvas.
 
-        You do not need to explicitly invoke this command -- any message containing coordinates prefixed with '@'
-        will trigger this command.
+        If autoscan is enabled and Pixelcanvas is set to your default canvas, you do not need to explicitly invoke this
+        command -- any message containing coordinates prefixed with '@' will trigger this command automatically.
+        See help for 'autoscan' and 'setdefaultcanvas' commands for more information.
 
         Usage examples:
         - http://pixelcanvas.io/@0,0
@@ -53,7 +54,7 @@ class Pixelcanvas():
             y = int(m.group(3))
             zoom = int(m.group(4)) if m.group(4) is not None else 1
             is_exp = m.group(1) is not None or m.group(5) is not None
-            await preview(ctx, x, y, zoom, is_exp)
+            await pixelcanvasio_preview(ctx, x, y, zoom, is_exp)
 
 
 def setup(bot):
