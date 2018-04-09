@@ -133,6 +133,9 @@ async def on_guild_update(before, after):
 
 @bot.event
 async def on_command_error(ctx, error):
+    if isinstance(error, commands.CommandNotFound):
+        await ctx.send("That is not a valid command. Use {}help to see my commands. Or if you're trying to use another "
+                       "bot, change my command prefix.".format(get_prefix(bot, ctx.message)))
     if isinstance(error, commands.MissingRequiredArgument):
         pages = bot.formatter.format_help_for(ctx, ctx.command)
         for p in pages:
@@ -149,10 +152,11 @@ async def on_command_error(ctx, error):
     if isinstance(error, commands.NoPrivateMessage):
         await ctx.send("That command only works in guilds.")
         return
+    cname = ctx.command.qualified_name if ctx.command is not None else "None"
     await channel_logger.log_to_channel("An error occurred while executing command {0} in server **{1.name}** "
-                                        "(ID: `{1.id}`):".format(ctx.command.qualified_name, ctx.guild))
+                                        "(ID: `{1.id}`):".format(cname, ctx.guild))
     await channel_logger.log_to_channel("```{}```".format(error))
-    log.error("An error occurred while executing command {}: {}".format(ctx.command.qualified_name, error))
+    log.error("An error occurred while executing command {}: {}".format(cname, error))
 
 
 @bot.event
