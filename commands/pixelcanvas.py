@@ -22,8 +22,11 @@ class Pixelcanvas:
         - 0, 0
         - (0, 0) -e
         """
+        if len(ctx.message.attachments) < 1:
+            await ctx.send("That command requires an attached template to check against.")
+            return
         m = re.search('\(?(-?\d+), ?(-?\d+)\)?(?: (-e)?)?', coordinates)
-        if m is not None and len(ctx.message.attachments) > 0:
+        if m is not None:
             x = int(m.group(1))
             y = int(m.group(2))
             att = ctx.message.attachments[0]
