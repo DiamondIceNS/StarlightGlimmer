@@ -102,33 +102,33 @@ class Animotes:
         blacklist = []
         whitelist = []
         opted_in = sql.is_server_emojishare_server(ctx.guild.id)
+        whitelist.append(ctx.guild.id)  # Emoji from this server are allowed automatically
         for e in self.bot.emojis:
-            if e.guild_id != ctx.guild.id and not opted_in or e.guild_id in blacklist:
-                continue
-            if not (e.guild_id in whitelist or sql.is_server_emojishare_server(e.guild_id)):
-                blacklist.append(e.guild_id)
-                continue
-            if e.guild_id not in whitelist:
-                whitelist.append(e.guild_id)
-            if not any(x['id'] for x in guilds if x['id'] == e.guild_id):
-                guild = next(x for x in self.bot.guilds if x.id == e.guild_id)
-                guilds.append({'id': e.guild_id, 'name': guild.name, 'emojis': [], 'animojis': []})
-            pos = next(i for i, x in enumerate(guilds) if x['id'] == e.guild_id)
             if e.animated:
+                # No emoji from blacklisted servers
+                if e.guild_id in blacklist:
+                    continue
+                # Do not list cross-server emoji if this server has not opted in
+                if e.guild_id != ctx.guild.id and not opted_in:
+                    continue
+                # Blacklist servers that have not themselves opted in
+                if not (e.guild_id in whitelist or sql.is_server_emojishare_server(e.guild_id)):
+                    blacklist.append(e.guild_id)
+                    continue
+                # If passed all checks, ensure this server is whitelisted so we can skip future opt-in checks
+                if e.guild_id not in whitelist:
+                    whitelist.append(e.guild_id)
+                if not any(x['id'] for x in guilds if x['id'] == e.guild_id):
+                    guild = next(x for x in self.bot.guilds if x.id == e.guild_id)
+                    guilds.append({'id': e.guild_id, 'name': guild.name, 'animojis': []})
+                pos = next(i for i, x in enumerate(guilds) if x['id'] == e.guild_id)
                 guilds[pos]['animojis'].append(str(e))
-            else:
-                guilds[pos]['emojis'].append(str(e))
 
         for g in guilds:
             msg = "**{0}**:".format(g['name'])
-            if len(g['emojis']) > 0:
-                msg += "\n"
-                for e in g['emojis']:
-                    msg += e
-            if len(g['animojis']) > 0:
-                msg += "\n"
-                for e in g['animojis']:
-                    msg += e
+            msg += "\n"
+            for e in g['animojis']:
+                msg += e
             await ctx.send(msg)
 
 
