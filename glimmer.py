@@ -1,5 +1,6 @@
 import re
 from discord.ext import commands
+from discord import TextChannel
 from time import time
 
 from utils.channel_logger import ChannelLogger
@@ -93,8 +94,9 @@ async def on_ready():
 
 
 async def print_welcome_message(guild):
-    c = next((x for x in guild.channels if x.name == "general" and x.permissions_for(guild.me).send_messages),
-             next((x for x in guild.channels if x.permissions_for(guild.me).send_messages), None))
+    c = next((x for x in guild.channels if x.name == "general" and x.permissions_for(guild.me).send_messages
+              and type(x) is TextChannel),
+             next((x for x in guild.channels if x.permissions_for(guild.me).send_messages and type(x) is TextChannel), None))
     if c is not None:
         log.info("Printing welcome message to guild {0.name} (ID: {0.id})".format(guild))
         await c.send("Hi! I'm Starlight Glimmer. "
