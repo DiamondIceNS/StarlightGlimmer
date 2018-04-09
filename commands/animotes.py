@@ -140,10 +140,12 @@ def emote_corrector(self, message):
     for em in found:
         temp = discord.utils.get(self.bot.emojis, name=em[1:-1])
         try:
-            if temp.guild_id == message.guild.id:
-                emotes.append((em, str(temp)))
-            elif sql.is_server_emojishare_server(message.guild.id) and sql.is_server_emojishare_server(temp.guild_id):
-                emotes.append((em, str(temp)))
+            if temp.animated:
+                if temp.guild_id == message.guild.id:
+                    emotes.append((em, str(temp)))
+                elif sql.is_server_emojishare_server(message.guild.id)\
+                        and sql.is_server_emojishare_server(temp.guild_id):
+                    emotes.append((em, str(temp)))
         except AttributeError:
             pass  # We only care about catching this, not doing anything with it
 
