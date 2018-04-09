@@ -136,6 +136,7 @@ async def on_command_error(ctx, error):
     if isinstance(error, commands.CommandNotFound):
         await ctx.send("That is not a valid command. Use {}help to see my commands. Or if you're trying to use another "
                        "bot, change my command prefix.".format(get_prefix(bot, ctx.message)))
+        return
     if isinstance(error, commands.MissingRequiredArgument):
         pages = bot.formatter.format_help_for(ctx, ctx.command)
         for p in pages:
@@ -153,7 +154,7 @@ async def on_command_error(ctx, error):
         await ctx.send("That command only works in guilds.")
         return
     cname = ctx.command.qualified_name if ctx.command is not None else "None"
-    await channel_logger.log_to_channel("An error occurred while executing command {0} in server **{1.name}** "
+    await channel_logger.log_to_channel("An error occurred while executing command `{0}` in server **{1.name}** "
                                         "(ID: `{1.id}`):".format(cname, ctx.guild))
     await channel_logger.log_to_channel("```{}```".format(error))
     log.error("An error occurred while executing command {}: {}".format(cname, error))
@@ -227,11 +228,6 @@ async def on_message(message):
                     await pixelcanvasio_diff(ctx, x, y, att, is_exp)
                 elif default_canvas == "pixelz.io":
                     await pixelzio_diff(ctx, x, y, att)
-            else:
-                if default_canvas == "pixelcanvas.io":
-                    await pixelcanvasio_preview(ctx, x, y, zoom, is_exp)
-                elif default_canvas == "pixelz.io":
-                    await pixelzio_preview(ctx, x, y, zoom)
 
 
 @bot.command()
