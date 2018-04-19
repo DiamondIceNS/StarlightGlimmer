@@ -1,14 +1,16 @@
+import re
 import discord
 from discord.ext import commands
-import re
 
-from utils.channel_logger import ChannelLogger
-from utils.logger import Log
-from utils.exceptions import NoPermission
 import utils.sqlite as sql
+from utils.channel_logger import ChannelLogger
+from utils.exceptions import NoPermission
+from utils.language import getlang
+from utils.logger import Log
 
-#    Cog to reformat messages to allow for animated emotes, regardless of nitro status.
-#    Copyright (C) 2017 Valentijn <ev1l0rd>
+#    Cog to reformat messages to allow for animated emotes, regardless of nitro status
+#    and sharing those emotes with other servers with opt-in policy.
+#    Copyright (C) 2017-2018 Valentijn <ev1l0rd> and DiamondIceNS
 #
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -40,45 +42,17 @@ class Animotes:
 
     @commands.command(aliases=['unregister'])
     async def register(self, ctx):
-        """Toggle your opt-in status to allow this bot to replace custom emoji on your behalf.
-
-        If you opt-in to this feature, any messages you send that contain emoji that I can see will be deleted
-        and replaced with an identical message from the bot with that emoji properly rendered. Bots do not require
-        a Nitro account to access cross-server or animated emoji, so you can use this to crudely work around that
-        restriction if you do not have Nitro yourself. It's the poor man's Nitro!
-
-        If your server has been opted in to emoji sharing, you can use this feature to steal any emoji from any server
-        this bot happens to be in, provided that other server has also opted in.
-
-        Use unregister to opt out after opting in.
-
-        This feature will malfunction if you have Nitro and you use your own animated emoji in the same message. Trying
-        to use a Twitch integration server emoji in the same message will probably also break this feature.
-
-        This feature requires me having the Manage Messages permission."""
         if not sql.is_user_animote_user(ctx.author.id):
             sql.add_animote_user(ctx.author.id)
-            message = "Successfully opted in to animated emote conversion."
+            message = getlang(ctx.guild.id, "animotes.member_opt_in")
         else:
             sql.delete_animote_user(ctx.author.id)
-            message = "Successfully opted out of animated emote conversion."
+            message = getlang(ctx.guild.id, "animotes.member_opt_out")
         await ctx.message.author.send(content=message)
 
     @commands.command(aliases=['unregisterserver'])
     @commands.guild_only()
-    async def registerserver(self, ctx):
-        """Toggle the server's opt-in status to emoji sharing.
-
-        Opting in to emoji sharing gives you access to all the emoji I can see in every other server I am in, as long
-        as those servers have also opted in to emoji sharing. This also means that opting in gives those servers access
-        to YOUR emoji as well. You do not need to opt in to this feature to enable animated emoji replacement for emoji
-        unique to this server.
-
-        WARNING: Opting in to this feature will let other servers see all your custom emoji as well as your server's
-        name and, by extension, your server's ID. If you do not want to share your server's presence with others, DO
-        NOT opt in to this feature!
-
-        This command can only be used by members with the Manage Emojis permission."""
+    async def registerguild(self, ctx):
         if not ctx.author.permissions_in(ctx.channel).manage_emojis:
             raise NoPermission
         if not sql.is_server_emojishare_server(ctx.guild.id):
@@ -86,18 +60,17 @@ class Animotes:
             self.log.info("Guild {0.name} (ID: {0.id}) has opted in to emoji sharing.".format(ctx.guild))
             await self.channel_logger.log_to_channel("Guild **{0.name}** (ID: `{0.id}`) has opted in to emoji sharing."
                                                 .format(ctx.guild))
-            message = "Successfully opted server in to emoji sharing."
+            message = getlang(ctx.guild.id, "animotes.guild_opt_in")
         else:
             sql.update_guild(ctx.guild.id, emojishare=0)
             self.log.info("Guild {0.name} (ID: {0.id}) has opted out of emoji sharing.".format(ctx.guild))
             await self.channel_logger.log_to_channel("Guild **{0.name}** (ID: `{0.id}`) has opted out of emoji sharing."
                                                 .format(ctx.guild))
-            message = "Successfully opted server out of emoji sharing."
+            message = getlang(ctx.guild.id, "animotes.guild_opt_out")
         await ctx.send(message)
 
     @commands.command()
     async def listemotes(self, ctx):
-        """Lists out all of the animated emotes that I know about"""
         guilds = []
         blacklist = []
         whitelist = []

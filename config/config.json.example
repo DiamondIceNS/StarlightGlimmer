@@ -1,6 +1,7 @@
 {
     "token": "your-token-here",
     "prefix": "g!",
+    "name": "Starlight Glimmer",
 
     "preview_height": 240,
     "preview_width": 400,

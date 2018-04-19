@@ -1,12 +1,17 @@
+<img align="right" width="200" height="200" src="avatar.jpg">
+
 # Starlight Glimmer
 A template utility bot based on [Alastair](Make-Alastair-Great-Again) and [Pinkie Pie](https://pastebin.com/Tg1p5AnW).
 
-Currently supports both [Pixelcanvas.io](http://pixelcanvas.io/) and [Pixelz.io](http://pixelz.io/).
+Currently supports [Pixelcanvas.io](http://pixelcanvas.io/), [Pixelz.io](http://pixelz.io/), and [Pixelzone.io](http://pixelzone.io/).
 
 #### Requires:
 - Python 3.5
 - [Discord.py rewrite](https://github.com/Rapptz/discord.py/tree/rewrite)
 - [Pillow](https://pillow.readthedocs.io/en/latest/installation.html)
+- [aiohttp](https://aiohttp.readthedocs.io/en/stable/)
+- [socketIO_client](https://github.com/invisibleroads/socketIO-client)
+- [lz4](https://github.com/python-lz4/python-lz4)
 
 #### Installation:
 1. Install Python and the required libraries
@@ -15,10 +20,18 @@ Currently supports both [Pixelcanvas.io](http://pixelcanvas.io/) and [Pixelz.io]
 4. `python glimmer.py`
 
 #### Features:
-- Live canvas preview
-- Live template checking
-- Above two features can be toggled to trigger any time a link/valid template is posted (instead of requiring a command)
+- Automatic live canvas preview
+- Automatic live template checking
+- Color quantization of templates to canvas palette
 - [Animotes](https://github.com/ev1l0rd/animotes) support, just because
-- Use of cross-server emoji through Animotes (must opt-in)
+- Cross-guild emoji through Animotes (must opt-in)
+- Support for full language localization
+
+### Languages:
+- English (US)
+
+If you happen to know a language that is not listed and would be willing to translate, please submit a pull request. (French and Brazilian Portuguese are specifically wanted, but no translation is a worthless translation!)
 
 **Invite:** `https://discordapp.com/oauth2/authorize?&client_id=405480380930588682&scope=bot&permissions=35840`
+
+[avatar]: avatar.jpg

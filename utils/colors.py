@@ -1,5 +1,3 @@
-pc_url_main = 'http://pixelcanvas.io/api/bigchunk/'
-pc_url_exp = 'http://experimental.pixelcanvas.io/api/bigchunk/'
 pc_colors = [
     (255, 255, 255),  # White
     (228, 228, 228),  # Light Grey
@@ -19,8 +17,7 @@ pc_colors = [
     (130,   0, 128)   # Purple
 ]
 
-pixelz_url = 'http://pixelz.io/api/'
-pixelz_colors = [
+pzio_colors = [
     (255, 255, 255),  # White
     (228, 228, 228),  # Light Grey
     (136, 136, 136),  # Dark Grey
@@ -37,4 +34,23 @@ pixelz_colors = [
     (  0,   0, 234),  # Blue
     (209,  89, 230),  # Light Purple
     (130,   0, 128)   # Purple
+]
+
+pzone_colors = [
+    ( 38,  38,	38),  # Dark Grey
+    (  0,	0,	 0),  # Black
+    (128, 128, 128),  # Light Grey
+    (255, 255, 255),  # White
+    (153,  98,  61),  # Brown
+    (255, 163, 200),  # Pink
+    (207, 115, 230),  # Light Purple
+    (128,   0, 128),  # Purple
+    (229,   0,   0),  # Red
+    (229, 137,   0),  # Orange
+    (229, 229,   0),  # Yellow
+    (150, 230,  70),  # Light Green
+    (  0, 190,   0),  # Green
+    (  0, 230, 230),  # Cyan
+    (  0, 136, 207),  # Teal
+    (  0,   0, 230)   # Blue
 ]

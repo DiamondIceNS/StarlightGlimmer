@@ -17,10 +17,19 @@ def create_tables():
                         alert_channel INTEGER,
                         emojishare INTEGER NOT NULL DEFAULT 0,
                         autoscan INTEGER NOT NULL DEFAULT 1,
-                        default_canvas TEXT NOT NULL DEFAULT "pixelcanvas.io"
+                        default_canvas TEXT NOT NULL DEFAULT "pixelcanvas.io",
+                        language TEXT NOT NULL DEFAULT "en_US"
                     )""")
     c.execute("""CREATE TABLE IF NOT EXISTS version(id INTEGER PRIMARY KEY CHECK (id = 1), version REAL)""")
+
     c.execute("""CREATE TABLE IF NOT EXISTS animote_users(id INTEGER)""")
+
+
+def update_tables(v):
+    # print("updating tables... "+v)
+    if v is not None:
+        if v < 1.2:
+            c.execute("""ALTER TABLE guilds ADD COLUMN language TEXT NOT NULL DEFAULT "en_US" """)
 
 
 def add_guild(gid, name, join_date):
@@ -41,7 +50,8 @@ def get_all_guilds():
     return c.fetchall()
 
 
-def update_guild(gid, name=None, prefix=None, alert_channel=None, emojishare=None, autoscan=None, default_canvas=None):
+def update_guild(gid, name=None, prefix=None, alert_channel=None, emojishare=None, autoscan=None, default_canvas=None,
+                 language=None):
     if name is not None:
         c.execute("""UPDATE guilds SET name=? WHERE id=?""", (name, gid))
     if prefix is not None:
@@ -54,6 +64,8 @@ def update_guild(gid, name=None, prefix=None, alert_channel=None, emojishare=Non
         c.execute("""UPDATE guilds SET autoscan=? WHERE id=?""", (autoscan, gid))
     if default_canvas is not None:
         c.execute("""UPDATE guilds SET default_canvas=? WHERE id=?""", (default_canvas, gid))
+    if language is not None:
+        c.execute("""UPDATE guilds SET language=? WHERE id=?""", (language, gid))
     conn.commit()
 
 
@@ -70,7 +82,14 @@ def get_version():
     return result[0]
 
 
+def init_version(version):
+    print("version initialized to {}".format(version))
+    c.execute("""INSERT INTO version(version) VALUES(?)""", (version,))
+    conn.commit()
+
+
 def update_version(version):
+    print("updated to {}".format(version))
     c.execute("""UPDATE version SET version=?""", (version,))
     conn.commit()
 
@@ -95,4 +114,10 @@ def is_server_emojishare_server(gid):
     return c.fetchone() is not None
 
 
+def get_guild_language(gid):
+    c.execute("""SELECT language FROM guilds WHERE id=?""", (gid,))
+    return c.fetchone()[0]
+
+
 create_tables()
+update_tables(get_version())

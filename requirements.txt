@@ -1,3 +1,5 @@
 git+https://github.com/Rapptz/discord.py@rewrite
 pillow
 aiohttp
+socketio_client
+lz4
