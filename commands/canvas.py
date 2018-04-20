@@ -1,5 +1,6 @@
 import re
 from discord.ext import commands
+from discord.ext.commands import BucketType
 from utils.language import getlang
 
 import utils.render as render
@@ -19,6 +20,7 @@ class Canvas:
     # =======================
 
     @commands.group(name="diff")
+    @commands.cooldown(1, 5, BucketType.guild)
     async def diff(self, ctx):
         pass
 
@@ -44,6 +46,7 @@ class Canvas:
             return ctx, x, y, att, zoom
 
     @diff.command(name="pixelcanvas")
+    @commands.cooldown(1, 5, BucketType.guild)
     async def diff_pixelcanvas(self, ctx, *, coordinates: str):
         args = await Canvas.parse_diff(ctx, coordinates)
         if args is not None:
@@ -52,6 +55,7 @@ class Canvas:
             await render.diff(*args, render.fetch_pixelcanvas, pc_colors)
 
     @diff.command(name="pixelzio")
+    @commands.cooldown(1, 5, BucketType.guild)
     async def diff_pixelzio(self, ctx, *, coordinates: str):
         args = await Canvas.parse_diff(ctx, coordinates)
         if args is not None:
@@ -60,6 +64,7 @@ class Canvas:
             await render.diff(*args, render.fetch_pixelzio, pzio_colors)
 
     @diff.command(name="pixelzone")
+    @commands.cooldown(1, 5, BucketType.guild)
     async def diff_pixelzone(self, ctx, *, coordinates: str):
         args = await Canvas.parse_diff(ctx, coordinates)
         if args is not None:
@@ -72,20 +77,27 @@ class Canvas:
     # =======================
 
     @commands.group(name="preview")
+    @commands.cooldown(1, 5, BucketType.guild)
     async def preview(self, ctx):
         pass
 
     @staticmethod
     async def parse_preview(ctx, coords):
-        m = re.search('(-?\d+), ?(-?\d+)/?\s?#?(\d+)?', coords)
+        m = re.search('(-?\d+), ?(-?\d+)(?:,(\d+))?/?\s?#?(\d+)?', coords)
         if m is not None:
             x = int(m.group(1))
             y = int(m.group(2))
-            zoom = int(m.group(3)) if m.group(3) is not None else 1
+            if m.group(4) is not None:
+                zoom = int(m.group(4))
+            elif m.group(3) is not None:
+                zoom = int(m.group(3))
+            else:
+                zoom = 1
             zoom = max(min(zoom, 16), 1)
             return ctx, x, y, zoom
 
     @preview.command(name="pixelcanvas")
+    @commands.cooldown(1, 5, BucketType.guild)
     async def preview_pixelcanvas(self, ctx, *, coordinates: str):
         args = await Canvas.parse_preview(ctx, coordinates)
         if args is not None:
@@ -94,6 +106,7 @@ class Canvas:
             await render.preview(*args, render.fetch_pixelcanvas)
 
     @preview.command(name="pixelzio")
+    @commands.cooldown(1, 5, BucketType.guild)
     async def preview_pixelzio(self, ctx, *, coordinates: str):
         args = await Canvas.parse_preview(ctx, coordinates)
         if args is not None:
@@ -102,6 +115,7 @@ class Canvas:
             await render.preview(*args, render.fetch_pixelzio)
 
     @preview.command(name="pixelzone")
+    @commands.cooldown(1, 5, BucketType.guild)
     async def preview_pixelzone(self, ctx, *, coordinates: str):
         args = await Canvas.parse_preview(ctx, coordinates)
         if args is not None:
@@ -114,6 +128,7 @@ class Canvas:
     # =======================
 
     @commands.group(name="quantize")
+    @commands.cooldown(1, 5, BucketType.guild)
     async def quantize(self, ctx):
         pass
 
@@ -132,6 +147,7 @@ class Canvas:
         return True
 
     @quantize.command(name="pixelcanvas")
+    @commands.cooldown(1, 5, BucketType.guild)
     async def quantize_pixelcanvas(self, ctx):
         if await Canvas.check_attachment(ctx):
             log.debug("Pixelcanvas quantize invoked by {0.name}#{0.discriminator} (ID: {0.id}) in {1.name} (ID: {1.id})"
@@ -139,6 +155,7 @@ class Canvas:
             await render.quantize(ctx, ctx.message.attachments[0], pc_colors)
 
     @quantize.command(name="pixelzio")
+    @commands.cooldown(1, 5, BucketType.guild)
     async def quantize_pixelzio(self, ctx):
         if await Canvas.check_attachment(ctx):
             log.debug("Pixelzio quantize invoked by {0.name}#{0.discriminator} (ID: {0.id}) in {1.name} (ID: {1.id})"
@@ -146,6 +163,7 @@ class Canvas:
             await render.quantize(ctx, ctx.message.attachments[0], pzio_colors)
 
     @quantize.command(name="pixelzone")
+    @commands.cooldown(1, 5, BucketType.guild)
     async def quantize_pixelzone(self, ctx):
         if await Canvas.check_attachment(ctx):
             log.debug("Pixelzone quantize invoked by {0.name}#{0.discriminator} (ID: {0.id}) in {1.name} (ID: {1.id})"
@@ -153,6 +171,7 @@ class Canvas:
             await render.quantize(ctx, ctx.message.attachments[0], pzone_colors)
 
     @commands.command()
+    @commands.cooldown(1, 5, BucketType.guild)
     async def repeat(self, ctx):
         async for msg in ctx.history(limit=50, before=ctx.message):
             regex = ctx.prefix \

@@ -34,6 +34,7 @@ STRINGS = {
 
     # Error messages
     "bot.error.command_not_found": "That is not a valid command. Use {0}help to see my commands.",
+    "bot.error.command_on_cooldown": "That command is on cooldown. Try again in {0:.01f}s.",
     "bot.error.missing_attachment": "That command requires an attachment.",
     "bot.error.no_canvas": "That command requires a subcommand.",
     "bot.error.no_permission": "You do not have permission to use that command.",

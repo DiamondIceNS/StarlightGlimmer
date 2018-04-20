@@ -129,8 +129,11 @@ async def on_guild_update(before, after):
 
 @bot.event
 async def on_command_error(ctx, error):
+    if isinstance(error, commands.CommandOnCooldown):
+        await ctx.send(getlang(ctx.guild.id, "bot.error.command_on_cooldown").format(error.retry_after))
+        return
     if isinstance(error, commands.CommandNotFound):
-        await ctx.send(getlang(ctx.guild.id, "bot.error.command_not_found").format(get_prefix(bot, ctx.message)))
+        # await ctx.send(getlang(ctx.guild.id, "bot.error.command_not_found").format(get_prefix(bot, ctx.message)))
         return
     if isinstance(error, commands.MissingRequiredArgument):
         pages = bot.formatter.format_help_for(ctx, ctx.command)
@@ -148,6 +151,8 @@ async def on_command_error(ctx, error):
         return
     if isinstance(error, commands.NoPrivateMessage):
         await ctx.send(getlang(ctx.guild.id, "bot.error.no_private_message"))
+        return
+    if isinstance(error, commands.CommandInvokeError) and isinstance(error.original, discord.HTTPException) and error.original.code == 50013:
         return
     cname = ctx.command.qualified_name if ctx.command is not None else "None"
     await channel_logger.log_to_channel("An error occurred while executing command `{0}` in server **{1.name}** "
@@ -173,67 +178,59 @@ async def on_message(message):
 
     if sql.select_guild_by_id(ctx.guild.id)['autoscan'] == 1:
         default_canvas = sql.select_guild_by_id(ctx.guild.id)['default_canvas']
-        pc_match = re.search('(?:pixelcanvas\.io/)@(-?\d+),(-?\d+)/?(?:\s?#?(\d+))?', message.content)
-        pzio_match = re.search('(?:pixelz\.io/)@(-?\d+),(-?\d+)(?:\s?#?(\d+))?', message.content)
-        pzone_match = re.search('(?:pixelzone\.io/)\?p=(-?\d+),(-?\d+)(?:,(\d+))?(?:\s?#?(\d+))?', message.content)
-        prev_match = re.search('@\(?(-?\d+), ?(-?\d+)\)?(?: ?#(\d+))?', message.content)
-        diff_match = re.search('\(?(-?\d+), ?(-?\d+)\)?(?: ?#(\d+))?', message.content)
+        pc_match = re.search('pixelcanvas\.io/@-?\d+,-?\d+', message.content)
+        pzio_match = re.search('pixelz\.io/@-?\d+,-?\d+', message.content)
+        pzone_match = re.search('pixelzone\.io/\?p=-?\d+,-?\d+', message.content)
+        prev_match = re.search('@\(?-?\d+, ?-?\d+\)?', message.content)
+        diff_match = re.search('\(?-?\d+, ?-?\d+\)?', message.content)
 
         if pc_match is not None:
-            x = int(pc_match.group(1))
-            y = int(pc_match.group(2))
-            zoom = int(pc_match.group(3)) if pc_match.group(3) is not None else 1
-            zoom = max(min(zoom, 16), 1)
-            await render.preview(ctx, x, y, zoom, render.fetch_pixelcanvas)
+            cmd = discord.utils.get(discord.utils.get(bot.commands, name='preview').commands, name='pixelcanvas')
+            ctx.command = cmd
+            await bot.invoke(ctx)
             return
 
         if pzio_match is not None:
-            x = int(pzio_match.group(1))
-            y = int(pzio_match.group(2))
-            zoom = int(pzio_match.group(3)) if pzio_match.group(3) is not None else 1
-            zoom = max(min(zoom, 16), 1)
-            await render.preview(ctx, x, y, zoom, render.fetch_pixelzio)
+            cmd = discord.utils.get(discord.utils.get(bot.commands, name='preview').commands, name='pixelzio')
+            ctx.command = cmd
+            await bot.invoke(ctx)
             return
 
         if pzone_match is not None:
-            x = int(pzone_match.group(1))
-            y = int(pzone_match.group(2))
-            if pzone_match.group(4) is not None:
-                zoom = int(pzone_match.group(4))
-            elif pzone_match.group(3) is not None:
-                zoom = int(pzio_match.group(3))
-            else:
-                zoom = 1
-            zoom = max(min(zoom, 16), 1)
-            await render.SIOConn().preview(ctx, x, y, zoom)
+            cmd = discord.utils.get(discord.utils.get(bot.commands, name='preview').commands, name='pixelzone')
+            ctx.command = cmd
+            await bot.invoke(ctx)
             return
 
         if prev_match is not None:
-            x = int(prev_match.group(1))
-            y = int(prev_match.group(2))
-            zoom = int(prev_match.group(3)) if prev_match.group(3) is not None else 1
-            zoom = max(min(zoom, 16), 1)
             if default_canvas == "pixelcanvas.io":
-                await render.preview(ctx, x, y, zoom, render.fetch_pixelcanvas)
+                cmd = discord.utils.get(discord.utils.get(bot.commands, name='preview').commands, name='pixelcanvas')
+                ctx.command = cmd
+                await bot.invoke(ctx)
             elif default_canvas == "pixelz.io":
-                await render.preview(ctx, x, y, zoom, render.fetch_pixelzio)
+                cmd = discord.utils.get(discord.utils.get(bot.commands, name='preview').commands, name='pixelzio')
+                ctx.command = cmd
+                await bot.invoke(ctx)
             elif default_canvas == "pixelzone.io":
-                await render.SIOConn().preview(ctx, x, y, zoom)
+                cmd = discord.utils.get(discord.utils.get(bot.commands, name='preview').commands, name='pixelzone')
+                ctx.command = cmd
+                await bot.invoke(ctx)
             return
 
         if diff_match is not None and len(message.attachments) > 0 \
                 and message.attachments[0].filename[-4:].lower() == ".png":
-            att = message.attachments[0]
-            x = int(diff_match.group(1))
-            y = int(diff_match.group(2))
-            zoom = int(diff_match.group(3)) if diff_match.group(3) is not None else 1
-            zoom = max(1, min(zoom, 400 // att.width, 400 // att.height))
             if default_canvas == "pixelcanvas.io":
-                await render.diff(ctx, x, y, att, zoom, render.fetch_pixelcanvas, pc_colors)
+                cmd = discord.utils.get(discord.utils.get(bot.commands, name='diff').commands, name='pixelcanvas')
+                ctx.command = cmd
+                await bot.invoke(ctx)
             elif default_canvas == "pixelz.io":
-                await render.diff(ctx, x, y, att, zoom, render.fetch_pixelzio, pzio_colors)
+                cmd = discord.utils.get(discord.utils.get(bot.commands, name='diff').commands, name='pixelzio')
+                ctx.command = cmd
+                await bot.invoke(ctx)
             elif default_canvas == "pixelzone.io":
-                await render.SIOConn().diff(ctx, x, y, att, zoom)
+                cmd = discord.utils.get(discord.utils.get(bot.commands, name='diff').commands, name='pixelzone')
+                ctx.command = cmd
+                await bot.invoke(ctx)
             return
 
 
@@ -269,7 +266,7 @@ async def suggest(ctx, *, suggestion: str):
 
 
 @bot.group(name="ditherchart")
-async def ditherchart():
+async def ditherchart(ctx):
     pass
 
 

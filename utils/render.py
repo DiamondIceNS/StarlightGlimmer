@@ -3,11 +3,9 @@ import discord
 import io
 import json
 import lz4.frame
-import os
 from math import sqrt, pow
 from PIL import Image
 from socketIO_client import SocketIO
-from time import time
 
 from utils.config import Config
 from utils.colors import *
@@ -81,27 +79,24 @@ class SIOConn:
                                self.fetched.height // 2 - cfg.preview_h // 2)
                 self.fetched = self.fetched.crop((tlp_z.x, tlp_z.y, tlp_z.x + cfg.preview_w, tlp_z.y + cfg.preview_h))
 
-            preview_filename = 'preview_{0}.png'.format(int(time()))
-            with open(preview_filename, 'wb') as f:
-                self.fetched.save(f, 'png')
-            f = discord.File(preview_filename, "preview.png")
-            await ctx.channel.send(file=f)
-            os.remove(preview_filename)
+            with io.BytesIO() as bio:
+                self.fetched.save(bio, format="PNG")
+                bio.seek(0)
+                f = discord.File(bio, "preview.png")
+                await ctx.send(file=f)
 
     async def diff(self, ctx, x, y, att, zoom):
         async with ctx.typing():
             self.fetch(x, y, att.width, att.height)
 
-            template_filename = 'template_{0}.png'.format(int(time()))
-            with open(template_filename, 'wb') as f:
-                await att.save(f)
-            template = Image.open(template_filename).convert('RGBA')
-            os.remove(template_filename)
+            with io.BytesIO() as bio:
+                await att.save(bio)
+                template = Image.open(bio).convert('RGBA')
 
             log.debug("X:{0} | Y:{1} | Dim: {2}x{3} | Zoom: {4}".format(x, y, template.width, template.height, zoom))
 
             if template.width * template.height > 1000000:
-                await ctx.channel.send(getlang(ctx.guild.id, "render.large_template"))
+                await ctx.send(getlang(ctx.guild.id, "render.large_template"))
 
             tot = 0  # Total non-transparent pixels in template
             err = 0  # Number of errors
@@ -134,26 +129,24 @@ class SIOConn:
             if zoom > 1:
                 diff_img = diff_img.resize(tuple(zoom * x for x in diff_img.size), Image.NEAREST)
 
-            diff_filename = 'diff_{0}.png'.format(int(time()))
-            with open(diff_filename, 'wb') as f:
-                diff_img.save(f, 'png')
-            f = discord.File(diff_filename, "diff.png")
             if bad > 0:
                 content = getlang(ctx.guild.id, "render.diff_bad_color") \
                     .format(tot - err, tot, err, bad, 100 * (tot - err) / tot)
             else:
                 content = getlang(ctx.guild.id, "render.diff").format(tot - err, tot, err, 100 * (tot - err) / tot)
-            await ctx.channel.send(content=content, file=f)
-            os.remove(diff_filename)
+
+            with io.BytesIO() as bio:
+                diff_img.save(bio, format="PNG")
+                bio.seek(0)
+                f = discord.File(bio, "diff.png")
+                await ctx.send(content=content, file=f)
 
 
 async def diff(ctx, x, y, att, zoom, fetch, colors):
     async with ctx.typing():
-        template_filename = 'template_{0}.png'.format(int(time()))
-        with open(template_filename, 'wb') as f:
-            await att.save(f)
-        template = Image.open(template_filename).convert('RGBA')
-        os.remove(template_filename)
+        with io.BytesIO() as bio:
+            await att.save(bio)
+            template = Image.open(bio).convert('RGBA')
 
         log.debug("X:{0} | Y:{1} | Dim: {2}x{3} | Zoom: {4}".format(x, y, template.width, template.height, zoom))
 
@@ -192,17 +185,17 @@ async def diff(ctx, x, y, att, zoom, fetch, colors):
         if zoom > 1:
             diff_img = diff_img.resize(tuple(zoom * x for x in diff_img.size), Image.NEAREST)
 
-        diff_filename = 'diff_{0}.png'.format(int(time()))
-        with open(diff_filename, 'wb') as f:
-            diff_img.save(f, 'png')
-        f = discord.File(diff_filename, "diff.png")
         if bad > 0:
             content = getlang(ctx.guild.id, "render.diff_bad_color")\
                 .format(tot - err, tot, err, bad, 100 * (tot - err) / tot)
         else:
             content = getlang(ctx.guild.id, "render.diff").format(tot - err, tot, err, 100 * (tot - err) / tot)
-        await ctx.channel.send(content=content, file=f)
-        os.remove(diff_filename)
+
+        with io.BytesIO() as bio:
+            diff_img.save(bio, format="PNG")
+            bio.seek(0)
+            f = discord.File(bio, "diff.png")
+            await ctx.send(content=content, file=f)
 
 
 async def preview(ctx, x, y, zoom, fetch):
@@ -216,20 +209,17 @@ async def preview(ctx, x, y, zoom, fetch):
             tlp_z = Coords(preview_img.width // 2 - cfg.preview_w // 2, preview_img.height // 2 - cfg.preview_h // 2)
             preview_img = preview_img.crop((tlp_z.x, tlp_z.y, tlp_z.x + cfg.preview_w, tlp_z.y + cfg.preview_h))
 
-        preview_filename = 'preview_{0}.png'.format(int(time()))
-        with open(preview_filename, 'wb') as f:
-            preview_img.save(f, 'png')
-        f = discord.File(preview_filename, "preview.png")
-        await ctx.channel.send(file=f)
-        os.remove(preview_filename)
+        with io.BytesIO() as bio:
+            preview_img.save(bio, format="PNG")
+            bio.seek(0)
+            f = discord.File(bio, "preveiw.png")
+            await ctx.send(file=f)
 
 
 async def quantize(ctx, att, colors):
-    template_filename = 'template_{0}.png'.format(int(time()))
-    with open(template_filename, 'wb') as f:
-        await att.save(f)
-    template = Image.open(template_filename).convert('RGBA')
-    os.remove(template_filename)
+    with io.BytesIO() as bio:
+        await att.save(bio)
+        template = Image.open(bio).convert('RGBA')
 
     log.debug("Dim: {0}x{1}".format(template.width, template.height))
 
@@ -259,12 +249,11 @@ async def quantize(ctx, att, colors):
                     best_fit = c
             template.putpixel((px, py), best_fit + (255,))
 
-    quantized_filename = 'cq_{0}.png'.format(int(time()))
-    with open(quantized_filename, 'wb') as f:
-        template.save(f, 'png')
-    f = discord.File(quantized_filename, att.filename)
-    await ctx.channel.send(getlang(ctx.guild.id, "render.quantize").format(bad_pixels), file=f)
-    os.remove(quantized_filename)
+    with io.BytesIO() as bio:
+        template.save(bio, format="PNG")
+        bio.seek(0)
+        f = discord.File(bio, "template.png")
+        await ctx.channel.send(getlang(ctx.guild.id, "render.quantize").format(bad_pixels), file=f)
 
 
 async def fetch_pixelcanvas(x, y, dx, dy):
