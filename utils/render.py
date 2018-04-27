@@ -150,7 +150,7 @@ async def diff(ctx, x, y, att, zoom, fetch, colors):
 
         log.debug("X:{0} | Y:{1} | Dim: {2}x{3} | Zoom: {4}".format(x, y, template.width, template.height, zoom))
 
-        if template.width * template.height > 1000000:
+        if template.width * template.height > 600000:
             await ctx.channel.send(getlang(ctx.guild.id, "render.large_template"))
 
         diff_img = await fetch(x, y, template.width, template.height)
@@ -262,17 +262,18 @@ async def fetch_pixelcanvas(x, y, dx, dy):
     bc = Coords(x // 64 + 7, y // 64 + 7)
     bc_ext = Coords((dx + ch_off.x) // 960 + 1, (dy + ch_off.y) // 960 + 1)
 
+    data = bytes()
     async with aiohttp.ClientSession() as session:
         for iy in range(0, bc_ext.y * 15, 15):
             for ix in range(0, bc_ext.x * 15, 15):
                 url = "http://pixelcanvas.io/api/bigchunk/{0}.{1}.bmp".format(bc.x + ix, bc.y + iy)
                 headers = {"Accept-Encoding": "gzip"}
                 async with session.get(url, headers=headers) as resp:
-                    data = await resp.read()
+                    data += await resp.read()
 
     def pixel_to_data_index():
         scan = Coords(ch_off.x + px, ch_off.y + py)
-        return (921600 * bc_ext.x * (scan.y // 960)  # Skips rows of big chunks
+        return (921600 * (bc_ext.x-1) * (scan.y // 960)  # Skips rows of big chunks
                 + 921600 * (scan.x // 960)           # Skips single big chunks in a row
                 + 4096 * 15 * (scan.y // 64)         # Skips rows of chunks in the big chunk
                 + 4096 * ((scan.x % 960) // 64)      # Skips single chunk in the row

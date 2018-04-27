@@ -174,8 +174,9 @@ class Canvas:
     @commands.cooldown(1, 5, BucketType.guild)
     async def repeat(self, ctx):
         async for msg in ctx.history(limit=50, before=ctx.message):
-            regex = ctx.prefix \
-                    + '(diff|preview) (pixelcanvas|pixelzio|pixelzone)(?: (-?\d+), ?(-?\d+)/?\s?#?(\d+)?)?'
+            log_msg = "repeated by {0.name}#{0.discriminator} (ID: {0.id}) in {1.name} (ID: {1.id})" \
+                        .format(ctx.author, ctx.guild)
+            regex = ctx.prefix + '(diff|preview) (pixelcanvas|pixelzio|pixelzone)(?: (-?\d+), ?(-?\d+)/?\s?#?(\d+)?)?'
             match = re.search(regex, msg.content)
             if match:
                 cmd = match.group(1)
@@ -187,23 +188,29 @@ class Canvas:
                     att = msg.attachments[0]
                     zoom = max(1, min(zoom, 400 // att.width, 400 // att.height))
                     if sub_cmd == "pixelcanvas":
+                        log.debug("Pixelcanvas diff " + log_msg)
                         await render.diff(ctx, x, y, att, zoom, render.fetch_pixelcanvas, pc_colors)
                         return
                     elif sub_cmd == "pixelzio":
+                        log.debug("Pixelzio diff " + log_msg)
                         await render.diff(ctx, x, y, att, zoom, render.fetch_pixelzio, pzio_colors)
                         return
                     elif sub_cmd == "pixelzone":
+                        log.debug("Pixelzone diff " + log_msg)
                         await render.SIOConn().diff(ctx, x, y, att, zoom)
                         return
                 if cmd == "preview":
                     zoom = max(1, min(16, zoom))
                     if sub_cmd == "pixelcanvas":
+                        log.debug("Pixelcanvas preview " + log_msg)
                         await render.preview(ctx, x, y, zoom, render.fetch_pixelcanvas)
                         return
                     elif sub_cmd == "pixelzio":
+                        log.debug("Pixelzio preview " + log_msg)
                         await render.preview(ctx, x, y, zoom, render.fetch_pixelzio)
                         return
                     elif sub_cmd == "pixelzone":
+                        log.debug("Pixelzone preview " + log_msg)
                         await render.SIOConn().preview(ctx, x, y, zoom)
                         return
 
@@ -219,6 +226,7 @@ class Canvas:
                 y = int(pc_match.group(2))
                 zoom = int(pc_match.group(3)) if pc_match.group(3) is not None else 1
                 zoom = max(min(zoom, 16), 1)
+                log.debug("Pixelcanvas preview " + log_msg)
                 await render.preview(ctx, x, y, zoom, render.fetch_pixelcanvas)
                 return
 
@@ -227,6 +235,7 @@ class Canvas:
                 y = int(pzio_match.group(2))
                 zoom = int(pzio_match.group(3)) if pzio_match.group(3) is not None else 1
                 zoom = max(min(zoom, 16), 1)
+                log.debug("Pixelzio preview " + log_msg)
                 await render.preview(ctx, x, y, zoom, render.fetch_pixelzio)
                 return
 
@@ -240,6 +249,7 @@ class Canvas:
                 else:
                     zoom = 1
                 zoom = max(min(zoom, 16), 1)
+                log.debug("Pixelzone preview " + log_msg)
                 await render.SIOConn().preview(ctx, x, y, zoom)
                 return
 
@@ -249,10 +259,13 @@ class Canvas:
                 zoom = int(prev_match.group(3)) if prev_match.group(3) is not None else 1
                 zoom = max(min(zoom, 16), 1)
                 if default_canvas == "pixelcanvas.io":
+                    log.debug("Pixelcanvas preview " + log_msg)
                     await render.preview(ctx, x, y, zoom, render.fetch_pixelcanvas)
                 elif default_canvas == "pixelz.io":
+                    log.debug("Pixelzio preview " + log_msg)
                     await render.preview(ctx, x, y, zoom, render.fetch_pixelzio)
                 elif default_canvas == "pixelzone.io":
+                    log.debug("Pixelzone preview " + log_msg)
                     await render.SIOConn().preview(ctx, x, y, zoom)
                 return
 
@@ -264,10 +277,13 @@ class Canvas:
                 zoom = int(diff_match.group(3)) if diff_match.group(3) is not None else 1
                 zoom = max(1, min(zoom, 400 // att.width, 400 // att.height))
                 if default_canvas == "pixelcanvas.io":
+                    log.debug("Pixelcanvas diff " + log_msg)
                     await render.diff(ctx, x, y, att, zoom, render.fetch_pixelcanvas, pc_colors)
                 elif default_canvas == "pixelz.io":
+                    log.debug("Pixelzio diff " + log_msg)
                     await render.diff(ctx, x, y, att, zoom, render.fetch_pixelzio, pzio_colors)
                 elif default_canvas == "pixelzone.io":
+                    log.debug("Pixelzone diff " + log_msg)
                     await render.SIOConn().diff(ctx, x, y, att, zoom)
                 return
 
