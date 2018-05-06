@@ -29,18 +29,20 @@ class Canvas:
         if len(ctx.message.attachments) < 1:
             await ctx.send(getlang(ctx.guild.id, "bot.error.missing_attachment"))
             return
-        filename = ctx.message.attachments[0].filename
-        if filename[-4:].lower() != ".png":
-            if filename[-4:].lower() == ".jpg" or filename[-5:].lower() == ".jpeg":
+        att = ctx.message.attachments[0]
+        if att.filename[-4:].lower() != ".png":
+            if att.filename[-4:].lower() == ".jpg" or att.filename[-5:].lower() == ".jpeg":
                 await ctx.send(getlang(ctx.guild.id, "bot.error.jpeg"))
                 return
             await ctx.send(getlang(ctx.guild.id, "bot.error.no_png"))
+            return
+        if att.width is None or att.height is None:
+            await ctx.send(getlang(ctx.guild.id, "bot.error.bad_png").format(sql.get_guild_prefix(ctx.guild.id), getlang(ctx.guild.id, "command.quantize")))
             return
         m = re.search('\(?(-?\d+), ?(-?\d+)\)?\s?#?(\d+)?', coords)
         if m is not None:
             x = int(m.group(1))
             y = int(m.group(2))
-            att = ctx.message.attachments[0]
             zoom = int(m.group(3)) if m.group(3) is not None else 1
             zoom = max(1, min(zoom, 400 // att.width, 400 // att.height))
             return ctx, x, y, att, zoom
@@ -186,6 +188,11 @@ class Canvas:
                 zoom = int(match.group(5)) if match.group(5) is not None else 1
                 if cmd == "diff" and len(msg.attachments) > 0 and msg.attachments[0].filename[-4:].lower() == ".png":
                     att = msg.attachments[0]
+                    if att.width is None or att.height is None:
+                        await ctx.send(getlang(ctx.guild.id, "bot.error.bad_png")
+                                       .format(sql.get_guild_prefix(ctx.guild.id),
+                                               getlang(ctx.guild.id, "command.quantize")))
+                        return
                     zoom = max(1, min(zoom, 400 // att.width, 400 // att.height))
                     if sub_cmd == "pixelcanvas":
                         log.debug("Pixelcanvas diff " + log_msg)
@@ -272,6 +279,10 @@ class Canvas:
             if diff_match is not None and len(msg.attachments) > 0 \
                     and msg.attachments[0].filename[-4:].lower() == ".png":
                 att = msg.attachments[0]
+                if att.width is None or att.height is None:
+                    await ctx.send(getlang(ctx.guild.id, "bot.error.bad_png")
+                                   .format(sql.get_guild_prefix(ctx.guild.id), getlang(ctx.guild.id, "command.quantize")))
+                    return
                 x = int(diff_match.group(1))
                 y = int(diff_match.group(2))
                 zoom = int(diff_match.group(3)) if diff_match.group(3) is not None else 1

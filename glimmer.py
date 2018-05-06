@@ -5,10 +5,8 @@ from discord import TextChannel
 from discord.ext import commands
 from time import time
 
-import utils.render as render
 import utils.sqlite as sql
 from utils.channel_logger import ChannelLogger
-from utils.colors import *
 from utils.config import Config
 from utils.exceptions import NoPermission
 from utils.language import getlang
@@ -18,11 +16,7 @@ from utils.version import VERSION
 
 
 def get_prefix(bot, msg):
-    if msg.guild is not None:
-        row = sql.select_guild_by_id(msg.guild.id)
-        if row is not None and row['prefix'] is not None:
-            return row['prefix']
-    return cfg.prefix
+    return sql.get_guild_prefix(msg.guild.id)
 
 
 cfg = Config()

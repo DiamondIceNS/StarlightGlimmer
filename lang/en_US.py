@@ -33,6 +33,7 @@ STRINGS = {
     "configuration.prefix_set": "Prefix for this guild has been set to **{0}**.",
 
     # Error messages
+    "bot.error.bad_png": "This image seems to be corrupted. Try re-saving it with an image editor or using `{0}{1}`.",
     "bot.error.command_not_found": "That is not a valid command. Use {0}help to see my commands.",
     "bot.error.command_on_cooldown": "That command is on cooldown. Try again in {0:.01f}s.",
     "bot.error.missing_attachment": "That command requires an attachment.",

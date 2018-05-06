@@ -119,5 +119,12 @@ def get_guild_language(gid):
     return c.fetchone()[0]
 
 
+def get_guild_prefix(gid):
+    row = select_guild_by_id(gid)
+    if row is not None and row['prefix'] is not None:
+        return row['prefix']
+    return cfg.prefix
+
+
 create_tables()
 update_tables(get_version())
