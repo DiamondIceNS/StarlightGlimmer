@@ -30,6 +30,10 @@ def update_tables(v):
     if v is not None:
         if v < 1.2:
             c.execute("""ALTER TABLE guilds ADD COLUMN language TEXT NOT NULL DEFAULT "en_US" """)
+        if v < 1.3:
+            c.execute("""UPDATE guilds SET default_canvas='pixelcanvas' WHERE default_canvas='pixelcanvas.io'""")
+            c.execute("""UPDATE guilds SET default_canvas='pixelzio' WHERE default_canvas='pixelz.io'""")
+            c.execute("""UPDATE guilds SET default_canvas='pixelzone' WHERE default_canvas='pixelzone.io'""")
 
 
 def add_guild(gid, name, join_date):

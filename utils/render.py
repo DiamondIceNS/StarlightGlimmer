@@ -4,11 +4,12 @@ import io
 import json
 import lz4.frame
 import websockets
+import time
 from math import sqrt, pow
 from PIL import Image
 
+import utils.colors as colors
 from utils.config import Config
-from utils.colors import *
 from utils.logger import Log
 from utils.language import getlang
 from utils.lzstring import LZString
@@ -24,7 +25,7 @@ class Coords:
         self.y = y
 
 
-async def diff(ctx, x, y, att, zoom, fetch, colors):
+async def diff(ctx, x, y, att, zoom, fetch, palette):
     async with ctx.typing():
         with io.BytesIO() as bio:
             await att.save(bio)
@@ -33,7 +34,7 @@ async def diff(ctx, x, y, att, zoom, fetch, colors):
         log.debug("X:{0} | Y:{1} | Dim: {2}x{3} | Zoom: {4}".format(x, y, template.width, template.height, zoom))
 
         if template.width * template.height > 600000:
-            await ctx.channel.send(getlang(ctx.guild.id, "render.large_template"))
+            await ctx.send(getlang(ctx.guild.id, "render.large_template"))
 
         diff_img = await fetch(x, y, template.width, template.height)
 
@@ -48,7 +49,7 @@ async def diff(ctx, x, y, att, zoom, fetch, colors):
                 if tp[3] is not 0:
                     # All non-transparent pixels count to the total
                     tot += 1
-                if 0 < tp[3] < 255 or (tp[3] is 255 and tp[:3] not in colors):
+                if 0 < tp[3] < 255 or (tp[3] is 255 and tp[:3] not in palette):
                     # All non-opaque and non-transparent pixels, and opaque pixels of bad colors, are bad
                     pixel = (0, 0, 255, 255)
                     err += 1
@@ -98,7 +99,7 @@ async def preview(ctx, x, y, zoom, fetch):
             await ctx.send(file=f)
 
 
-async def quantize(ctx, att, colors):
+async def quantize(ctx, att, palette):
     with io.BytesIO() as bio:
         await att.save(bio)
         template = Image.open(bio).convert('RGBA')
@@ -119,7 +120,7 @@ async def quantize(ctx, att, colors):
 
             dist = 450
             best_fit = (0, 0, 0)
-            for c in colors:
+            for c in palette:
                 if pix[:3] == c:  # If pixel matches exactly, break
                     best_fit = c
                     if pix[3] == 255:  # Pixel is only not bad if it's fully opaque
@@ -135,7 +136,33 @@ async def quantize(ctx, att, colors):
         template.save(bio, format="PNG")
         bio.seek(0)
         f = discord.File(bio, "template.png")
-        await ctx.channel.send(getlang(ctx.guild.id, "render.quantize").format(bad_pixels), file=f)
+        await ctx.send(getlang(ctx.guild.id, "render.quantize").format(bad_pixels), file=f)
+
+
+async def gridify(ctx, att, zoom):
+    with io.BytesIO() as bio:
+        await att.save(bio)
+        template = Image.open(bio).convert('RGBA')
+
+    grid_img = Image.new('RGBA', (template.width * (zoom + 1) - 1, template.height * (zoom + 1) - 1))
+    for iy in range(template.height):
+        for ix in range(template.width):
+            for ziy in range(zoom):
+                for zix in range(zoom):
+                    grid_img.putpixel((ix * (zoom + 1) + zix, iy * (zoom + 1) + ziy), template.getpixel((ix, iy)))
+
+    for iy in range(template.height - 1):
+        for ix in range(grid_img.width):
+            grid_img.putpixel((ix, (iy + 1) * (zoom + 1) - 1), (128, 128, 128, 255))
+    for ix in range(template.width - 1):
+        for iy in range(grid_img.height):
+            grid_img.putpixel(((ix + 1) * (zoom + 1) - 1, iy), (128, 128, 128, 255))
+
+    with io.BytesIO() as bio:
+        grid_img.save(bio, format="PNG")
+        bio.seek(0)
+        f = discord.File(bio, "gridded.png")
+        await ctx.send(file=f)
 
 
 async def fetch_pixelcanvas(x, y, dx, dy):
@@ -167,7 +194,7 @@ async def fetch_pixelcanvas(x, y, dx, dy):
         for px in range(dx):
             i = pixel_to_data_index()
             color_id = data[int(i)] & 15 if i % 1 != 0 else data[int(i)] >> 4
-            color = pc_colors[color_id] + (255,)
+            color = colors.pixelcanvas[color_id] + (255,)
             fetched.putpixel((px, py), color)
 
     return fetched
@@ -233,8 +260,29 @@ async def fetch_pixelzone(x, y, dx, dy):
             for px in range(chunk.width):
                 i = (py * 512 + px) / 2
                 color_id = tmp[int(i)] & 15 if i % 1 == 0 else tmp[int(i)] >> 4
-                color = pzone_colors[color_id]
+                color = colors.pixelzone[color_id]
                 chunk.putpixel((px, py), color)
         fetched.paste(chunk, (chk_rel.x * 512, chk_rel.y * 512, (chk_rel.x + 1) * 512, (chk_rel.y + 1) * 512))
 
     return fetched.crop((x % 512, y % 512, (x % 512) + dx, (y % 512) + dy))
+
+
+async def fetch_pxlsspace(x, y, dx, dy):
+    fetched = Image.new('RGB', (dx, dy), colors.pxlsspace[1])
+
+    async with aiohttp.ClientSession() as session:
+        url = "http://pxls.space/boarddata?={0:.0f}".format(time.time())
+        headers = {"Accept-Encoding": "gzip"}
+        async with session.get(url, headers=headers) as resp:
+            data = await resp.read()
+
+    for py in range(dy):
+        for px in range(dx):
+            if 1280 <= px+x or px+x < 0 or 720 <= py+y or py+y < 0:
+                continue
+            i = 1280 * (py+y) + (px+x)
+            color_id = data[i]
+            color = colors.pxlsspace[color_id]
+            fetched.putpixel((px, py), color)
+
+    return fetched

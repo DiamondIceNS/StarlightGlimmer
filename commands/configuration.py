@@ -10,10 +10,10 @@ class Configuration:
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.group(name="alertchannel")
+    @commands.group(name="alertchannel", invoke_without_command=True)
     @commands.guild_only()
     async def alertchannel(self, ctx):
-        pass
+        await ctx.send(getlang(ctx.guild.id, "bot.error.no_subcommand"))
 
     @alertchannel.command(name="set")
     @commands.guild_only()
@@ -53,17 +53,17 @@ class Configuration:
             sql.update_guild(ctx.guild.id, autoscan=0)
             await ctx.send(getlang(ctx.guild.id, "configuration.autoscan_disabled"))
 
-    @commands.group(name="setdefaultcanvas")
+    @commands.group(name="setdefaultcanvas", invoke_without_command=True)
     @commands.guild_only()
     async def setdefaultcanvas(self, ctx):
-        pass  # TODO
+        await ctx.send(getlang(ctx.guild.id, "bot.error.no_subcommand"))
 
     @setdefaultcanvas.command(name="pixelcanvas")
     @commands.guild_only()
     async def setdefaultcanvas_pixelcanvas(self, ctx):
         if not ctx.author.permissions_in(ctx.channel).administrator:
             raise NoPermission
-        sql.update_guild(ctx.guild.id, default_canvas="pixelcanvas.io")
+        sql.update_guild(ctx.guild.id, default_canvas="pixelcanvas")
         await ctx.send(getlang(ctx.guild.id, "configuration.default_canvas_set").format("Pixelcanvas.io"))
 
     @setdefaultcanvas.command(name="pixelzio")
@@ -71,7 +71,7 @@ class Configuration:
     async def setdefaultcanvas_pixelzio(self, ctx):
         if not ctx.author.permissions_in(ctx.channel).administrator:
             raise NoPermission
-        sql.update_guild(ctx.guild.id, default_canvas="pixelz.io")
+        sql.update_guild(ctx.guild.id, default_canvas="pixelzio")
         await ctx.send(getlang(ctx.guild.id, "configuration.default_canvas_set").format("Pixelz.io"))
 
     @setdefaultcanvas.command(name="pixelzone")
@@ -79,8 +79,16 @@ class Configuration:
     async def setdefaultcanvas_pixelzone(self, ctx):
         if not ctx.author.permissions_in(ctx.channel).administrator:
             raise NoPermission
-        sql.update_guild(ctx.guild.id, default_canvas="pixelzone.io")
+        sql.update_guild(ctx.guild.id, default_canvas="pixelzone")
         await ctx.send(getlang(ctx.guild.id, "configuration.default_canvas_set").format("Pixelzone.io"))
+
+    @setdefaultcanvas.command(name="pxlsspace")
+    @commands.guild_only()
+    async def setdefaultcanvas_pxlsspace(self, ctx):
+        if not ctx.author.permissions_in(ctx.channel).administrator:
+            raise NoPermission
+        sql.update_guild(ctx.guild.id, default_canvas="pxlsspace")
+        await ctx.send(getlang(ctx.guild.id, "configuration.default_canvas_set").format("Pxls.space"))
 
 
 def setup(bot):

@@ -28,6 +28,8 @@ class Config:
         self.token = data.get('token', None)
         self.prefix = data.get('prefix', "g!")
         self.name = data.get('name', 'Starlight Glimmer')
+        self.invite = data.get('invite', "https://discordapp.com/oauth2/authorize?&client_id=405480380930588682&scope"
+                                         "=bot&permissions=35840")
 
         self.preview_h = clamp(data.get('preview_height', 240), 0, 896)
         self.preview_w = clamp(data.get('preview_width', 400), 0, 896)

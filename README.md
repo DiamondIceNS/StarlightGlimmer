@@ -3,7 +3,7 @@
 # Starlight Glimmer
 A template utility bot based on [Alastair](Make-Alastair-Great-Again) and [Pinkie Pie](https://pastebin.com/Tg1p5AnW).
 
-Currently supports [Pixelcanvas.io](http://pixelcanvas.io/), [Pixelz.io](http://pixelz.io/), and [Pixelzone.io](http://pixelzone.io/).
+Currently supports [Pixelcanvas.io](http://pixelcanvas.io/), [Pixelz.io](http://pixelz.io/), [Pixelzone.io](http://pixelzone.io/), and [Pxls.space](http://pxls.space/).
 
 #### Requires:
 - Python 3.6

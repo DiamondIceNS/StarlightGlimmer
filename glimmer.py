@@ -3,6 +3,7 @@ import re
 import traceback
 from discord import TextChannel
 from discord.ext import commands
+from discord.utils import get as dget
 from time import time
 
 import utils.sqlite as sql
@@ -146,7 +147,8 @@ async def on_command_error(ctx, error):
     if isinstance(error, commands.NoPrivateMessage):
         await ctx.send(getlang(ctx.guild.id, "bot.error.no_private_message"))
         return
-    if isinstance(error, commands.CommandInvokeError) and isinstance(error.original, discord.HTTPException) and error.original.code == 50013:
+    if isinstance(error, commands.CommandInvokeError) and isinstance(error.original, discord.HTTPException) \
+            and error.original.code == 50013:
         return
     cname = ctx.command.qualified_name if ctx.command is not None else "None"
     await channel_logger.log_to_channel("An error occurred while executing command `{0}` in server **{1.name}** "
@@ -172,60 +174,23 @@ async def on_message(message):
 
     if sql.select_guild_by_id(ctx.guild.id)['autoscan'] == 1:
         default_canvas = sql.select_guild_by_id(ctx.guild.id)['default_canvas']
-        pc_match = re.search('pixelcanvas\.io/@-?\d+,-?\d+', message.content)
-        pzio_match = re.search('pixelz\.io/@-?\d+,-?\d+', message.content)
-        pzone_match = re.search('pixelzone\.io/\?p=-?\d+,-?\d+', message.content)
-        prev_match = re.search('@\(?-?\d+, ?-?\d+\)?', message.content)
-        diff_match = re.search('\(?-?\d+, ?-?\d+\)?', message.content)
 
-        if pc_match is not None:
-            cmd = discord.utils.get(discord.utils.get(bot.commands, name='preview').commands, name='pixelcanvas')
-            ctx.command = cmd
-            await bot.invoke(ctx)
-            return
-
-        if pzio_match is not None:
-            cmd = discord.utils.get(discord.utils.get(bot.commands, name='preview').commands, name='pixelzio')
-            ctx.command = cmd
-            await bot.invoke(ctx)
-            return
-
-        if pzone_match is not None:
-            cmd = discord.utils.get(discord.utils.get(bot.commands, name='preview').commands, name='pixelzone')
-            ctx.command = cmd
-            await bot.invoke(ctx)
-            return
-
-        if prev_match is not None:
-            if default_canvas == "pixelcanvas.io":
-                cmd = discord.utils.get(discord.utils.get(bot.commands, name='preview').commands, name='pixelcanvas')
-                ctx.command = cmd
-                await bot.invoke(ctx)
-            elif default_canvas == "pixelz.io":
-                cmd = discord.utils.get(discord.utils.get(bot.commands, name='preview').commands, name='pixelzio')
-                ctx.command = cmd
-                await bot.invoke(ctx)
-            elif default_canvas == "pixelzone.io":
-                cmd = discord.utils.get(discord.utils.get(bot.commands, name='preview').commands, name='pixelzone')
-                ctx.command = cmd
-                await bot.invoke(ctx)
-            return
-
-        if diff_match is not None and len(message.attachments) > 0 \
+        if re.search('pixelcanvas\.io/@-?\d+,-?\d+', message.content) is not None:
+            ctx.command = dget(dget(bot.commands, name='preview').commands, name='pixelcanvas')
+        elif re.search('pixelz\.io/@-?\d+,-?\d+', message.content) is not None:
+            ctx.command = dget(dget(bot.commands, name='preview').commands, name='pixelzio')
+        elif re.search('pixelzone\.io/\?p=-?\d+,-?\d+', message.content) is not None:
+            ctx.command = dget(dget(bot.commands, name='preview').commands, name='pixelzone')
+        elif re.search('pxls\.space/#x=\d+&y=\d+', message.content) is not None:
+            ctx.command = dget(dget(bot.commands, name='preview').commands, name='pxlsspace')
+        elif re.search('@\(?-?\d+, ?-?\d+\)?', message.content) is not None:
+            ctx.command = dget(dget(bot.commands, name='preview').commands, name=default_canvas)
+        elif re.search('\(?-?\d+, ?-?\d+\)?', message.content) is not None and len(message.attachments) > 0 \
                 and message.attachments[0].filename[-4:].lower() == ".png":
-            if default_canvas == "pixelcanvas.io":
-                cmd = discord.utils.get(discord.utils.get(bot.commands, name='diff').commands, name='pixelcanvas')
-                ctx.command = cmd
-                await bot.invoke(ctx)
-            elif default_canvas == "pixelz.io":
-                cmd = discord.utils.get(discord.utils.get(bot.commands, name='diff').commands, name='pixelzio')
-                ctx.command = cmd
-                await bot.invoke(ctx)
-            elif default_canvas == "pixelzone.io":
-                cmd = discord.utils.get(discord.utils.get(bot.commands, name='diff').commands, name='pixelzone')
-                ctx.command = cmd
-                await bot.invoke(ctx)
-            return
+            ctx.command = dget(dget(bot.commands, name='diff').commands, name=default_canvas)
+
+        if ctx.command is not None:
+            await bot.invoke(ctx)
 
 
 @bot.command()
@@ -259,9 +224,9 @@ async def suggest(ctx, *, suggestion: str):
     await ctx.send(getlang(ctx.guild.id, "bot.suggest"))
 
 
-@bot.group(name="ditherchart")
+@bot.group(name="ditherchart", invoke_without_command=True)
 async def ditherchart(ctx):
-    pass
+    await ctx.send(getlang(ctx.guild.id, "bot.error.no_subcommand"))
 
 
 @ditherchart.command(name="pixelcanvas")
@@ -280,6 +245,17 @@ async def ditherchart_pixelzio(ctx):
 async def ditherchart_pixelzio(ctx):
     f = discord.File("assets/dither_chart_pixelzone.png", "assets/dither_chart_pixelzone.png")
     await ctx.send(file=f)
+
+
+@ditherchart.command(name="pxlsspace")
+async def ditherchart_pixelzio(ctx):
+    f = discord.File("assets/dither_chart_pxlsspace.png", "assets/dither_chart_pxlsspace.png")
+    await ctx.send(file=f)
+
+
+@bot.command()
+async def invite(ctx):
+    await ctx.send(cfg.invite)
 
 
 bot.run(cfg.token)

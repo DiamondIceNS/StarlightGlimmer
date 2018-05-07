@@ -3,9 +3,9 @@ from discord.ext import commands
 from discord.ext.commands import BucketType
 from utils.language import getlang
 
+import utils.colors as colors
 import utils.render as render
 import utils.sqlite as sql
-from utils.colors import pzone_colors, pzio_colors, pc_colors
 from utils.logger import Log
 
 log = Log(__name__)
@@ -19,10 +19,10 @@ class Canvas:
     #          DIFF
     # =======================
 
-    @commands.group(name="diff")
+    @commands.group(name="diff", invoke_without_command=True)
     @commands.cooldown(1, 5, BucketType.guild)
     async def diff(self, ctx):
-        pass
+        await ctx.send(getlang(ctx.guild.id, "bot.error.no_subcommand"))
 
     @staticmethod
     async def parse_diff(ctx, coords):
@@ -55,7 +55,7 @@ class Canvas:
         if args is not None:
             log.debug("Pixelcanvas diff invoked by {0.name}#{0.discriminator} (ID: {0.id}) in {1.name} (ID: {1.id})"
                       .format(ctx.author, ctx.guild))
-            await render.diff(*args, render.fetch_pixelcanvas, pc_colors)
+            await render.diff(*args, render.fetch_pixelcanvas, colors.pixelcanvas)
 
     @diff.command(name="pixelzio")
     @commands.cooldown(1, 5, BucketType.guild)
@@ -64,7 +64,7 @@ class Canvas:
         if args is not None:
             log.debug("Pixelzio diff invoked by {0.name}#{0.discriminator} (ID: {0.id}) in {1.name} (ID: {1.id})"
                       .format(ctx.author, ctx.guild))
-            await render.diff(*args, render.fetch_pixelzio, pzio_colors)
+            await render.diff(*args, render.fetch_pixelzio, colors.pixelzio)
 
     @diff.command(name="pixelzone")
     @commands.cooldown(1, 5, BucketType.guild)
@@ -73,20 +73,29 @@ class Canvas:
         if args is not None:
             log.debug("Pixelzone diff invoked by {0.name}#{0.discriminator} (ID: {0.id}) in {1.name} (ID: {1.id})"
                       .format(ctx.author, ctx.guild))
-            await render.diff(*args, render.fetch_pixelzone, pzone_colors)
+            await render.diff(*args, render.fetch_pixelzone, colors.pixelzone)
+
+    @diff.command(name="pxlsspace")
+    @commands.cooldown(1, 5, BucketType.guild)
+    async def diff_pxlsspace(self, ctx, *, coordinates: str):
+        args = await Canvas.parse_diff(ctx, coordinates)
+        if args is not None:
+            log.debug("Pxlsspace diff invoked by {0.name}#{0.discriminator} (ID: {0.id}) in {1.name} (ID: {1.id})"
+                      .format(ctx.author, ctx.guild))
+            await render.diff(*args, render.fetch_pxlsspace, colors.pxlsspace)
 
     # =======================
     #        PREVIEW
     # =======================
 
-    @commands.group(name="preview")
+    @commands.group(name="preview", invoke_without_command=True)
     @commands.cooldown(1, 5, BucketType.guild)
     async def preview(self, ctx):
-        pass
+        await ctx.send(getlang(ctx.guild.id, "bot.error.no_subcommand"))
 
     @staticmethod
     async def parse_preview(ctx, coords):
-        m = re.search('(-?\d+), ?(-?\d+)(?:,(\d+))?/?\s?#?(\d+)?', coords)
+        m = re.search('(-?\d+)(?:,|&y=) ?(-?\d+)(?:(?:,|&scale=)(\d+))?/?\s?#?(\d+)?', coords)
         if m is not None:
             x = int(m.group(1))
             y = int(m.group(2))
@@ -126,14 +135,25 @@ class Canvas:
                       .format(ctx.author, ctx.guild))
             await render.preview(*args, render.fetch_pixelzone)
 
+    @preview.command(name="pxlsspace")
+    @commands.cooldown(1, 5, BucketType.guild)
+    async def preview_pxlsspace(self, ctx, *, coordinates: str):
+        args = await Canvas.parse_preview(ctx, coordinates)
+        if args is not None:
+            log.debug("Pxlsspace preview invoked by {0.name}#{0.discriminator} (ID: {0.id}) in {1.name} (ID: {1.id})"
+                      .format(ctx.author, ctx.guild))
+            x = max(0, min(1279, args[1]))
+            y = max(0, min(719, args[2]))
+            await render.preview(ctx, x, y, args[3], render.fetch_pxlsspace)
+
     # =======================
     #        QUANTIZE
     # =======================
 
-    @commands.group(name="quantize")
+    @commands.group(name="quantize", invoke_without_command=True)
     @commands.cooldown(1, 5, BucketType.guild)
     async def quantize(self, ctx):
-        pass
+        await ctx.send(getlang(ctx.guild.id, "bot.error.no_subcommand"))
 
     @staticmethod
     async def check_attachment(ctx):
@@ -155,7 +175,7 @@ class Canvas:
         if await Canvas.check_attachment(ctx):
             log.debug("Pixelcanvas quantize invoked by {0.name}#{0.discriminator} (ID: {0.id}) in {1.name} (ID: {1.id})"
                       .format(ctx.author, ctx.guild))
-            await render.quantize(ctx, ctx.message.attachments[0], pc_colors)
+            await render.quantize(ctx, ctx.message.attachments[0], colors.pixelcanvas)
 
     @quantize.command(name="pixelzio")
     @commands.cooldown(1, 5, BucketType.guild)
@@ -163,7 +183,7 @@ class Canvas:
         if await Canvas.check_attachment(ctx):
             log.debug("Pixelzio quantize invoked by {0.name}#{0.discriminator} (ID: {0.id}) in {1.name} (ID: {1.id})"
                       .format(ctx.author, ctx.guild))
-            await render.quantize(ctx, ctx.message.attachments[0], pzio_colors)
+            await render.quantize(ctx, ctx.message.attachments[0], colors.pixelzio)
 
     @quantize.command(name="pixelzone")
     @commands.cooldown(1, 5, BucketType.guild)
@@ -171,16 +191,40 @@ class Canvas:
         if await Canvas.check_attachment(ctx):
             log.debug("Pixelzone quantize invoked by {0.name}#{0.discriminator} (ID: {0.id}) in {1.name} (ID: {1.id})"
                       .format(ctx.author, ctx.guild))
-            await render.quantize(ctx, ctx.message.attachments[0], pzone_colors)
+            await render.quantize(ctx, ctx.message.attachments[0], colors.pixelzone)
+
+    @quantize.command(name="pxlsspace")
+    @commands.cooldown(1, 5, BucketType.guild)
+    async def quantize_pxlsspace(self, ctx):
+        if await Canvas.check_attachment(ctx):
+            log.debug("Pxlsspace quantize invoked by {0.name}#{0.discriminator} (ID: {0.id}) in {1.name} (ID: {1.id})"
+                      .format(ctx.author, ctx.guild))
+            await render.quantize(ctx, ctx.message.attachments[0], colors.pxlsspace)
+
+    # =======================
+    #         GRIDIFY
+    # =======================
+
+    @commands.command(name="gridify")
+    @commands.cooldown(1, 5, BucketType.guild)
+    async def gridify(self, ctx, zoom: int = 1):
+        if await Canvas.check_attachment(ctx):
+            log.debug("Gridify invoked by {0.name}#{0.discriminator} (ID: {0.id}) in {1.name} (ID: {1.id})"
+                      .format(ctx.author, ctx.guild))
+            att = ctx.message.attachments[0]
+            zoom = max(1, min(zoom, 1000 // att.width, 1000 // att.height))
+            await render.gridify(ctx, att, zoom)
 
     @commands.command()
     @commands.cooldown(1, 5, BucketType.guild)
     async def repeat(self, ctx):
         async for msg in ctx.history(limit=50, before=ctx.message):
             log_msg = "repeated by {0.name}#{0.discriminator} (ID: {0.id}) in {1.name} (ID: {1.id})" \
-                        .format(ctx.author, ctx.guild)
-            regex = ctx.prefix + '(diff|preview) (pixelcanvas|pixelzio|pixelzone)(?: (-?\d+), ?(-?\d+)/?\s?#?(\d+)?)?'
-            match = re.search(regex, msg.content)
+                .format(ctx.author, ctx.guild)
+            regex = ctx.prefix \
+                + '(diff|preview) ((?:pixel(?:canvas|zio|zone))|pxlsspace)(?: (-?\d+), ?(-?\d+)/?\s?#?(\d+)?)'
+            match = re.match(regex, msg.content)
+
             if match:
                 cmd = match.group(1)
                 sub_cmd = match.group(2)
@@ -197,15 +241,19 @@ class Canvas:
                     zoom = max(1, min(zoom, 400 // att.width, 400 // att.height))
                     if sub_cmd == "pixelcanvas":
                         log.debug("Pixelcanvas diff " + log_msg)
-                        await render.diff(ctx, x, y, att, zoom, render.fetch_pixelcanvas, pc_colors)
+                        await render.diff(ctx, x, y, att, zoom, render.fetch_pixelcanvas, colors.pixelcanvas)
                         return
                     elif sub_cmd == "pixelzio":
                         log.debug("Pixelzio diff " + log_msg)
-                        await render.diff(ctx, x, y, att, zoom, render.fetch_pixelzio, pzio_colors)
+                        await render.diff(ctx, x, y, att, zoom, render.fetch_pixelzio, colors.pixelzio)
                         return
                     elif sub_cmd == "pixelzone":
                         log.debug("Pixelzone diff " + log_msg)
-                        await render.diff(ctx, x, y, att, zoom, render.fetch_pixelzone, pzone_colors)
+                        await render.diff(ctx, x, y, att, zoom, render.fetch_pixelzone, colors.pixelzone)
+                        return
+                    elif sub_cmd == "pxlsspace":
+                        log.debug("Pxlsspace diff " + log_msg)
+                        await render.diff(ctx, x, y, att, zoom, render.fetch_pxlsspace, colors.pxlsspace)
                         return
                 if cmd == "preview":
                     zoom = max(1, min(16, zoom))
@@ -221,11 +269,16 @@ class Canvas:
                         log.debug("Pixelzone preview " + log_msg)
                         await render.preview(ctx, x, y, zoom, render.fetch_pixelzone)
                         return
+                    elif sub_cmd == "pxlsspace":
+                        log.debug("Pxlsspace preview " + log_msg)
+                        await render.preview(ctx, x, y, zoom, render.fetch_pxlsspace)
+                        return
 
             default_canvas = sql.select_guild_by_id(ctx.guild.id)['default_canvas']
             pc_match = re.search('(?:pixelcanvas\.io/)@(-?\d+),(-?\d+)/?(?:\s?#?(\d+))?', msg.content)
             pzio_match = re.search('(?:pixelz\.io/)@(-?\d+),(-?\d+)(?:\s?#?(\d+))?', msg.content)
             pzone_match = re.search('(?:pixelzone\.io/)\?p=(-?\d+),(-?\d+)(?:,(\d+))?(?:\s?#?(\d+))?', msg.content)
+            pxlsp_match = re.search('pxls\.space/#x=(\d+)&y=(\d+)(?:&scale=(\d+))?\s?#?(\d+)?', msg.content)
             prev_match = re.search('@\(?(-?\d+), ?(-?\d+)\)?(?: ?#(\d+))?', msg.content)
             diff_match = re.search('\(?(-?\d+), ?(-?\d+)\)?(?: ?#(\d+))?', msg.content)
 
@@ -261,20 +314,37 @@ class Canvas:
                 await render.preview(ctx, x, y, zoom, render.fetch_pixelzone)
                 return
 
+            if pxlsp_match is not None:
+                x = int(pxlsp_match.group(1))
+                y = int(pxlsp_match.group(2))
+                if pxlsp_match.group(4) is not None:
+                    zoom = int(pxlsp_match.group(4))
+                elif pxlsp_match.group(3) is not None:
+                    zoom = int(pxlsp_match.group(3))
+                else:
+                    zoom = 1
+                zoom = max(min(zoom, 16), 1)
+                log.debug("Pxlsspace preview " + log_msg)
+                await render.preview(ctx, x, y, zoom, render.fetch_pxlsspace)
+                return
+
             if prev_match is not None:
                 x = int(prev_match.group(1))
                 y = int(prev_match.group(2))
                 zoom = int(prev_match.group(3)) if prev_match.group(3) is not None else 1
                 zoom = max(min(zoom, 16), 1)
-                if default_canvas == "pixelcanvas.io":
+                if default_canvas == "pixelcanvas":
                     log.debug("Pixelcanvas preview " + log_msg)
                     await render.preview(ctx, x, y, zoom, render.fetch_pixelcanvas)
-                elif default_canvas == "pixelz.io":
+                elif default_canvas == "pixelz":
                     log.debug("Pixelzio preview " + log_msg)
                     await render.preview(ctx, x, y, zoom, render.fetch_pixelzio)
-                elif default_canvas == "pixelzone.io":
+                elif default_canvas == "pixelzone":
                     log.debug("Pixelzone preview " + log_msg)
                     await render.preview(ctx, x, y, zoom, render.fetch_pixelzone)
+                elif default_canvas == "pxlsspace":
+                    log.debug("Pxlsspace preview " + log_msg)
+                    await render.preview(ctx, x, y, zoom, render.fetch_pxlsspace)
                 return
 
             if diff_match is not None and len(msg.attachments) > 0 \
@@ -289,15 +359,18 @@ class Canvas:
                 y = int(diff_match.group(2))
                 zoom = int(diff_match.group(3)) if diff_match.group(3) is not None else 1
                 zoom = max(1, min(zoom, 400 // att.width, 400 // att.height))
-                if default_canvas == "pixelcanvas.io":
+                if default_canvas == "pixelcanvas":
                     log.debug("Pixelcanvas diff " + log_msg)
-                    await render.diff(ctx, x, y, att, zoom, render.fetch_pixelcanvas, pc_colors)
-                elif default_canvas == "pixelz.io":
+                    await render.diff(ctx, x, y, att, zoom, render.fetch_pixelcanvas, colors.pixelcanvas)
+                elif default_canvas == "pixelz":
                     log.debug("Pixelzio diff " + log_msg)
-                    await render.diff(ctx, x, y, att, zoom, render.fetch_pixelzio, pzio_colors)
-                elif default_canvas == "pixelzone.io":
+                    await render.diff(ctx, x, y, att, zoom, render.fetch_pixelzio, colors.pixelzio)
+                elif default_canvas == "pixelzone":
                     log.debug("Pixelzone diff " + log_msg)
-                    await render.diff(ctx, x, y, att, zoom, render.fetch_pixelzone, pzone_colors)
+                    await render.diff(ctx, x, y, att, zoom, render.fetch_pixelzone, colors.pixelzone)
+                elif default_canvas == "pxlsspace":
+                    log.debug("Pxlsspace diff " + log_msg)
+                    await render.diff(ctx, x, y, att, zoom, render.fetch_pxlsspace, colors.pxlsspace)
                 return
 
             ctx.send(getlang(ctx.guild.id, "render.repeat_not_found"))
