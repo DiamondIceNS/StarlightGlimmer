@@ -37,7 +37,8 @@ class Canvas:
             await ctx.send(getlang(ctx.guild.id, "bot.error.no_png"))
             return
         if att.width is None or att.height is None:
-            await ctx.send(getlang(ctx.guild.id, "bot.error.bad_png").format(sql.get_guild_prefix(ctx.guild.id), getlang(ctx.guild.id, "command.quantize")))
+            await ctx.send(getlang(ctx.guild.id, "bot.error.bad_png")
+                           .format(sql.get_guild_prefix(ctx.guild.id), getlang(ctx.guild.id, "command.quantize")))
             return
         m = re.search('\(?(-?\d+), ?(-?\d+)\)?\s?#?(\d+)?', coords)
         if m is not None:
@@ -72,7 +73,7 @@ class Canvas:
         if args is not None:
             log.debug("Pixelzone diff invoked by {0.name}#{0.discriminator} (ID: {0.id}) in {1.name} (ID: {1.id})"
                       .format(ctx.author, ctx.guild))
-            await render.SIOConn().diff(*args)
+            await render.diff(*args, render.fetch_pixelzone, pzone_colors)
 
     # =======================
     #        PREVIEW
@@ -123,7 +124,7 @@ class Canvas:
         if args is not None:
             log.debug("Pixelzone preview invoked by {0.name}#{0.discriminator} (ID: {0.id}) in {1.name} (ID: {1.id})"
                       .format(ctx.author, ctx.guild))
-            await render.SIOConn().preview(*args)
+            await render.preview(*args, render.fetch_pixelzone)
 
     # =======================
     #        QUANTIZE
@@ -204,7 +205,7 @@ class Canvas:
                         return
                     elif sub_cmd == "pixelzone":
                         log.debug("Pixelzone diff " + log_msg)
-                        await render.SIOConn().diff(ctx, x, y, att, zoom)
+                        await render.diff(ctx, x, y, att, zoom, render.fetch_pixelzone, pzone_colors)
                         return
                 if cmd == "preview":
                     zoom = max(1, min(16, zoom))
@@ -218,7 +219,7 @@ class Canvas:
                         return
                     elif sub_cmd == "pixelzone":
                         log.debug("Pixelzone preview " + log_msg)
-                        await render.SIOConn().preview(ctx, x, y, zoom)
+                        await render.preview(ctx, x, y, zoom, render.fetch_pixelzone)
                         return
 
             default_canvas = sql.select_guild_by_id(ctx.guild.id)['default_canvas']
@@ -257,7 +258,7 @@ class Canvas:
                     zoom = 1
                 zoom = max(min(zoom, 16), 1)
                 log.debug("Pixelzone preview " + log_msg)
-                await render.SIOConn().preview(ctx, x, y, zoom)
+                await render.preview(ctx, x, y, zoom, render.fetch_pixelzone)
                 return
 
             if prev_match is not None:
@@ -273,7 +274,7 @@ class Canvas:
                     await render.preview(ctx, x, y, zoom, render.fetch_pixelzio)
                 elif default_canvas == "pixelzone.io":
                     log.debug("Pixelzone preview " + log_msg)
-                    await render.SIOConn().preview(ctx, x, y, zoom)
+                    await render.preview(ctx, x, y, zoom, render.fetch_pixelzone)
                 return
 
             if diff_match is not None and len(msg.attachments) > 0 \
@@ -281,7 +282,8 @@ class Canvas:
                 att = msg.attachments[0]
                 if att.width is None or att.height is None:
                     await ctx.send(getlang(ctx.guild.id, "bot.error.bad_png")
-                                   .format(sql.get_guild_prefix(ctx.guild.id), getlang(ctx.guild.id, "command.quantize")))
+                                   .format(sql.get_guild_prefix(ctx.guild.id),
+                                           getlang(ctx.guild.id, "command.quantize")))
                     return
                 x = int(diff_match.group(1))
                 y = int(diff_match.group(2))
@@ -295,7 +297,7 @@ class Canvas:
                     await render.diff(ctx, x, y, att, zoom, render.fetch_pixelzio, pzio_colors)
                 elif default_canvas == "pixelzone.io":
                     log.debug("Pixelzone diff " + log_msg)
-                    await render.SIOConn().diff(ctx, x, y, att, zoom)
+                    await render.diff(ctx, x, y, att, zoom, render.fetch_pixelzone, pzone_colors)
                 return
 
             ctx.send(getlang(ctx.guild.id, "render.repeat_not_found"))

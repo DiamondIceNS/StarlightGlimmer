@@ -6,12 +6,12 @@ A template utility bot based on [Alastair](Make-Alastair-Great-Again) and [Pinki
 Currently supports [Pixelcanvas.io](http://pixelcanvas.io/), [Pixelz.io](http://pixelz.io/), and [Pixelzone.io](http://pixelzone.io/).
 
 #### Requires:
-- Python 3.5
+- Python 3.6
 - [Discord.py rewrite](https://github.com/Rapptz/discord.py/tree/rewrite)
-- [Pillow](https://pillow.readthedocs.io/en/latest/installation.html)
-- [aiohttp](https://aiohttp.readthedocs.io/en/stable/)
-- [socketIO_client](https://github.com/invisibleroads/socketIO-client)
-- [lz4](https://github.com/python-lz4/python-lz4)
+- [Pillow](https://pillow.readthedocs.io/en/latest/installation.html) 5.1.0
+- [aiohttp](https://aiohttp.readthedocs.io/en/stable/) 3.2.0
+- [websockets](https://pypi.org/project/websockets/) 4.0.1
+- [lz4](https://github.com/python-lz4/python-lz4) 1.1.0
 
 #### Installation:
 1. Install Python and the required libraries

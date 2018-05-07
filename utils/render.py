@@ -3,9 +3,9 @@ import discord
 import io
 import json
 import lz4.frame
+import websockets
 from math import sqrt, pow
 from PIL import Image
-from socketIO_client import SocketIO
 
 from utils.config import Config
 from utils.colors import *
@@ -22,124 +22,6 @@ class Coords:
     def __init__(self, x, y):
         self.x = x
         self.y = y
-
-
-# Pixelzone requires a unique architecture due to its use of Socket.io
-class SIOConn:
-    def __init__(self):
-        self.socket = SocketIO('http://pixelzone.io')
-        self.socket.on('chunkData', self.on_chunkdata)
-        self.chk = None
-        self.fetched = None
-        self.callbacks = 0
-
-    def fetch(self, x, y, dx, dy):
-        tlp = Coords(x + 4096, y + 4096)
-        ch_off = Coords(tlp.x % 512, tlp.y % 512)
-        ext = Coords((tlp.x + dx) // 512 - tlp.x // 512 + 1, (tlp.y + dy) // 512 - tlp.y // 512 + 1)
-        self.chk = Coords(tlp.x // 512, tlp.y // 512)
-        self.fetched = Image.new('RGB', (512 * ext.x, 512 * ext.y))
-
-        for iy in range(ext.y):
-            for ix in range(ext.x):
-                self.socket.emit('getChunkData', {"cx": self.chk.x + ix, "cy": self.chk.y + iy})
-
-        expected_callbacks = ext.x * ext.y
-        while self.callbacks < expected_callbacks:
-            self.socket.wait(seconds=1)
-        self.socket.disconnect()
-
-        self.fetched = self.fetched.crop((ch_off.x, ch_off.y, ch_off.x + dx, ch_off.y + dy))
-
-    def on_chunkdata(self, data):
-        chk_abs = Coords(data['cx'], data['cy'])
-        chk_rel = Coords(chk_abs.x - self.chk.x, chk_abs.y - self.chk.y)
-        tmp = LZString().decompressFromBase64(data['data'])
-        tmp = json.loads("[" + tmp + "]")
-        tmp = lz4.frame.decompress(bytes(tmp))
-        chunk = Image.new('RGB', (512, 512), (255, 255, 255, 255))
-        for py in range(chunk.height):
-            for px in range(chunk.width):
-                i = (py * 512 + px) / 2
-                color_id = tmp[int(i)] & 15 if i % 1 == 0 else tmp[int(i)] >> 4
-                color = pzone_colors[color_id]
-                chunk.putpixel((px, py), color)
-        self.fetched.paste(chunk, (chk_rel.x * 512, chk_rel.y * 512, (chk_rel.x + 1) * 512, (chk_rel.y + 1) * 512))
-        self.callbacks += 1
-
-    async def preview(self, ctx, x, y, zoom):
-        async with ctx.typing():
-            log.debug("X:{0} | Y:{1} | Zoom:{2}".format(x, y, zoom))
-
-            self.fetch(x - cfg.preview_w // 2, y - cfg.preview_h // 2, cfg.preview_w, cfg.preview_h)
-
-            if zoom > 1:
-                self.fetched = self.fetched.resize(tuple(zoom * x for x in self.fetched.size), Image.NEAREST)
-                tlp_z = Coords(self.fetched.width // 2 - cfg.preview_w // 2,
-                               self.fetched.height // 2 - cfg.preview_h // 2)
-                self.fetched = self.fetched.crop((tlp_z.x, tlp_z.y, tlp_z.x + cfg.preview_w, tlp_z.y + cfg.preview_h))
-
-            with io.BytesIO() as bio:
-                self.fetched.save(bio, format="PNG")
-                bio.seek(0)
-                f = discord.File(bio, "preview.png")
-                await ctx.send(file=f)
-
-    async def diff(self, ctx, x, y, att, zoom):
-        async with ctx.typing():
-            self.fetch(x, y, att.width, att.height)
-
-            with io.BytesIO() as bio:
-                await att.save(bio)
-                template = Image.open(bio).convert('RGBA')
-
-            log.debug("X:{0} | Y:{1} | Dim: {2}x{3} | Zoom: {4}".format(x, y, template.width, template.height, zoom))
-
-            if template.width * template.height > 1000000:
-                await ctx.send(getlang(ctx.guild.id, "render.large_template"))
-
-            tot = 0  # Total non-transparent pixels in template
-            err = 0  # Number of errors
-            bad = 0  # Number of pixels in the template that are not in the Pixelcanvas color palette
-
-            diff_img = Image.new('RGB', (att.width, att.height), (255, 255, 255))
-            for py in range(diff_img.height):
-                for px in range(diff_img.width):
-                    tp = template.getpixel((px, py))
-                    dp = self.fetched.getpixel((px, py))
-                    if tp[3] is not 0:
-                        # All non-transparent pixels count to the total
-                        tot += 1
-                    if 0 < tp[3] < 255 or (tp[3] is 255 and tp[:3] not in pzone_colors):
-                        # All non-opaque and non-transparent pixels, and opaque pixels of bad colors, are bad
-                        pixel = (0, 0, 255, 255)
-                        err += 1
-                        bad += 1
-                    elif tp[3] is 255 and (tp[0] is not dp[0] or tp[1] is not dp[1] or tp[2] is not dp[2]):
-                        # All pixels that are valid and opaque but do not match the canvas are wrong
-                        pixel = (255, 0, 0, 255)
-                        err += 1
-                    else:
-                        # Render all correct/irrelevant pixels in greyscale
-                        avg = round(dp[0] * 0.3 + dp[1] * 0.52 + dp[2] * 0.18)
-                        pixel = (avg, avg, avg, 255)
-
-                    diff_img.putpixel((px, py), pixel)
-
-            if zoom > 1:
-                diff_img = diff_img.resize(tuple(zoom * x for x in diff_img.size), Image.NEAREST)
-
-            if bad > 0:
-                content = getlang(ctx.guild.id, "render.diff_bad_color") \
-                    .format(tot - err, tot, err, bad, 100 * (tot - err) / tot)
-            else:
-                content = getlang(ctx.guild.id, "render.diff").format(tot - err, tot, err, 100 * (tot - err) / tot)
-
-            with io.BytesIO() as bio:
-                diff_img.save(bio, format="PNG")
-                bio.seek(0)
-                f = discord.File(bio, "diff.png")
-                await ctx.send(content=content, file=f)
 
 
 async def diff(ctx, x, y, att, zoom, fetch, colors):
@@ -212,7 +94,7 @@ async def preview(ctx, x, y, zoom, fetch):
         with io.BytesIO() as bio:
             preview_img.save(bio, format="PNG")
             bio.seek(0)
-            f = discord.File(bio, "preveiw.png")
+            f = discord.File(bio, "preview.png")
             await ctx.send(file=f)
 
 
@@ -307,3 +189,52 @@ async def fetch_pixelzio(x, y, dx, dy):
                     fetched.paste(tmp, (ix, iy, ix + 500, iy + 500))
 
     return fetched.crop((x % 500, y % 500, (x % 500) + dx, (y % 500) + dy))
+
+
+async def fetch_pixelzone(x, y, dx, dy):
+    x = x + 4096
+    y = y + 4096
+    ext = Coords((x + dx) // 512 - x // 512 + 1, (y + dy) // 512 - y // 512 + 1)
+    chk = Coords(x // 512, y // 512)
+    fetched = Image.new('RGB', (512 * ext.x, 512 * ext.y))
+
+    url = "{0}://pixelzone.io/socket.io/?EIO=3&transport={1}"
+    pkts_expected = 0
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url.format("http", "polling")) as r:
+            sid = json.loads(str((await r.read())[5:], "utf-8"))['sid']
+    async with websockets.connect(url.format("ws", "websocket&sid=") + sid) as ws:
+        await ws.send("2probe")
+        await ws.recv()
+        await ws.send("5")
+        await ws.recv()
+        for iy in range(ext.y):
+            for ix in range(ext.x):
+                if 0 <= chk.x + ix < 16 and 0 <= chk.y + iy < 16:
+                    await ws.send("42[\"getChunkData\", {{\"cx\": {0}, \"cy\": {1}}}]".format(chk.x + ix, chk.y + iy))
+                    pkts_expected = pkts_expected + 1
+        chunks = []
+        if pkts_expected > 0:
+            async for msg in ws:
+                d = json.loads(msg[msg.find('['):])
+                if d[0] == "chunkData":
+                    chunks.append(d[1])
+                if len(chunks) == pkts_expected:
+                    break
+
+    for data in chunks:
+        chk_abs = Coords(data['cx'], data['cy'])
+        chk_rel = Coords(chk_abs.x - chk.x, chk_abs.y - chk.y)
+        tmp = LZString().decompressFromBase64(data['data'])
+        tmp = json.loads("[" + tmp + "]")
+        tmp = lz4.frame.decompress(bytes(tmp))
+        chunk = Image.new('RGB', (512, 512), (255, 255, 255, 255))
+        for py in range(chunk.height):
+            for px in range(chunk.width):
+                i = (py * 512 + px) / 2
+                color_id = tmp[int(i)] & 15 if i % 1 == 0 else tmp[int(i)] >> 4
+                color = pzone_colors[color_id]
+                chunk.putpixel((px, py), color)
+        fetched.paste(chunk, (chk_rel.x * 512, chk_rel.y * 512, (chk_rel.x + 1) * 512, (chk_rel.y + 1) * 512))
+
+    return fetched.crop((x % 512, y % 512, (x % 512) + dx, (y % 512) + dy))

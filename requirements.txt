@@ -1,5 +1,5 @@
 git+https://github.com/Rapptz/discord.py@rewrite
-pillow
-aiohttp
-socketio_client
-lz4
+pillow==5.1.0
+aiohttp==3.2.0
+lz4==1.1.0
+websockets==4.0.1

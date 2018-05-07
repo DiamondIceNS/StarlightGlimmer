@@ -2,6 +2,7 @@
 .idea/
 *.pyc
 ~*/
+venv/
 
 #Python
 __pycache__/
