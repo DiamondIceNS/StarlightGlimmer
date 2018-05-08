@@ -17,7 +17,7 @@ def create_tables():
                         alert_channel INTEGER,
                         emojishare INTEGER NOT NULL DEFAULT 0,
                         autoscan INTEGER NOT NULL DEFAULT 1,
-                        default_canvas TEXT NOT NULL DEFAULT "pixelcanvas.io",
+                        default_canvas TEXT NOT NULL DEFAULT "pixelcanvas",
                         language TEXT NOT NULL DEFAULT "en_US"
                     )""")
     c.execute("""CREATE TABLE IF NOT EXISTS version(id INTEGER PRIMARY KEY CHECK (id = 1), version REAL)""")
