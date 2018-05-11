@@ -9,8 +9,6 @@ __pycache__/
 
 # Bot files
 config.json
-animotes.json
-*.png
 *.log
 *.db
 
