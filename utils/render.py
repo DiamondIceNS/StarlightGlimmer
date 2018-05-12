@@ -7,12 +7,12 @@ import websockets
 import time
 from math import sqrt, pow
 from PIL import Image
-from lzstring import LZString
 
 import utils.colors as colors
 from utils.config import Config
 from utils.logger import Log
 from utils.language import getlang
+from utils.lzstring import LZString
 
 cfg = Config()
 log = Log(__name__)

@@ -12,7 +12,6 @@ Currently supports [Pixelcanvas.io](http://pixelcanvas.io/), [Pixelz.io](http://
 - [aiohttp](https://aiohttp.readthedocs.io/en/stable/) 3.2.0
 - [websockets](https://pypi.org/project/websockets/) 4.0.1
 - [lz4](https://github.com/python-lz4/python-lz4) 1.1.0
-- [lzstring](https://github.com/marcel-dancak/lz-string-python)
 
 #### Installation:
 1. Install Python and the required libraries
