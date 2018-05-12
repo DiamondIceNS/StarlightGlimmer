@@ -1,4 +1,5 @@
 git+https://github.com/Rapptz/discord.py@rewrite
+git+https://github.com/marcel-dancak/lz-string-python
 pillow==5.1.0
 aiohttp==3.2.0
 lz4==1.1.0
