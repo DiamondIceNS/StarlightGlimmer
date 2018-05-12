@@ -34,10 +34,13 @@ def update_tables(v):
             c.execute("""UPDATE guilds SET default_canvas='pixelcanvas' WHERE default_canvas='pixelcanvas.io'""")
             c.execute("""UPDATE guilds SET default_canvas='pixelzio' WHERE default_canvas='pixelz.io'""")
             c.execute("""UPDATE guilds SET default_canvas='pixelzone' WHERE default_canvas='pixelzone.io'""")
+        if v < 1.4:
+            c.execute("""ALTER TABLE guilds """)
 
 
 def add_guild(gid, name, join_date):
-    c.execute("""INSERT INTO guilds(id, name, join_date) VALUES(?, ?, ?)""", (gid, name, join_date))
+    c.execute("""INSERT INTO guilds(id, name, join_date, default_canvas) VALUES(?, ?, ?, ?)""",
+              (gid, name, join_date, "pixelcanvas"))
     conn.commit()
 
 
