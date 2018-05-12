@@ -7,7 +7,7 @@ STRINGS = {
         Let's get pixel painting!""",
     "bot.help_ending_note": "Type '{0}{1} <command>' for more info on a command.",
     "bot.ping": "Pinging...",
-    "bot.pong": "Pong! | **{0:.01f}s**",
+    "bot.pong": "Pong! | **{0}ms**",
     "bot.suggest": "Your suggestion has been sent. Thank you for your input!",
     "bot.version": "My version number is **{0}**",
 

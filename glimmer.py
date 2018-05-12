@@ -198,7 +198,7 @@ async def ping(ctx):
     ping_start = time()
     ping_msg = await ctx.send(getlang(ctx.guild.id, "bot.ping"))
     ping_time = time() - ping_start
-    await ping_msg.edit(content=getlang(ctx.guild.id, "bot.pong").format(ping_time))
+    await ping_msg.edit(content=getlang(ctx.guild.id, "bot.pong").format(int(ping_time*1000)))
 
 
 @bot.command()
