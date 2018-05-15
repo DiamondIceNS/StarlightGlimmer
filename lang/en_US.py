@@ -30,6 +30,11 @@ STRINGS = {
     "configuration.autoscan_disabled": "Autoscan has been disabled.",
     "configuration.autoscan_enabled": "Autoscan has been enabled.",
     "configuration.default_canvas_set": "Default canvas has been set to **{0}**.",
+    "configuration.language_invalid": "That isn't a valid language option.",
+    "configuration.language_list": "This server's current language is **{1}**.\n"
+                                   "To set a new language, run this command again with one of the following options:\n"
+                                   "```{0}```",
+    "configuration.language_set": "Language has been set to **English (US)**.",
     "configuration.prefix_set": "Prefix for this guild has been set to **{0}**.",
 
     # Error messages
@@ -65,6 +70,7 @@ STRINGS = {
     "brief.gridify": "Adds a grid to a template.",
     "brief.help": "Displays this message.",
     "brief.invite": "Gets my invite link.",
+    "brief.language": "Sets my language.",
     "brief.listemotes": "Lists all the animated emoji that I know about.",
     "brief.ping": "Pong!",
     "brief.preview": "Previews the canvas at a given coordinate.",
@@ -131,6 +137,7 @@ STRINGS = {
         """Takes an uploaded template and creates a gridded version for an easier reference. Use the 'size' parameter to set how large the individual pixels should be. (Default 1) You cannot zoom an image to be larger than 1000x1000.""",
     "help.help": None,
     "help.invite": None,
+    "help.language": """Use this command with no arguments to see the current and available languages.""",
     "help.listemotes": """See 'registerserver' for more information about emoji sharing.""",
     "help.ping": None,
     "help.preview":
@@ -203,6 +210,7 @@ STRINGS = {
     "command.gridify": "gridify",
     "command.help": "help",
     "command.invite": "invite",
+    "command.language": "language",
     "command.listemotes": "listemotes",
     "command.ping": "ping",
     "command.preview": "preview",
@@ -247,6 +255,7 @@ STRINGS = {
     "signature.gridify": "gridify (size)",
     "signature.help": "help",
     "signature.invite": "invite",
+    "signature.language": "language (code)",
     "signature.listemotes": "listemotes",
     "signature.ping": "ping",
     "signature.preview": "preview <subcommand>",

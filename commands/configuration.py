@@ -9,6 +9,10 @@ import utils.sqlite as sql
 class Configuration:
     def __init__(self, bot):
         self.bot = bot
+        self.langs = {
+            'en-US': "English (US)",
+            'pt-BR': "Português (BR)",
+        }
 
     @commands.group(name="alertchannel", invoke_without_command=True)
     @commands.guild_only()
@@ -89,6 +93,24 @@ class Configuration:
             raise NoPermission
         sql.update_guild(ctx.guild.id, default_canvas="pxlsspace")
         await ctx.send(getlang(ctx.guild.id, "configuration.default_canvas_set").format("Pxls.space"))
+
+    @commands.command()
+    @commands.guild_only()
+    async def language(self, ctx, option=None):
+        if not option:
+            lang_list = ""
+            for i, (code, name) in enumerate(self.langs.items(), 1):
+                lang_list = lang_list + "{0} - {1}".format(code, name)
+                if i < len(self.langs):
+                    lang_list = lang_list + "\n"
+            current_lang = self.langs[sql.get_guild_language(ctx.guild.id)]
+            await ctx.send(getlang(ctx.guild.id, "configuration.language_list").format(lang_list, current_lang))
+            return
+        if option not in self.langs:
+            await ctx.send(getlang(ctx.guild.id, "configuration.language_invalid"))
+            return
+        sql.update_guild(ctx.guild.id, language=option)
+        await ctx.send(getlang(ctx.guild.id, "configuration.language_set"))
 
 
 def setup(bot):
