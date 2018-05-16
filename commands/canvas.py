@@ -1,4 +1,5 @@
 import re
+import discord
 from discord.ext import commands
 from discord.ext.commands import BucketType
 from discord.utils import get as dget
@@ -43,7 +44,11 @@ class Canvas:
         att = ctx.message.attachments[0]
         if att.filename[-4:].lower() != ".png":
             if att.filename[-4:].lower() == ".jpg" or att.filename[-5:].lower() == ".jpeg":
-                await ctx.send(getlang(ctx.guild.id, "bot.error.jpeg"))
+                try:
+                    f = discord.File("assets/disdain_for_jpegs.gif", "disdain_for_jpegs.gif")
+                    await ctx.send(getlang(ctx.guild.id, "bot.error.jpeg"), file=f)
+                except IOError:
+                    await ctx.send(getlang(ctx.guild.id, "bot.error.jpeg"))
                 return
             await ctx.send(getlang(ctx.guild.id, "bot.error.no_png"))
             return
@@ -194,7 +199,11 @@ class Canvas:
         filename = ctx.message.attachments[0].filename
         if filename[-4:].lower() != ".png":
             if filename[-4:].lower() == ".jpg" or filename[-5:].lower() == ".jpeg":
-                await ctx.send(getlang(ctx.guild.id, "bot.error.jpeg"))
+                try:
+                    f = discord.File("assets/disdain_for_jpegs.gif", "disdain_for_jpegs.gif")
+                    await ctx.send(getlang(ctx.guild.id, "bot.error.jpeg"), file=f)
+                except IOError:
+                    await ctx.send(getlang(ctx.guild.id, "bot.error.jpeg"))
                 return False
             await ctx.send(getlang(ctx.guild.id, "bot.error.no_png"))
             return False
@@ -262,7 +271,6 @@ class Canvas:
                 x = int(match.group(3))
                 y = int(match.group(4))
                 zoom = int(match.group(5)) if match.group(5) is not None else 1
-                print("cmd: {}, scmd: {}, x: {}, y: {}".format(cmd, sub_cmd, x, y))
                 if (cmd == "diff" or cmd == "d") and len(msg.attachments) > 0 \
                         and msg.attachments[0].filename[-4:].lower() == ".png":
                     att = msg.attachments[0]

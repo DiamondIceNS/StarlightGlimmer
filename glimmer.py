@@ -124,7 +124,6 @@ async def on_guild_update(before, after):
 
 @bot.event
 async def on_command_error(ctx, error):
-    print(type(error))
     if isinstance(error, commands.CommandOnCooldown):
         await ctx.send(getlang(ctx.guild.id, "bot.error.command_on_cooldown").format(error.retry_after))
         return
@@ -224,25 +223,25 @@ async def ditherchart(ctx):
 
 @ditherchart.command(name="pixelcanvas")
 async def ditherchart_pixelcanvas(ctx):
-    f = discord.File("assets/dither_chart_pixelcanvas.png", "assets/dither_chart_pixelcanvas.png")
+    f = discord.File("assets/dither_chart_pixelcanvas.png", "dither_chart_pixelcanvas.png")
     await ctx.send(file=f)
 
 
 @ditherchart.command(name="pixelzio")
 async def ditherchart_pixelzio(ctx):
-    f = discord.File("assets/dither_chart_pixelzio.png", "assets/dither_chart_pixelzio.png")
+    f = discord.File("assets/dither_chart_pixelzio.png", "dither_chart_pixelzio.png")
     await ctx.send(file=f)
 
 
 @ditherchart.command(name="pixelzone")
 async def ditherchart_pixelzio(ctx):
-    f = discord.File("assets/dither_chart_pixelzone.png", "assets/dither_chart_pixelzone.png")
+    f = discord.File("assets/dither_chart_pixelzone.png", "dither_chart_pixelzone.png")
     await ctx.send(file=f)
 
 
 @ditherchart.command(name="pxlsspace")
 async def ditherchart_pixelzio(ctx):
-    f = discord.File("assets/dither_chart_pxlsspace.png", "assets/dither_chart_pxlsspace.png")
+    f = discord.File("assets/dither_chart_pxlsspace.png", "dither_chart_pxlsspace.png")
     await ctx.send(file=f)
 
 
