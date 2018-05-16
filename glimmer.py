@@ -218,28 +218,39 @@ async def suggest(ctx, *, suggestion: str):
 
 @bot.group(name="ditherchart", invoke_without_command=True)
 async def ditherchart(ctx):
-    pass
+    default_canvas = sql.select_guild_by_id(ctx.guild.id)['default_canvas']
+    f = None
+    if default_canvas == "pixelcanvas":
+        f = discord.File("assets/dither_chart_pixelcanvas.png", "dither_chart_pixelcanvas.png")
+    elif default_canvas == "pixelzio":
+        f = discord.File("assets/dither_chart_pixelzio.png", "dither_chart_pixelzio.png")
+    elif default_canvas == "pixelzone":
+        f = discord.File("assets/dither_chart_pixelzone.png", "dither_chart_pixelzone.png")
+    elif default_canvas == "pxlsspace":
+        f = discord.File("assets/dither_chart_pxlsspace.png", "dither_chart_pxlsspace.png")
+    if f:
+        await ctx.send(file=f)
 
 
-@ditherchart.command(name="pixelcanvas")
+@ditherchart.command(name="pixelcanvas", aliases=["pc"])
 async def ditherchart_pixelcanvas(ctx):
     f = discord.File("assets/dither_chart_pixelcanvas.png", "dither_chart_pixelcanvas.png")
     await ctx.send(file=f)
 
 
-@ditherchart.command(name="pixelzio")
+@ditherchart.command(name="pixelzio", aliases=["pzi"])
 async def ditherchart_pixelzio(ctx):
     f = discord.File("assets/dither_chart_pixelzio.png", "dither_chart_pixelzio.png")
     await ctx.send(file=f)
 
 
-@ditherchart.command(name="pixelzone")
+@ditherchart.command(name="pixelzone", aliases=["pz"])
 async def ditherchart_pixelzio(ctx):
     f = discord.File("assets/dither_chart_pixelzone.png", "dither_chart_pixelzone.png")
     await ctx.send(file=f)
 
 
-@ditherchart.command(name="pxlsspace")
+@ditherchart.command(name="pxlsspace", aliases=["ps"])
 async def ditherchart_pixelzio(ctx):
     f = discord.File("assets/dither_chart_pxlsspace.png", "dither_chart_pxlsspace.png")
     await ctx.send(file=f)
