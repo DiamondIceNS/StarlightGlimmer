@@ -1,4 +1,5 @@
 import aiohttp
+import asyncio
 import discord
 import io
 import json
@@ -43,6 +44,7 @@ async def diff(ctx, x, y, att, zoom, fetch, palette):
         bad = 0  # Number of pixels in the template that are not in the color palette
 
         for py in range(template.height):
+            await asyncio.sleep(0)
             for px in range(template.width):
                 tp = template.getpixel((px, py))
                 dp = diff_img.getpixel((px, py))
@@ -108,6 +110,7 @@ async def quantize(ctx, att, palette):
 
     bad_pixels = template.height * template.width
     for py in range(template.height):
+        await asyncio.sleep(0)
         for px in range(template.width):
             pix = template.getpixel((px, py))
 
@@ -146,6 +149,7 @@ async def gridify(ctx, att, zoom):
 
     grid_img = Image.new('RGBA', (template.width * (zoom + 1) - 1, template.height * (zoom + 1) - 1))
     for iy in range(template.height):
+        await asyncio.sleep(0)
         for ix in range(template.width):
             for ziy in range(zoom):
                 for zix in range(zoom):
@@ -191,6 +195,7 @@ async def fetch_pixelcanvas(x, y, dx, dy):
                 ) / 2                                # Pixels come packed in pairs
 
     for py in range(dy):
+        await asyncio.sleep(0)
         for px in range(dx):
             i = pixel_to_data_index()
             color_id = data[int(i)] & 15 if i % 1 != 0 else data[int(i)] >> 4
@@ -257,6 +262,7 @@ async def fetch_pixelzone(x, y, dx, dy):
         tmp = lz4.frame.decompress(bytes(tmp))
         chunk = Image.new('RGB', (512, 512), (255, 255, 255, 255))
         for py in range(chunk.height):
+            await asyncio.sleep(0)
             for px in range(chunk.width):
                 i = (py * 512 + px) / 2
                 color_id = tmp[int(i)] & 15 if i % 1 == 0 else tmp[int(i)] >> 4
@@ -277,6 +283,7 @@ async def fetch_pxlsspace(x, y, dx, dy):
             data = await resp.read()
 
     for py in range(dy):
+        await asyncio.sleep(0)
         for px in range(dx):
             if 1280 <= px+x or px+x < 0 or 720 <= py+y or py+y < 0:
                 continue

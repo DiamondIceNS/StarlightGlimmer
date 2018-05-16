@@ -18,7 +18,7 @@ def create_tables():
                         emojishare INTEGER NOT NULL DEFAULT 0,
                         autoscan INTEGER NOT NULL DEFAULT 1,
                         default_canvas TEXT NOT NULL DEFAULT "pixelcanvas",
-                        language TEXT NOT NULL DEFAULT "en_US"
+                        language TEXT NOT NULL DEFAULT "en-US"
                     )""")
     c.execute("""CREATE TABLE IF NOT EXISTS version(id INTEGER PRIMARY KEY CHECK (id = 1), version REAL)""")
 
@@ -34,11 +34,13 @@ def update_tables(v):
             c.execute("""UPDATE guilds SET default_canvas='pixelcanvas' WHERE default_canvas='pixelcanvas.io'""")
             c.execute("""UPDATE guilds SET default_canvas='pixelzio' WHERE default_canvas='pixelz.io'""")
             c.execute("""UPDATE guilds SET default_canvas='pixelzone' WHERE default_canvas='pixelzone.io'""")
+        if v < 1.4:
+            c.execute("""UPDATE guilds SET language='en-US' WHERE language='en_US'""")
 
 
 def add_guild(gid, name, join_date):
-    c.execute("""INSERT INTO guilds(id, name, join_date, default_canvas) VALUES(?, ?, ?, ?)""",
-              (gid, name, join_date, "pixelcanvas"))
+    c.execute("""INSERT INTO guilds(id, name, join_date, default_canvas, language) VALUES(?, ?, ?, ?)""",
+              (gid, name, join_date, "pixelcanvas", "en-US"))
     conn.commit()
 
 

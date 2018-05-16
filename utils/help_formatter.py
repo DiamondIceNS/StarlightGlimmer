@@ -11,6 +11,9 @@ cfg = Config()
 
 
 class GlimmerHelpFormatter(HelpFormatter):
+    def __init__(self):
+        super().__init__(width=100)
+
     def get_localized_ending_note(self):
         gid = self.context.guild.id
         command_name = self.context.invoked_with

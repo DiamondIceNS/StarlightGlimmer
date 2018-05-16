@@ -7,7 +7,7 @@ STRINGS = {
         Let's get pixel painting!""",
     "bot.help_ending_note": "Type '{0}{1} <command>' for more info on a command.",
     "bot.ping": "Pinging...",
-    "bot.pong": "Pong! | **{0:.01f}s**",
+    "bot.pong": "Pong! | **{0}ms**",
     "bot.suggest": "Your suggestion has been sent. Thank you for your input!",
     "bot.version": "My version number is **{0}**",
 
@@ -29,18 +29,21 @@ STRINGS = {
     "configuration.alert_channel_set": "Alert channel has been set to {0}.",
     "configuration.autoscan_disabled": "Autoscan has been disabled.",
     "configuration.autoscan_enabled": "Autoscan has been enabled.",
-    "configuration.default_canvas_set": "Default canvas has been set to **{0}**.",
+    "configuration.canvas_check": "This guild's default canvas is **{0}**.\n"
+                                  "To change the default canvas, run this command again with a supported canvas. (Use `{1}help canvas` to see a list.)",
+    "configuration.canvas_set": "Default canvas has been set to **{0}**.",
+    "configuration.language_check": "This guild's current language is **{1}**.\n"
+                                   "To set a new language, run this command again with one of the following options:\n"
+                                   "```{0}```",
+    "configuration.language_set": "Language has been set to **English (US)**.",
     "configuration.prefix_set": "Prefix for this guild has been set to **{0}**.",
 
     # Error messages
-    "bot.error.bad_png": "This image seems to be corrupted. Try re-saving it with an image editor or using `{0}{1}`.",
-    "bot.error.command_not_found": "That is not a valid command. Use {0}help to see my commands.",
+    "bot.error.bad_png": "This image seems to be corrupted. Try re-saving it with an image editor or using `{0}quantize`.",
     "bot.error.command_on_cooldown": "That command is on cooldown. Try again in {0:.01f}s.",
     "bot.error.missing_attachment": "That command requires an attachment.",
-    "bot.error.no_canvas": "That command requires a subcommand.",
     "bot.error.no_permission": "You do not have permission to use that command.",
     "bot.error.no_png": "That command requires a PNG image.",
-    "bot.error.no_subcommand": "That command needs a subcommand. See the help for this command for a list of subcommands.",
     "bot.error.jpeg": "Seriously? A JPEG? Gross! Please create a PNG template instead.",
     "bot.error.no_private_message": "That command only works in guilds.",
     "bot.error.unhandled_command_error": "An error occurred with that command. The dev has been notified.",
@@ -50,6 +53,11 @@ STRINGS = {
     "brief.alertchannel.clear": "Clears the alert channel.",
     "brief.alertchannel.set": "Sets the alert channel.",
     "brief.autoscan": "Toggles automatic preview and diff.",
+    "brief.canvas": "Sets the default canvas website for this guild.",
+    "brief.canvas.pixelcanvas": "Sets the default canvas to Pixelcanvas.io.",
+    "brief.canvas.pixelzio": "Sets the default canvas to Pixelz.io.",
+    "brief.canvas.pixelzone": "Sets the default canvas to Pixelzone.io.",
+    "brief.canvas.pxlsspace": "Sets the default canvas to Pxls.space.",
     "brief.changelog": "Gets a link to my releases page.",
     "brief.diff": "Checks completion status of a template on a canvas.",
     "brief.diff.pixelcanvas": "Creates a diff using Pixelcanvas.io.",
@@ -65,8 +73,10 @@ STRINGS = {
     "brief.gridify": "Adds a grid to a template.",
     "brief.help": "Displays this message.",
     "brief.invite": "Gets my invite link.",
+    "brief.language": "Sets my language.",
     "brief.listemotes": "Lists all the animated emoji that I know about.",
     "brief.ping": "Pong!",
+    "brief.prefix": "Sets my command prefix for this guild.",
     "brief.preview": "Previews the canvas at a given coordinate.",
     "brief.preview.pixelcanvas": "Creates a preview using Pixelcanvas.io.",
     "brief.preview.pixelzio": "Creates a preview using Pixelz.io.",
@@ -80,12 +90,6 @@ STRINGS = {
     "brief.register": "Toggles animated emoji replacement for a user.",
     "brief.registerguild": "Toggles emoji sharing for this guild.",
     "brief.repeat": "Repeats the last used canvas command.",
-    "brief.setdefaultcanvas": "Sets the default canvas website for this guild.",
-    "brief.setdefaultcanvas.pixelcanvas": "Sets the default canvas to Pixelcanvas.io.",
-    "brief.setdefaultcanvas.pixelzio": "Sets the default canvas to Pixelz.io.",
-    "brief.setdefaultcanvas.pixelzone": "Sets the default canvas to Pixelzone.io.",
-    "brief.setdefaultcanvas.pxlsspace": "Sets the default canvas to Pxls.space.",
-    "brief.setprefix": "Sets my command prefix for this guild.",
     "brief.suggest": "Sends a suggestion to the developer.",
     "brief.version": "Gets my version number.",
 
@@ -106,6 +110,16 @@ STRINGS = {
         See 'setdefaultcanvas' for more information about the default canvas.
         
         Only users with the Administrator role can use this command.""",
+    "help.canvas":
+        """The default canvas is the canvas that will be used for automatic previews or diffs triggered by autoscan. (See 'autoscan')
+        
+        Defaults to Pixelcanvas.io.
+        
+        This command can only be used by members with the Administrator permission.""",
+    "help.canvas.pixelcanvas": """This command can only be used by members with the Administrator permission.""",
+    "help.canvas.pixelzio": """This command can only be used by members with the Administrator permission.""",
+    "help.canvas.pixelzone": """This command can only be used by members with the Administrator permission.""",
+    "help.canvas.pxlsspace": """This command can only be used by members with the Administrator permission.""",
     "help.changelog": None,
     "help.diff":
         """Takes an uploaded template, compares it to the current state of the canvas, and calculates how complete it is. It will also generate an image showing you where the unfinished pixels are.
@@ -131,12 +145,19 @@ STRINGS = {
         """Takes an uploaded template and creates a gridded version for an easier reference. Use the 'size' parameter to set how large the individual pixels should be. (Default 1) You cannot zoom an image to be larger than 1000x1000.""",
     "help.help": None,
     "help.invite": None,
+    "help.language": """Use this command with no arguments to see the current and available languages.""",
     "help.listemotes": """See 'registerserver' for more information about emoji sharing.""",
     "help.ping": None,
+    "help.prefix":
+        """Max length is 5 characters. You really shouldn't need more than 2.
+        
+        This command can only be used by members with the Administrator permission.""",
     "help.preview":
         """Given a coordinate pair or a URL, renders a live view of a canvas at those coordinates.
         
         You can create a zoomed-in preview by adding a zoom factor. (i.e. "0, 0 #4") Maximum zoom is 16.
+        
+        If you do not specify a canvas to use, the default canvas will be used.
         
         If autoscan is enabled, this happens automatically using the default canvas. (See 'autoscan' and 'setdefaultcanvas')""",
     "help.preview.pixelcanvas": None,
@@ -166,20 +187,6 @@ STRINGS = {
         
         This command can only be used by members with the Manage Emojis permission.""",
     "help.repeat": "This command only applies to 'preview', 'diff', and their autoscan invocations. Only 50 messages back will be searched.",
-    "help.setdefaultcanvas":
-        """The default canvas is the canvas that will be used for automatic previews or diffs triggered by autoscan. (See 'autoscan')
-        
-        Defaults to Pixelcanvas.io.
-        
-        This command can only be used by members with the Administrator permission.""",
-    "help.setdefaultcanvas.pixelcanvas": """This command can only be used by members with the Administrator permission.""",
-    "help.setdefaultcanvas.pixelzio": """This command can only be used by members with the Administrator permission.""",
-    "help.setdefaultcanvas.pixelzone": """This command can only be used by members with the Administrator permission.""",
-    "help.setdefaultcanvas.pxlsspace": """This command can only be used by members with the Administrator permission.""",
-    "help.setprefix":
-        """Max length is 10 characters. You really shouldn't need more than 2.
-        
-        This command can only be used by members with the Administrator permission.""",
     "help.suggest": None,
     "help.version": None,
 
@@ -188,6 +195,11 @@ STRINGS = {
     "command.alertchannel.clear": "clear",
     "command.alertchannel.set": "set",
     "command.autoscan": "autoscan",
+    "command.canvas": "canvas",
+    "command.canvas.pixelcanvas": "pixelcanvas",
+    "command.canvas.pixelzio": "pixelzio",
+    "command.canvas.pixelzone": "pixelzone",
+    "command.canvas.pxlsspace": "pxlsspace",
     "command.changelog": "changelog",
     "command.diff": "diff",
     "command.diff.pixelcanvas": "pixelcanvas",
@@ -203,8 +215,10 @@ STRINGS = {
     "command.gridify": "gridify",
     "command.help": "help",
     "command.invite": "invite",
+    "command.language": "language",
     "command.listemotes": "listemotes",
     "command.ping": "ping",
+    "command.prefix": "prefix",
     "command.preview": "preview",
     "command.preview.pixelcanvas": "pixelcanvas",
     "command.preview.pixelzio": "pixelzio",
@@ -218,12 +232,6 @@ STRINGS = {
     "command.register": "register",
     "command.registerguild": "registerguild",
     "command.repeat": "repeat",
-    "command.setdefaultcanvas": "setdefaultcanvas",
-    "command.setdefaultcanvas.pixelcanvas": "pixelcanvas",
-    "command.setdefaultcanvas.pixelzio": "pixelzio",
-    "command.setdefaultcanvas.pixelzone": "pixelzone",
-    "command.setdefaultcanvas.pxlsspace": "pxlsspace",
-    "command.setprefix": "setprefix",
     "command.suggest": "suggest",
     "command.version": "version",
 
@@ -232,6 +240,11 @@ STRINGS = {
     "signature.alertchannel.clear": "alertchannel clear",
     "signature.alertchannel.set": "alertchannel set <channel>",
     "signature.autoscan": "autoscan",
+    "signature.canvas": "canvas <canvas>",
+    "signature.canvas.pixelcanvas": "canvas [pixelcanvas|pc]",
+    "signature.canvas.pixelzio": "canvas [pixelzio|pzi]",
+    "signature.canvas.pixelzone": "canvas [pixelzone|pz]",
+    "signature.canvas.pxlsspace": "canvas [pxlsspace|ps]",
     "signature.changelog": "changelog",
     "signature.diff": "diff <subcommand>",
     "signature.diff.pixelcanvas": "diff pixelcanvas <coordinates> (zoom)",
@@ -247,10 +260,12 @@ STRINGS = {
     "signature.gridify": "gridify (size)",
     "signature.help": "help",
     "signature.invite": "invite",
+    "signature.language": "language (code)",
     "signature.listemotes": "listemotes",
     "signature.ping": "ping",
-    "signature.preview": "preview <subcommand>",
-    "signature.preview.pixelcanvas": "preview pixelcanvas <coordinates> (zoom)",
+    "signature.prefix": "prefix <prefix>",
+    "signature.preview": "[preview|p] (canvas) <coordinates> (zoom)",
+    "signature.preview.pixelcanvas": "[preview|p] [pixelcanvas|pc] <coordinates> (zoom)",
     "signature.preview.pixelzio": "preview pixelzio <coordinates> (zoom)",
     "signature.preview.pixelzone": "preview pixelzone <coordinates> (zoom)",
     "signature.preview.pxlsspace": "preview pxlsspace <coordinates> (zoom)",
@@ -262,12 +277,6 @@ STRINGS = {
     "signature.register": "register",
     "signature.registerguild": "registerguild",
     "signature.repeat": "repeat",
-    "signature.setdefaultcanvas": "setdefaultcanvas <subcommand>",
-    "signature.setdefaultcanvas.pixelcanvas": "setdefaultcanvas pixelcanvas",
-    "signature.setdefaultcanvas.pixelzio": "setdefaultcanvas pixelzio",
-    "signature.setdefaultcanvas.pixelzone": "setdefaultcanvas pixelzone",
-    "signature.setdefaultcanvas.pxlsspace": "setdefaultcanvas pxlsspace",
-    "signature.setprefix": "setprefix <prefix>",
     "signature.suggest": "suggest <suggestion>",
     "signature.version": "version",
 }

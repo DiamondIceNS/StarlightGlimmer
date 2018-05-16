@@ -128,18 +128,10 @@ async def on_command_error(ctx, error):
         await ctx.send(getlang(ctx.guild.id, "bot.error.command_on_cooldown").format(error.retry_after))
         return
     if isinstance(error, commands.CommandNotFound):
-        # await ctx.send(getlang(ctx.guild.id, "bot.error.command_not_found").format(get_prefix(bot, ctx.message)))
         return
     if isinstance(error, commands.MissingRequiredArgument):
-        pages = bot.formatter.format_help_for(ctx, ctx.command)
-        print(pages)
-        for p in pages:
-            await ctx.send(p)
         return
     if isinstance(error, commands.BadArgument):
-        pages = bot.formatter.format_help_for(ctx, ctx.command)
-        for p in pages:
-            await ctx.send(p)
         return
     if isinstance(error, NoPermission):
         await ctx.send(getlang(ctx.guild.id, "bot.error.no_permission"))
@@ -198,7 +190,7 @@ async def ping(ctx):
     ping_start = time()
     ping_msg = await ctx.send(getlang(ctx.guild.id, "bot.ping"))
     ping_time = time() - ping_start
-    await ping_msg.edit(content=getlang(ctx.guild.id, "bot.pong").format(ping_time))
+    await ping_msg.edit(content=getlang(ctx.guild.id, "bot.pong").format(int(ping_time*1000)))
 
 
 @bot.command()
@@ -226,30 +218,30 @@ async def suggest(ctx, *, suggestion: str):
 
 @bot.group(name="ditherchart", invoke_without_command=True)
 async def ditherchart(ctx):
-    await ctx.send(getlang(ctx.guild.id, "bot.error.no_subcommand"))
+    pass
 
 
 @ditherchart.command(name="pixelcanvas")
 async def ditherchart_pixelcanvas(ctx):
-    f = discord.File("assets/dither_chart_pixelcanvas.png", "assets/dither_chart_pixelcanvas.png")
+    f = discord.File("assets/dither_chart_pixelcanvas.png", "dither_chart_pixelcanvas.png")
     await ctx.send(file=f)
 
 
 @ditherchart.command(name="pixelzio")
 async def ditherchart_pixelzio(ctx):
-    f = discord.File("assets/dither_chart_pixelzio.png", "assets/dither_chart_pixelzio.png")
+    f = discord.File("assets/dither_chart_pixelzio.png", "dither_chart_pixelzio.png")
     await ctx.send(file=f)
 
 
 @ditherchart.command(name="pixelzone")
 async def ditherchart_pixelzio(ctx):
-    f = discord.File("assets/dither_chart_pixelzone.png", "assets/dither_chart_pixelzone.png")
+    f = discord.File("assets/dither_chart_pixelzone.png", "dither_chart_pixelzone.png")
     await ctx.send(file=f)
 
 
 @ditherchart.command(name="pxlsspace")
 async def ditherchart_pixelzio(ctx):
-    f = discord.File("assets/dither_chart_pxlsspace.png", "assets/dither_chart_pxlsspace.png")
+    f = discord.File("assets/dither_chart_pxlsspace.png", "dither_chart_pxlsspace.png")
     await ctx.send(file=f)
 
 
