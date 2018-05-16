@@ -124,22 +124,15 @@ async def on_guild_update(before, after):
 
 @bot.event
 async def on_command_error(ctx, error):
+    print(type(error))
     if isinstance(error, commands.CommandOnCooldown):
         await ctx.send(getlang(ctx.guild.id, "bot.error.command_on_cooldown").format(error.retry_after))
         return
     if isinstance(error, commands.CommandNotFound):
-        # await ctx.send(getlang(ctx.guild.id, "bot.error.command_not_found").format(get_prefix(bot, ctx.message)))
         return
     if isinstance(error, commands.MissingRequiredArgument):
-        pages = bot.formatter.format_help_for(ctx, ctx.command)
-        print(pages)
-        for p in pages:
-            await ctx.send(p)
         return
     if isinstance(error, commands.BadArgument):
-        pages = bot.formatter.format_help_for(ctx, ctx.command)
-        for p in pages:
-            await ctx.send(p)
         return
     if isinstance(error, NoPermission):
         await ctx.send(getlang(ctx.guild.id, "bot.error.no_permission"))
@@ -226,7 +219,7 @@ async def suggest(ctx, *, suggestion: str):
 
 @bot.group(name="ditherchart", invoke_without_command=True)
 async def ditherchart(ctx):
-    await ctx.send(getlang(ctx.guild.id, "bot.error.no_subcommand"))
+    pass
 
 
 @ditherchart.command(name="pixelcanvas")
