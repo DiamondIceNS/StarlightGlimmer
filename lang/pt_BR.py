@@ -114,7 +114,7 @@ STRINGS = {
         
         Somente usuários com a função Administrador podem usar este comando.""",
     "help.canvas":
-        """O canvas padrão é o canvas que será usado para visualizações automáticas ou diferenças acionados pelo rastreamento automático. (Veja 'autoscan')
+        """O canvas padrão é o canvas que será usado para visualizações automáticas ou diferenças acionadas pelo rastreamento automático. (Veja 'autoscan')
 
         Padrão para Pixelcanvas.io.
 
@@ -145,7 +145,7 @@ STRINGS = {
     "help.ditherchart.pxlsspace": None,
     "help.github": None,
     "help.gridify":
-        """Pega um template anexada e cria uma versão em grade para uma referência mais fácil. Use o parâmetro 'size' para definir o tamanho dos pixels individuais. (Padrão 1) Você não pode ampliar uma imagem para ser maior que 1000x1000.""",
+        """Pega um template anexada e cria um versão em grade para uma referência mais fácil. Use o parâmetro 'size' para definir o tamanho dos pixels individuais. (Padrão 1) Você não pode ampliar uma imagem para ser maior que 1000x1000.""",
     "help.help": None,
     "help.invite": None,
     "help.language": """Use this command with no arguments to see the current and available languages.""",
