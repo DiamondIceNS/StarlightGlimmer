@@ -7,6 +7,7 @@ from discord.utils import get as dget
 from time import time
 
 import utils.sqlite as sql
+from utils.canvases import use_default_canvas
 from utils.channel_logger import ChannelLogger
 from utils.config import Config
 from utils.exceptions import NoPermission
@@ -182,82 +183,51 @@ async def on_message(message):
             ctx.command = dget(dget(bot.commands, name='diff').commands, name=default_canvas)
 
         if ctx.command is not None:
+            ctx.invoked_with = "autoscan"
             await bot.invoke(ctx)
 
 
 @bot.command()
 async def ping(ctx):
+    log.command("ping", ctx.author, ctx.guild)
     ping_start = time()
     ping_msg = await ctx.send(getlang(ctx.guild.id, "bot.ping"))
     ping_time = time() - ping_start
+    log.debug("(Ping:{0}ms)".format(int(ping_time*1000)))
     await ping_msg.edit(content=getlang(ctx.guild.id, "bot.pong").format(int(ping_time*1000)))
 
 
 @bot.command()
 async def github(ctx):
+    log.command("github", ctx.author, ctx.guild)
     await ctx.send("https://github.com/DiamondIceNS/StarlightGlimmer")
 
 
 @bot.command()
 async def changelog(ctx):
+    log.command("changelog", ctx.author, ctx.guild)
     await ctx.send("https://github.com/DiamondIceNS/StarlightGlimmer/releases")
 
 
 @bot.command()
 async def version(ctx):
+    log.command("version", ctx.author, ctx.guild)
     await ctx.send(getlang(ctx.guild.id, "bot.version").format(VERSION))
 
 
 @bot.command()
 async def suggest(ctx, *, suggestion: str):
+    log.command("suggest", ctx.author, ctx.guild)
+    log.debug("Suggestion: {0}".format(suggestion))
     await channel_logger.log_to_channel("New suggestion from **{0.name}#{0.discriminator}** (ID: `{0.id}`) in guild "
                                         "**{1.name}** (ID: `{1.id}`):".format(ctx.author, ctx.guild))
     await channel_logger.log_to_channel("> `{}`".format(suggestion))
     await ctx.send(getlang(ctx.guild.id, "bot.suggest"))
 
 
-@bot.group(name="ditherchart", invoke_without_command=True)
-async def ditherchart(ctx):
-    default_canvas = sql.select_guild_by_id(ctx.guild.id)['default_canvas']
-    f = None
-    if default_canvas == "pixelcanvas":
-        f = discord.File("assets/dither_chart_pixelcanvas.png", "dither_chart_pixelcanvas.png")
-    elif default_canvas == "pixelzio":
-        f = discord.File("assets/dither_chart_pixelzio.png", "dither_chart_pixelzio.png")
-    elif default_canvas == "pixelzone":
-        f = discord.File("assets/dither_chart_pixelzone.png", "dither_chart_pixelzone.png")
-    elif default_canvas == "pxlsspace":
-        f = discord.File("assets/dither_chart_pxlsspace.png", "dither_chart_pxlsspace.png")
-    if f:
-        await ctx.send(file=f)
-
-
-@ditherchart.command(name="pixelcanvas", aliases=["pc"])
-async def ditherchart_pixelcanvas(ctx):
-    f = discord.File("assets/dither_chart_pixelcanvas.png", "dither_chart_pixelcanvas.png")
-    await ctx.send(file=f)
-
-
-@ditherchart.command(name="pixelzio", aliases=["pzi"])
-async def ditherchart_pixelzio(ctx):
-    f = discord.File("assets/dither_chart_pixelzio.png", "dither_chart_pixelzio.png")
-    await ctx.send(file=f)
-
-
-@ditherchart.command(name="pixelzone", aliases=["pz"])
-async def ditherchart_pixelzio(ctx):
-    f = discord.File("assets/dither_chart_pixelzone.png", "dither_chart_pixelzone.png")
-    await ctx.send(file=f)
-
-
-@ditherchart.command(name="pxlsspace", aliases=["ps"])
-async def ditherchart_pixelzio(ctx):
-    f = discord.File("assets/dither_chart_pxlsspace.png", "dither_chart_pxlsspace.png")
-    await ctx.send(file=f)
-
-
 @bot.command()
 async def invite(ctx):
+    log.command("invite", ctx.author, ctx.guild)
     await ctx.send(cfg.invite)
 
 

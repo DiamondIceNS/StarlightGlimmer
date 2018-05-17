@@ -7,14 +7,14 @@ STRINGS = {
         Vamos começar a pintar pixels!""",
     "bot.help_ending_note": "Digite '{0}{1} <command>' para mais informações do comando.",
     "bot.ping": "Pinging...",
-    "bot.pong": "Pong! | **{0:.01f}s**",
+    "bot.pong": "Pong! | **{0}ms**",
     "bot.suggest": "Sua sugestão foi enviada. Obrigado por sua contribuição!",
     "bot.version": "O numero da minha versão é **{0}**",
 
     # Animotes messages
-    "animotes.guild_opt_in": "O compartilhamento de emojis foi ** ativado ** para essa guild.",
-    "animotes.guild_opt_out": "O compartilhamento de emojis foi ** desativado ** para esta guild.",
-    "animotes.member_opt_in": "Você optou com sucesso em ** aceitar ** a conversão de emojis.",
+    "animotes.guild_opt_in": "O compartilhamento de emojis foi **ativado** para essa guild.",
+    "animotes.guild_opt_out": "O compartilhamento de emojis foi **desativado** para esta guild.",
+    "animotes.member_opt_in": "Você optou com sucesso em **aceitar** a conversão de emojis.",
     "animotes.member_opt_out": "Você cancelou ** com êxito ** a conversão de emojis.",
 
     # Canvas messages
@@ -29,13 +29,13 @@ STRINGS = {
     "configuration.alert_channel_set": "O canal de Alerta foi definido para {0}.",
     "configuration.autoscan_disabled": "Autoscan foi desativado.",
     "configuration.autoscan_enabled": "Autoscan foi ativado.",
-    "configuration.canvas_check": "O canvas padrão desta guild é ** {0} **. \ n"
+    "configuration.canvas_check": "O canvas padrão desta guild é **{0}**. \ n"
                                   "Para alterar o canvas padrão, execute este comando novamente com um canvas suportado. (Use `{1}help canvas` para ver uma lista.)",
     "configuration.canvas_set": "O canvas padrão foi definido para **{0}**.",
     "configuration.language_check": "O idioma atual deste guild é **{1}**.\n"
                                     "Para definir um novo idioma, execute este comando novamente com uma das seguintes opções:\n"
                                     "```{0}```",
-    "configuration.language_set": "O idioma foi definido para ** Português (BR) **.",
+    "configuration.language_set": "O idioma foi definido para **Português (BR)**.",
     "configuration.prefix_set": "O prefixo deste server foi definido para **{0}**.",
 
     # Error messages

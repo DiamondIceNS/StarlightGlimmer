@@ -2,12 +2,12 @@ import re
 import discord
 from discord.ext import commands
 from discord.ext.commands import BucketType
-from discord.utils import get as dget
 from utils.language import getlang
 
 import utils.colors as colors
 import utils.render as render
 import utils.sqlite as sql
+from utils.canvases import use_default_canvas
 from utils.logger import Log
 
 log = Log(__name__)
@@ -24,17 +24,7 @@ class Canvas:
     @commands.group(name="diff", invoke_without_command=True, aliases=["d"])
     @commands.cooldown(1, 5, BucketType.guild)
     async def diff(self, ctx):
-        default_canvas = sql.select_guild_by_id(ctx.guild.id)['default_canvas']
-        if default_canvas == "pixelcanvas":
-            ctx.command = dget(dget(self.bot.commands, name='diff').commands, name='pixelcanvas')
-        elif default_canvas == "pixelzio":
-            ctx.command = dget(dget(self.bot.commands, name='diff').commands, name='pixelzio')
-        elif default_canvas == "pixelzone":
-            ctx.command = dget(dget(self.bot.commands, name='diff').commands, name='pixelzone')
-        elif default_canvas == "pxlsspace":
-            ctx.command = dget(dget(self.bot.commands, name='diff').commands, name='pxlsspace')
-        if ctx.command is not None:
-            await self.bot.invoke(ctx)
+        await use_default_canvas(ctx, self.bot, "diff")
 
     @staticmethod
     async def parse_diff(ctx, coords):
@@ -69,8 +59,7 @@ class Canvas:
     async def diff_pixelcanvas(self, ctx, *, coordinates: str):
         args = await Canvas.parse_diff(ctx, coordinates)
         if args is not None:
-            log.debug("Pixelcanvas diff invoked by {0.name}#{0.discriminator} (ID: {0.id}) in {1.name} (ID: {1.id})"
-                      .format(ctx.author, ctx.guild))
+            log.command("diff pixelcanvas", ctx.author, ctx.guild, autoscan=ctx.invoked_with == "autoscan")
             await render.diff(*args, render.fetch_pixelcanvas, colors.pixelcanvas)
 
     @diff.command(name="pixelzio", aliases=["pzi"])
@@ -78,8 +67,7 @@ class Canvas:
     async def diff_pixelzio(self, ctx, *, coordinates: str):
         args = await Canvas.parse_diff(ctx, coordinates)
         if args is not None:
-            log.debug("Pixelzio diff invoked by {0.name}#{0.discriminator} (ID: {0.id}) in {1.name} (ID: {1.id})"
-                      .format(ctx.author, ctx.guild))
+            log.command("diff pixelzio", ctx.author, ctx.guild, autoscan=ctx.invoked_with == "autoscan")
             await render.diff(*args, render.fetch_pixelzio, colors.pixelzio)
 
     @diff.command(name="pixelzone", aliases=["pz"])
@@ -87,8 +75,7 @@ class Canvas:
     async def diff_pixelzone(self, ctx, *, coordinates: str):
         args = await Canvas.parse_diff(ctx, coordinates)
         if args is not None:
-            log.debug("Pixelzone diff invoked by {0.name}#{0.discriminator} (ID: {0.id}) in {1.name} (ID: {1.id})"
-                      .format(ctx.author, ctx.guild))
+            log.command("diff pixelzone", ctx.author, ctx.guild, autoscan=ctx.invoked_with == "autoscan")
             await render.diff(*args, render.fetch_pixelzone, colors.pixelzone)
 
     @diff.command(name="pxlsspace", aliases=["ps"])
@@ -96,8 +83,7 @@ class Canvas:
     async def diff_pxlsspace(self, ctx, *, coordinates: str):
         args = await Canvas.parse_diff(ctx, coordinates)
         if args is not None:
-            log.debug("Pxlsspace diff invoked by {0.name}#{0.discriminator} (ID: {0.id}) in {1.name} (ID: {1.id})"
-                      .format(ctx.author, ctx.guild))
+            log.command("diff pxlsspace", ctx.author, ctx.guild, autoscan=ctx.invoked_with == "autoscan")
             await render.diff(*args, render.fetch_pxlsspace, colors.pxlsspace)
 
     # =======================
@@ -107,17 +93,7 @@ class Canvas:
     @commands.group(name="preview", invoke_without_command=True, aliases=["p"])
     @commands.cooldown(1, 5, BucketType.guild)
     async def preview(self, ctx):
-        default_canvas = sql.select_guild_by_id(ctx.guild.id)['default_canvas']
-        if default_canvas == "pixelcanvas":
-            ctx.command = dget(dget(self.bot.commands, name='preview').commands, name='pixelcanvas')
-        elif default_canvas == "pixelzio":
-            ctx.command = dget(dget(self.bot.commands, name='preview').commands, name='pixelzio')
-        elif default_canvas == "pixelzone":
-            ctx.command = dget(dget(self.bot.commands, name='preview').commands, name='pixelzone')
-        elif default_canvas == "pxlsspace":
-            ctx.command = dget(dget(self.bot.commands, name='preview').commands, name='pxlsspace')
-        if ctx.command is not None:
-            await self.bot.invoke(ctx)
+        await use_default_canvas(ctx, self.bot, "preview")
 
     @staticmethod
     async def parse_preview(ctx, coords):
@@ -139,8 +115,7 @@ class Canvas:
     async def preview_pixelcanvas(self, ctx, *, coordinates: str):
         args = await Canvas.parse_preview(ctx, coordinates)
         if args is not None:
-            log.debug("Pixelcanvas preview invoked by {0.name}#{0.discriminator} (ID: {0.id}) in {1.name} (ID: {1.id})"
-                      .format(ctx.author, ctx.guild))
+            log.command("preview pixelcanvas", ctx.author, ctx.guild, autoscan=ctx.invoked_with == "autoscan")
             await render.preview(*args, render.fetch_pixelcanvas)
 
     @preview.command(name="pixelzio", aliases=["pzi"])
@@ -148,8 +123,7 @@ class Canvas:
     async def preview_pixelzio(self, ctx, *, coordinates: str):
         args = await Canvas.parse_preview(ctx, coordinates)
         if args is not None:
-            log.debug("Pixelzio preview invoked by {0.name}#{0.discriminator} (ID: {0.id}) in {1.name} (ID: {1.id})"
-                      .format(ctx.author, ctx.guild))
+            log.command("preview pixelzio", ctx.author, ctx.guild, autoscan=ctx.invoked_with == "autoscan")
             await render.preview(*args, render.fetch_pixelzio)
 
     @preview.command(name="pixelzone", aliases=["pz"])
@@ -157,8 +131,7 @@ class Canvas:
     async def preview_pixelzone(self, ctx, *, coordinates: str):
         args = await Canvas.parse_preview(ctx, coordinates)
         if args is not None:
-            log.debug("Pixelzone preview invoked by {0.name}#{0.discriminator} (ID: {0.id}) in {1.name} (ID: {1.id})"
-                      .format(ctx.author, ctx.guild))
+            log.command("preview pixelzone", ctx.author, ctx.guild, autoscan=ctx.invoked_with == "autoscan")
             await render.preview(*args, render.fetch_pixelzone)
 
     @preview.command(name="pxlsspace", aliases=["ps"])
@@ -166,8 +139,7 @@ class Canvas:
     async def preview_pxlsspace(self, ctx, *, coordinates: str):
         args = await Canvas.parse_preview(ctx, coordinates)
         if args is not None:
-            log.debug("Pxlsspace preview invoked by {0.name}#{0.discriminator} (ID: {0.id}) in {1.name} (ID: {1.id})"
-                      .format(ctx.author, ctx.guild))
+            log.command("preview pxlsspace", ctx.author, ctx.guild, autoscan=ctx.invoked_with == "autoscan")
             x = max(0, min(1279, args[1]))
             y = max(0, min(719, args[2]))
             await render.preview(ctx, x, y, args[3], render.fetch_pxlsspace)
@@ -179,17 +151,7 @@ class Canvas:
     @commands.group(name="quantize", invoke_without_command=True, aliases=["q"])
     @commands.cooldown(1, 5, BucketType.guild)
     async def quantize(self, ctx):
-        default_canvas = sql.select_guild_by_id(ctx.guild.id)['default_canvas']
-        if default_canvas == "pixelcanvas":
-            ctx.command = dget(dget(self.bot.commands, name='quantize').commands, name='pixelcanvas')
-        elif default_canvas == "pixelzio":
-            ctx.command = dget(dget(self.bot.commands, name='quantize').commands, name='pixelzio')
-        elif default_canvas == "pixelzone":
-            ctx.command = dget(dget(self.bot.commands, name='quantize').commands, name='pixelzone')
-        elif default_canvas == "pxlsspace":
-            ctx.command = dget(dget(self.bot.commands, name='quantize').commands, name='pxlsspace')
-        if ctx.command is not None:
-            await self.bot.invoke(ctx)
+        await use_default_canvas(ctx, self.bot, "quantize")
 
     @staticmethod
     async def check_attachment(ctx):
@@ -213,32 +175,28 @@ class Canvas:
     @commands.cooldown(1, 5, BucketType.guild)
     async def quantize_pixelcanvas(self, ctx):
         if await Canvas.check_attachment(ctx):
-            log.debug("Pixelcanvas quantize invoked by {0.name}#{0.discriminator} (ID: {0.id}) in {1.name} (ID: {1.id})"
-                      .format(ctx.author, ctx.guild))
+            log.command("quantize pixelcanvas", ctx.author, ctx.guild)
             await render.quantize(ctx, ctx.message.attachments[0], colors.pixelcanvas)
 
     @quantize.command(name="pixelzio", aliases=["pzi"])
     @commands.cooldown(1, 5, BucketType.guild)
     async def quantize_pixelzio(self, ctx):
         if await Canvas.check_attachment(ctx):
-            log.debug("Pixelzio quantize invoked by {0.name}#{0.discriminator} (ID: {0.id}) in {1.name} (ID: {1.id})"
-                      .format(ctx.author, ctx.guild))
+            log.command("quantize pixelzio", ctx.author, ctx.guild)
             await render.quantize(ctx, ctx.message.attachments[0], colors.pixelzio)
 
     @quantize.command(name="pixelzone", aliases=["pz"])
     @commands.cooldown(1, 5, BucketType.guild)
     async def quantize_pixelzone(self, ctx):
         if await Canvas.check_attachment(ctx):
-            log.debug("Pixelzone quantize invoked by {0.name}#{0.discriminator} (ID: {0.id}) in {1.name} (ID: {1.id})"
-                      .format(ctx.author, ctx.guild))
+            log.command("quantize pixelzone", ctx.author, ctx.guild)
             await render.quantize(ctx, ctx.message.attachments[0], colors.pixelzone)
 
     @quantize.command(name="pxlsspace", aliases=["ps"])
     @commands.cooldown(1, 5, BucketType.guild)
     async def quantize_pxlsspace(self, ctx):
         if await Canvas.check_attachment(ctx):
-            log.debug("Pxlsspace quantize invoked by {0.name}#{0.discriminator} (ID: {0.id}) in {1.name} (ID: {1.id})"
-                      .format(ctx.author, ctx.guild))
+            log.command("quantize pxlsspace", ctx.author, ctx.guild)
             await render.quantize(ctx, ctx.message.attachments[0], colors.pxlsspace)
 
     # =======================
@@ -249,18 +207,51 @@ class Canvas:
     @commands.cooldown(1, 5, BucketType.guild)
     async def gridify(self, ctx, zoom: int = 1):
         if await Canvas.check_attachment(ctx):
-            log.debug("Gridify invoked by {0.name}#{0.discriminator} (ID: {0.id}) in {1.name} (ID: {1.id})"
-                      .format(ctx.author, ctx.guild))
+            log.command("gridify", ctx.author, ctx.guild)
             att = ctx.message.attachments[0]
             zoom = max(1, min(zoom, 1000 // att.width, 1000 // att.height))
             await render.gridify(ctx, att, zoom)
+
+    # ======================
+    #       DITHERCHART
+    # ======================
+
+    @commands.group(name="ditherchart", invoke_without_command=True)
+    async def ditherchart(self, ctx):
+        await use_default_canvas(ctx, self.bot, "ditherchart")
+
+    @ditherchart.command(name="pixelcanvas", aliases=["pc"])
+    async def ditherchart_pixelcanvas(self, ctx):
+        log.command("ditherchart pixelcanvas", ctx.author, ctx.guild)
+        f = discord.File("assets/dither_chart_pixelcanvas.png", "dither_chart_pixelcanvas.png")
+        await ctx.send(file=f)
+
+    @ditherchart.command(name="pixelzio", aliases=["pzi"])
+    async def ditherchart_pixelzio(self, ctx):
+        log.command("ditherchart pixelzio", ctx.author, ctx.guild)
+        f = discord.File("assets/dither_chart_pixelzio.png", "dither_chart_pixelzio.png")
+        await ctx.send(file=f)
+
+    @ditherchart.command(name="pixelzone", aliases=["pz"])
+    async def ditherchart_pixelzone(self, ctx):
+        log.command("ditherchart pixelzone", ctx.author, ctx.guild)
+        f = discord.File("assets/dither_chart_pixelzone.png", "dither_chart_pixelzone.png")
+        await ctx.send(file=f)
+
+    @ditherchart.command(name="pxlsspace", aliases=["ps"])
+    async def ditherchart_pxlsspace(self, ctx):
+        log.command("ditherchart pxlsspace", ctx.author, ctx.guild)
+        f = discord.File("assets/dither_chart_pxlsspace.png", "dither_chart_pxlsspace.png")
+        await ctx.send(file=f)
+
+    # ======================
+    #         REPEAT
+    # ======================
 
     @commands.command(name="repeat", aliases=["r"])
     @commands.cooldown(1, 5, BucketType.guild)
     async def repeat(self, ctx):
         async for msg in ctx.history(limit=50, before=ctx.message):
-            log_msg = "repeated by {0.name}#{0.discriminator} (ID: {0.id}) in {1.name} (ID: {1.id})" \
-                .format(ctx.author, ctx.guild)
             regex = ctx.prefix + '(diff|d|preview|p) ((?:pixel(?:canvas|zio|zone))|pxlsspace|p(?:c|z|zi|s))(?: (' \
                                  '-?\d+), ?(-?\d+)/?\s?#?(\d+)?) '
             match = re.match(regex, msg.content)
@@ -281,37 +272,37 @@ class Canvas:
                         return
                     zoom = max(1, min(zoom, 400 // att.width, 400 // att.height))
                     if sub_cmd == "pixelcanvas" or sub_cmd == "pc":
-                        log.debug("Pixelcanvas diff " + log_msg)
+                        log.command("diff pixelcanvas", ctx.author, ctx.guild, repeat=True)
                         await render.diff(ctx, x, y, att, zoom, render.fetch_pixelcanvas, colors.pixelcanvas)
                         return
                     elif sub_cmd == "pixelzio" or sub_cmd == "pzi":
-                        log.debug("Pixelzio diff " + log_msg)
+                        log.command("diff pixelzio", ctx.author, ctx.guild, repeat=True)
                         await render.diff(ctx, x, y, att, zoom, render.fetch_pixelzio, colors.pixelzio)
                         return
                     elif sub_cmd == "pixelzone" or sub_cmd == "pz":
-                        log.debug("Pixelzone diff " + log_msg)
+                        log.command("diff pixelzone", ctx.author, ctx.guild, repeat=True)
                         await render.diff(ctx, x, y, att, zoom, render.fetch_pixelzone, colors.pixelzone)
                         return
                     elif sub_cmd == "pxlsspace" or sub_cmd == "ps":
-                        log.debug("Pxlsspace diff " + log_msg)
+                        log.command("diff pxlsspace", ctx.author, ctx.guild, repeat=True)
                         await render.diff(ctx, x, y, att, zoom, render.fetch_pxlsspace, colors.pxlsspace)
                         return
                 if cmd == "preview" or cmd == "p":
                     zoom = max(1, min(16, zoom))
                     if sub_cmd == "pixelcanvas" or sub_cmd == "pc":
-                        log.debug("Pixelcanvas preview " + log_msg)
+                        log.command("preview pixelcanvas", ctx.author, ctx.guild, repeat=True)
                         await render.preview(ctx, x, y, zoom, render.fetch_pixelcanvas)
                         return
                     elif sub_cmd == "pixelzio" or sub_cmd == "pzi":
-                        log.debug("Pixelzio preview " + log_msg)
+                        log.command("preview pixelzio", ctx.author, ctx.guild, repeat=True)
                         await render.preview(ctx, x, y, zoom, render.fetch_pixelzio)
                         return
                     elif sub_cmd == "pixelzone" or sub_cmd == "pz":
-                        log.debug("Pixelzone preview " + log_msg)
+                        log.command("preview pixelzone", ctx.author, ctx.guild, repeat=True)
                         await render.preview(ctx, x, y, zoom, render.fetch_pixelzone)
                         return
                     elif sub_cmd == "pxlsspace" or sub_cmd == "ps":
-                        log.debug("Pxlsspace preview " + log_msg)
+                        log.command("preview pxlsspace", ctx.author, ctx.guild, repeat=True)
                         await render.preview(ctx, x, y, zoom, render.fetch_pxlsspace)
                         return
 
@@ -328,7 +319,7 @@ class Canvas:
                 y = int(pc_match.group(2))
                 zoom = int(pc_match.group(3)) if pc_match.group(3) is not None else 1
                 zoom = max(min(zoom, 16), 1)
-                log.debug("Pixelcanvas preview " + log_msg)
+                log.command("preview pixelcanvas", ctx.author, ctx.guild, autoscan=True, repeat=True)
                 await render.preview(ctx, x, y, zoom, render.fetch_pixelcanvas)
                 return
 
@@ -337,7 +328,7 @@ class Canvas:
                 y = int(pzio_match.group(2))
                 zoom = int(pzio_match.group(3)) if pzio_match.group(3) is not None else 1
                 zoom = max(min(zoom, 16), 1)
-                log.debug("Pixelzio preview " + log_msg)
+                log.command("preview pixelzio", ctx.author, ctx.guild, autoscan=True, repeat=True)
                 await render.preview(ctx, x, y, zoom, render.fetch_pixelzio)
                 return
 
@@ -351,7 +342,7 @@ class Canvas:
                 else:
                     zoom = 1
                 zoom = max(min(zoom, 16), 1)
-                log.debug("Pixelzone preview " + log_msg)
+                log.command("preview pixelzone", ctx.author, ctx.guild, autoscan=True, repeat=True)
                 await render.preview(ctx, x, y, zoom, render.fetch_pixelzone)
                 return
 
@@ -365,7 +356,7 @@ class Canvas:
                 else:
                     zoom = 1
                 zoom = max(min(zoom, 16), 1)
-                log.debug("Pxlsspace preview " + log_msg)
+                log.command("preview pxlsspace", ctx.author, ctx.guild, autoscan=True, repeat=True)
                 await render.preview(ctx, x, y, zoom, render.fetch_pxlsspace)
                 return
 
@@ -375,16 +366,16 @@ class Canvas:
                 zoom = int(prev_match.group(3)) if prev_match.group(3) is not None else 1
                 zoom = max(min(zoom, 16), 1)
                 if default_canvas == "pixelcanvas":
-                    log.debug("Pixelcanvas preview " + log_msg)
+                    log.command("preview pixelcanvas", ctx.author, ctx.guild, autoscan=True, repeat=True)
                     await render.preview(ctx, x, y, zoom, render.fetch_pixelcanvas)
                 elif default_canvas == "pixelzio":
-                    log.debug("Pixelzio preview " + log_msg)
+                    log.command("preview pixelzio", ctx.author, ctx.guild, autoscan=True, repeat=True)
                     await render.preview(ctx, x, y, zoom, render.fetch_pixelzio)
                 elif default_canvas == "pixelzone":
-                    log.debug("Pixelzone preview " + log_msg)
+                    log.command("preview pixelzone", ctx.author, ctx.guild, autoscan=True, repeat=True)
                     await render.preview(ctx, x, y, zoom, render.fetch_pixelzone)
                 elif default_canvas == "pxlsspace":
-                    log.debug("Pxlsspace preview " + log_msg)
+                    log.command("preview pxlsspace", ctx.author, ctx.guild, autoscan=True, repeat=True)
                     await render.preview(ctx, x, y, zoom, render.fetch_pxlsspace)
                 return
 
@@ -401,16 +392,16 @@ class Canvas:
                 zoom = int(diff_match.group(3)) if diff_match.group(3) is not None else 1
                 zoom = max(1, min(zoom, 400 // att.width, 400 // att.height))
                 if default_canvas == "pixelcanvas":
-                    log.debug("Pixelcanvas diff " + log_msg)
+                    log.command("diff pixelcanvas", ctx.author, ctx.guild, autoscan=True, repeat=True)
                     await render.diff(ctx, x, y, att, zoom, render.fetch_pixelcanvas, colors.pixelcanvas)
                 elif default_canvas == "pixelzio":
-                    log.debug("Pixelzio diff " + log_msg)
+                    log.command("diff pixelzio", ctx.author, ctx.guild, autoscan=True, repeat=True)
                     await render.diff(ctx, x, y, att, zoom, render.fetch_pixelzio, colors.pixelzio)
                 elif default_canvas == "pixelzone":
-                    log.debug("Pixelzone diff " + log_msg)
+                    log.command("diff pixelzone", ctx.author, ctx.guild, autoscan=True, repeat=True)
                     await render.diff(ctx, x, y, att, zoom, render.fetch_pixelzone, colors.pixelzone)
                 elif default_canvas == "pxlsspace":
-                    log.debug("Pxlsspace diff " + log_msg)
+                    log.command("diff pxlsspace", ctx.author, ctx.guild, autoscan=True, repeat=True)
                     await render.diff(ctx, x, y, att, zoom, render.fetch_pxlsspace, colors.pxlsspace)
                 return
 

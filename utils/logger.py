@@ -12,6 +12,15 @@ class Log:
         handler.setFormatter(logging.Formatter('{asctime} [{levelname}] {name}: {message}', style='{'))
         self.logger.addHandler(handler)
 
+    def command(self, cmd, author, guild, autoscan=False, repeat=False):
+        invocation_type = "I"
+        if autoscan:
+            invocation_type = "A"
+        if repeat:
+            invocation_type = invocation_type + "R"
+        self.debug("[{0}] {1.name}#{1.discriminator} used '{2}' in {3.name} (UID:{1.id} GID:{3.id})"
+                   .format(invocation_type, author, cmd, guild))
+
     def debug(self, msg):
         if cfg.debug:
             self.logger.debug(msg)

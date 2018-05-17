@@ -32,7 +32,7 @@ async def diff(ctx, x, y, att, zoom, fetch, palette):
             await att.save(bio)
             template = Image.open(bio).convert('RGBA')
 
-        log.debug("X:{0} | Y:{1} | Dim: {2}x{3} | Zoom: {4}".format(x, y, template.width, template.height, zoom))
+        log.debug("(X:{0} | Y:{1} | Dim:{2}x{3} | Zoom:{4})".format(x, y, template.width, template.height, zoom))
 
         if template.width * template.height > 600000:
             await ctx.send(getlang(ctx.guild.id, "render.large_template"))
@@ -85,7 +85,7 @@ async def diff(ctx, x, y, att, zoom, fetch, palette):
 
 async def preview(ctx, x, y, zoom, fetch):
     async with ctx.typing():
-        log.debug("X:{0} | Y:{1} | Zoom:{2}".format(x, y, zoom))
+        log.debug("(X:{0} | Y:{1} | Zoom:{2})".format(x, y, zoom))
 
         preview_img = await fetch(x - cfg.preview_w // 2, y - cfg.preview_h // 2, cfg.preview_w, cfg.preview_h)
 
@@ -106,7 +106,7 @@ async def quantize(ctx, att, palette):
         await att.save(bio)
         template = Image.open(bio).convert('RGBA')
 
-    log.debug("Dim: {0}x{1}".format(template.width, template.height))
+    log.debug("(Dim:{0}x{1})".format(template.width, template.height))
 
     bad_pixels = template.height * template.width
     for py in range(template.height):
@@ -146,6 +146,8 @@ async def gridify(ctx, att, zoom):
     with io.BytesIO() as bio:
         await att.save(bio)
         template = Image.open(bio).convert('RGBA')
+
+    log.debug("(Dim:{0}x{1} | Zoom:{2})".format(template.width, template.height, zoom))
 
     grid_img = Image.new('RGBA', (template.width * (zoom + 1) - 1, template.height * (zoom + 1) - 1))
     for iy in range(template.height):
