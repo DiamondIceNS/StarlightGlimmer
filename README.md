@@ -23,14 +23,18 @@ Currently supports [Pixelcanvas.io](http://pixelcanvas.io/), [Pixelz.io](http://
 - Automatic live canvas preview
 - Automatic live template checking
 - Color quantization of templates to canvas palette
+- Gridifyer to create gridded, human-readable templates
+- Dithering sample charts for assisting color selection when you are making a template
 - [Animotes](https://github.com/ev1l0rd/animotes) support, just because
 - Cross-guild emoji through Animotes (must opt-in)
 - Support for full language localization
 
 #### Languages:
 - English (US)
+- Portuguese (BR)
 
-If you happen to know a language that is not listed and would be willing to translate, please submit a pull request. (French and Brazilian Portuguese are specifically wanted, but no translation is a worthless translation!)
+If you happen to know a language that is not listed and would be willing to translate, please translate the strings in `lang/en_US.py` and submit a pull request.
+(Currently looking for: French, Turkish)
 
 **Invite:** `https://discordapp.com/oauth2/authorize?&client_id=405480380930588682&scope=bot&permissions=35840`
 
