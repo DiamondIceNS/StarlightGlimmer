@@ -253,7 +253,7 @@ class Canvas:
     async def repeat(self, ctx):
         async for msg in ctx.history(limit=50, before=ctx.message):
             regex = ctx.prefix + '(diff|d|preview|p) ((?:pixel(?:canvas|zio|zone))|pxlsspace|p(?:c|z|zi|s))(?: (' \
-                                 '-?\d+), ?(-?\d+)/?\s?#?(\d+)?) '
+                                 '-?\d+), ?(-?\d+)/?\s?#?(\d+)?)'
             match = re.match(regex, msg.content)
 
             if match:
