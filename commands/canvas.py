@@ -338,7 +338,7 @@ class Canvas:
                 if pzone_match.group(4) is not None:
                     zoom = int(pzone_match.group(4))
                 elif pzone_match.group(3) is not None:
-                    zoom = int(pzio_match.group(3))
+                    zoom = int(pzone_match.group(3))
                 else:
                     zoom = 1
                 zoom = max(min(zoom, 16), 1)
