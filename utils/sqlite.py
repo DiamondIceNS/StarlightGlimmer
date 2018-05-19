@@ -39,7 +39,7 @@ def update_tables(v):
 
 
 def add_guild(gid, name, join_date):
-    c.execute("""INSERT INTO guilds(id, name, join_date, default_canvas, language) VALUES(?, ?, ?, ?)""",
+    c.execute("""INSERT INTO guilds(id, name, join_date, default_canvas, language) VALUES(?, ?, ?, ?, ?)""",
               (gid, name, join_date, "pixelcanvas", "en-US"))
     conn.commit()
 
