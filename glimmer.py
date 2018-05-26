@@ -10,7 +10,7 @@ import utils.sqlite as sql
 from utils.canvases import use_default_canvas
 from utils.channel_logger import ChannelLogger
 from utils.config import Config
-from utils.exceptions import NoPermission, CloudFlareException
+from utils.exceptions import NoPermission
 from utils.language import getlang
 from utils.logger import Log
 from utils.help_formatter import GlimmerHelpFormatter

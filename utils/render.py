@@ -12,7 +12,6 @@ from PIL import Image
 
 import utils.colors as colors
 from utils.config import Config
-from utils.exceptions import CloudFlareException
 from utils.logger import Log
 from utils.language import getlang
 from utils.lzstring import LZString
