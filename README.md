@@ -6,7 +6,7 @@ A template utility bot based on [Alastair](Make-Alastair-Great-Again) and [Pinki
 Currently supports [Pixelcanvas.io](http://pixelcanvas.io/), [Pixelz.io](http://pixelz.io/), [Pixelzone.io](http://pixelzone.io/), and [Pxls.space](http://pxls.space/).
 
 #### Requires:
-- Python 3.6
+- [Python 3.6](https://www.python.org/downloads/release/python-365/)
 - [Discord.py rewrite](https://github.com/Rapptz/discord.py/tree/rewrite)
 - [Pillow](https://pillow.readthedocs.io/en/latest/installation.html) 5.1.0
 - [aiohttp](https://aiohttp.readthedocs.io/en/stable/) 3.2.0
@@ -15,10 +15,11 @@ Currently supports [Pixelcanvas.io](http://pixelcanvas.io/), [Pixelz.io](http://
 - [cloudflare-scrape async](https://github.com/lucasgadams/cloudflare-scrape@cf_async)
 
 #### Installation:
-1. Install Python and the required libraries
-2. Put your bot token and other config info in `config/config.json.example`
+1. Install Python 3.6
+2. Run `pip install -r requirements.txt` in the main directory
+3. Put your bot token and other config info in `config/config.json.example`
 3. Rename `config.json.example` to `config.json`
-4. `python glimmer.py`
+4. Run `python glimmer.py`
 
 #### Features:
 - Automatic live canvas preview
@@ -28,7 +29,9 @@ Currently supports [Pixelcanvas.io](http://pixelcanvas.io/), [Pixelz.io](http://
 - Dithering sample charts for assisting color selection when you are making a template
 - [Animotes](https://github.com/ev1l0rd/animotes) support, just because
 - Cross-guild emoji through Animotes (must opt-in)
-- Support for full language localization
+- Full language localization
+
+For a more in-depth walkthrough of Glimmer's core functions, see [the wiki page](https://github.com/DiamondIceNS/StarlightGlimmer/wiki).
 
 #### Languages:
 - English (US)
@@ -37,6 +40,6 @@ Currently supports [Pixelcanvas.io](http://pixelcanvas.io/), [Pixelz.io](http://
 If you happen to know a language that is not listed and would be willing to translate, please translate the strings in `lang/en_US.py` and submit a pull request.
 (Currently looking for: French, Turkish)
 
-**Invite:** `https://discordapp.com/oauth2/authorize?&client_id=405480380930588682&scope=bot&permissions=35840`
+**Invite:** `https://discordapp.com/oauth2/authorize?&client_id=405480380930588682&scope=bot&permissions=101376`
 
 [avatar]: avatar.jpg
