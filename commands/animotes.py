@@ -8,6 +8,7 @@ from utils.exceptions import NoPermission
 from utils.language import getlang
 from utils.logger import Log
 
+
 #    Cog to reformat messages to allow for animated emotes, regardless of nitro status
 #    and sharing those emotes with other servers with opt-in policy.
 #    Copyright (C) 2017-2018 Valentijn <ev1l0rd> and DiamondIceNS
@@ -40,34 +41,39 @@ class Animotes:
                 await message.delete()
                 await channel.send(content=content)
 
-    @commands.command(aliases=['unregister'])
+    @commands.command()
     async def register(self, ctx):
-        if not sql.is_user_animote_user(ctx.author.id):
-            sql.add_animote_user(ctx.author.id)
-            message = getlang(ctx.guild.id, "animotes.member_opt_in")
-        else:
-            sql.delete_animote_user(ctx.author.id)
-            message = getlang(ctx.guild.id, "animotes.member_opt_out")
-        await ctx.message.author.send(content=message)
+        sql.add_animote_user(ctx.author.id)
+        self.log.command("register", ctx.author, ctx.guild)
+        await ctx.author.send(getlang(ctx.guild.id, "animotes.member_opt_in"))
 
-    @commands.command(aliases=['unregisterserver'])
+    @commands.command()
+    async def unregister(self, ctx):
+        sql.delete_animote_user(ctx.author.id)
+        self.log.command("unregister", ctx.author, ctx.guild)
+        await ctx.author.send(getlang(ctx.guild.id, "animotes.member_opt_out"))
+
+    @commands.command()
     @commands.guild_only()
     async def registerguild(self, ctx):
         if not ctx.author.permissions_in(ctx.channel).manage_emojis:
             raise NoPermission
-        if not sql.is_server_emojishare_server(ctx.guild.id):
-            sql.update_guild(ctx.guild.id, emojishare=1)
-            self.log.info("Guild {0.name} (ID: {0.id}) has opted in to emoji sharing.".format(ctx.guild))
-            await self.channel_logger.log_to_channel("Guild **{0.name}** (ID: `{0.id}`) has opted in to emoji sharing."
-                                                .format(ctx.guild))
-            message = getlang(ctx.guild.id, "animotes.guild_opt_in")
-        else:
-            sql.update_guild(ctx.guild.id, emojishare=0)
-            self.log.info("Guild {0.name} (ID: {0.id}) has opted out of emoji sharing.".format(ctx.guild))
-            await self.channel_logger.log_to_channel("Guild **{0.name}** (ID: `{0.id}`) has opted out of emoji sharing."
-                                                .format(ctx.guild))
-            message = getlang(ctx.guild.id, "animotes.guild_opt_out")
-        await ctx.send(message)
+        sql.update_guild(ctx.guild.id, emojishare=1)
+        self.log.command("registerguild", ctx.author, ctx.guild)
+        await self.channel_logger.log_to_channel("Guild **{0.name}** (ID: `{0.id}`) has opted in to emoji sharing."
+                                                 .format(ctx.guild))
+        await ctx.send(getlang(ctx.guild.id, "animotes.guild_opt_in"))
+
+    @commands.command()
+    @commands.guild_only()
+    async def unregisterguild(self, ctx):
+        if not ctx.author.permissions_in(ctx.channel).manage_emojis:
+            raise NoPermission
+        sql.update_guild(ctx.guild.id, emojishare=0)
+        self.log.command("unregisterguild", ctx.author, ctx.guild)
+        await self.channel_logger.log_to_channel("Guild **{0.name}** (ID: `{0.id}`) has opted out of emoji sharing."
+                                                 .format(ctx.guild))
+        await ctx.send(getlang(ctx.guild.id, "animotes.guild_opt_out"))
 
     @commands.command()
     async def listemotes(self, ctx):
@@ -116,7 +122,7 @@ def emote_corrector(self, message):
             if temp.animated:
                 if temp.guild_id == message.guild.id:
                     emotes.append((em, str(temp)))
-                elif sql.is_server_emojishare_server(message.guild.id)\
+                elif sql.is_server_emojishare_server(message.guild.id) \
                         and sql.is_server_emojishare_server(temp.guild_id):
                     emotes.append((em, str(temp)))
         except AttributeError:
