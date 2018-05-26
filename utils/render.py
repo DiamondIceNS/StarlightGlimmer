@@ -6,11 +6,13 @@ import json
 import lz4.frame
 import websockets
 import time
+import cfscrape
 from math import sqrt, pow
 from PIL import Image
 
 import utils.colors as colors
 from utils.config import Config
+from utils.exceptions import CloudFlareException
 from utils.logger import Log
 from utils.language import getlang
 from utils.lzstring import LZString
@@ -212,7 +214,7 @@ async def fetch_pixelzio(x, y, dx, dy):
     ext = Coords((x + dx) // 500 - x // 500 + 1, (y + dy) // 500 - y // 500 + 1)
     fetched = Image.new('RGB', (500 * ext.x, 500 * ext.y))
 
-    async with aiohttp.ClientSession() as session:
+    async with cfscrape.create_scraper_async() as session:
         for iy in range(0, ext.y * 500, 500):
             for ix in range(0, ext.x * 500, 500):
                 url = "http://pixelz.io/api/{0}_{1}/img".format(chk.x + ix, chk.y + iy)

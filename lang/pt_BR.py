@@ -40,7 +40,6 @@ STRINGS = {
 
     # Error messages
     "bot.error.bad_png": "Esta imagem parece estar corrompida. Tente salvá-la novamente com um editor de imagens ou usando `{0}{1}`.",
-    "bot.error.command_not_found": "Esse não é um comando valido. Use {0}help para ver meus comandos.",
     "bot.error.command_on_cooldown": "Esse comando está em cooldown. Tente novamente em {0:.01f}s.",
     "bot.error.missing_attachment": "Esse comando requer um anexo.",
     "bot.error.no_canvas": "Esse comando requer um subcomando.",
