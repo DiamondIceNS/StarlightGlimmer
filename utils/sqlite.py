@@ -1,7 +1,10 @@
 import sqlite3
+import os
 
 from utils.config import Config
 
+if not os.path.exists('data'):
+    os.makedirs('data')
 conn = sqlite3.connect('data/glimmer.db')
 conn.row_factory = sqlite3.Row
 c = conn.cursor()
