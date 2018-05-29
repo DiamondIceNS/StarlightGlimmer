@@ -139,7 +139,7 @@ def get_guild_prefix(gid):
 
 
 def get_template_by_name(gid, name):
-    c.execute('SELECT * FROM templates WHERE gid=? AND name=?', (gid, name))
+    c.execute('SELECT * FROM templates WHERE guild_id=? AND name=?', (gid, name))
     try:
         return Template(*c.fetchone())
     except:
@@ -147,7 +147,7 @@ def get_template_by_name(gid, name):
 
 
 def get_templates_by_hash(gid, md5):
-    c.execute('SELECT * FROM templates WHERE gid=? AND md5=?', (gid, md5))
+    c.execute('SELECT * FROM templates WHERE guild_id=? AND md5=?', (gid, md5))
     try:
         templates = []
         for t in c.fetchall():
@@ -157,30 +157,42 @@ def get_templates_by_hash(gid, md5):
         return None
 
 
-def add_template(gid, name, x, y, canvas, url, md5, owner):
-    now = int(time.time())
-    c.execute('INSERT INTO templates(gid, name, url, canvas, x, y, date_added, date_updated, md5, owner)'
-              'VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', (gid, name, url, canvas, x, y, now, now, md5, owner))
+def get_templates_by_guild(gid):
+    c.execute('SELECT * FROM templates WHERE guild_id=?', (gid,))
+    try:
+        templates = []
+        for t in c.fetchall():
+            templates.append(Template(*t))
+        return templates
+    except:
+        return None
+
+
+def add_template(template):
+    c.execute('INSERT INTO templates(guild_id, name, url, canvas, x, y, w, h, date_added, date_modified, md5, owner)'
+              'VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', template.to_tuple())
     conn.commit()
 
 
-def update_template(gid, name, x, y, canvas, url, md5, owner=None):
-    if owner is None:
-        c.execute('UPDATE templates SET x=?, y=?, canvas=?, url=?, date_updated=?, md5=? WHERE gid=? AND name=?',
-                  (x, y, canvas, url, int(time.time()), md5, gid, name))
-    else:
-        c.execute('UPDATE templates SET x=?, y=?, canvas=?, url=?, date_updated=?, md5=?, owner=?'
-                  'WHERE gid=? AND name=?', (x, y, canvas, url, int(time.time()), md5, owner, gid, name))
+def update_template(template):
+    c.execute('UPDATE templates '
+              'SET url = ?, canvas=?, x=?, y=?, w=?, h=?, date_added=?, date_modified=?, md5=?, owner=?'
+              'WHERE guild_id=? AND name=?', template.to_tuple()[2:] + (template.gid, template.name))
     conn.commit()
 
 
 def drop_template(gid, name):
-    c.execute('DELETE FROM templates WHERE gid=? AND name=?', (gid, name))
+    c.execute('DELETE FROM templates WHERE guild_id=? AND name=?', (gid, name))
     conn.commit()
 
 
+def count_templates(gid):
+    c.execute('SELECT COUNT(*) FROM templates WHERE guild_id=?', (gid,))
+    return c.fetchone()[0]
+
+
 def add_menu_lock(cid, uid):
-    c.execute('INSERT INTO menu_locks(channel_id, user_id, lock_time) VALUES(?, ?, ?)', (cid, uid, int(time.time())))
+    c.execute('INSERT INTO menu_locks(channel_id, user_id, date_added) VALUES(?, ?, ?)', (cid, uid, int(time.time())))
     conn.commit()
 
 

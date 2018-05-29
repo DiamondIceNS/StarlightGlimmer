@@ -12,6 +12,13 @@ canvas_list = {
     'ps': "Pxls.space"
 }
 
+canvas_url_templates = {
+    'pixelcanvas': "https://pixelcanvas.io/@{0},{1}",
+    'pixelzio': "https://pixelz.io/@{0},{1}",
+    'pixelzone': "http://pixelzone.io/?p={0},{1}",
+    'pxlsspace': "https://pxls.space/#x={0}&y={1}"
+}
+
 
 async def use_default_canvas(ctx, bot, cmd: str):
     default_canvas = sql.select_guild_by_id(ctx.guild.id)['default_canvas']
