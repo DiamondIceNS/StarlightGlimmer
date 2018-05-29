@@ -21,15 +21,15 @@ log = Log(__name__)
 cfg = Config()
 
 # TODO:
-# - enforce per-guild template limit
 # - allow Admin to bypass owner check
 # - add ability to give bot permissions to arbitrary roles
 # - link templates to canvas commands
 # - add "check all" feature
-# - cap template name length
 # - paginate template list
 # - add faction support
 # - add cross-guild template sharing
+# - localize strings
+# - add help for all commands
 
 
 class Template:
@@ -172,8 +172,11 @@ class Template:
         return resp_msg.content == "1"
 
     async def add_template(self, ctx, canvas, name, x, y, url):
+        if len(name) > cfg.max_template_name_length:
+            await ctx.send("That name is too long. Please use a name under {0} characters.".format(cfg.max_template_name_length))  # TODO: Localize string
+            return
         ct = sql.count_templates(ctx.guild.id)
-        if ct >= cfg.max_templats_per_guild:
+        if ct >= cfg.max_templates_per_guild:
             await ctx.send("This guild already has the maximum number of templates. Please remove a template before adding another.")  # TODO: Localize string
             return
         url = await self.select_url(ctx, url)

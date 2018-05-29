@@ -33,7 +33,8 @@ class Config:
 
         self.preview_h = clamp(data.get('preview_height', 240), 0, 896)
         self.preview_w = clamp(data.get('preview_width', 400), 0, 896)
-        self.max_templats_per_guild = data.get('max_templates_per_guild')
+        self.max_templates_per_guild = clamp(data.get('max_templates_per_guild'), 1, data.get('max_templates_per_guild'))
+        self.max_template_name_length = clamp(data.get('max_template_name_length'), 1, 64)
 
         self.logging_channel_id = data.get('logging_channel_id', None)
         self.debug = data.get('debug', False)

@@ -7,6 +7,7 @@
     "preview_height": 240,
     "preview_width": 400,
     "max_templates_per_guild": 25,
+    "max_template_name_length": 32,
 
     "logging_channel_id": 0,
     "debug": false
