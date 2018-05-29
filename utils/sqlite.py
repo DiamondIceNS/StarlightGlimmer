@@ -158,7 +158,7 @@ def get_templates_by_hash(gid, md5):
 
 
 def get_templates_by_guild(gid):
-    c.execute('SELECT * FROM templates WHERE guild_id=?', (gid,))
+    c.execute('SELECT * FROM templates WHERE guild_id=? ORDER BY name DESC, canvas DESC', (gid,))
     try:
         templates = []
         for t in c.fetchall():

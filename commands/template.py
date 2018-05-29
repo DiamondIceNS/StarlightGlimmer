@@ -25,7 +25,6 @@ cfg = Config()
 # - add ability to give bot permissions to arbitrary roles
 # - link templates to canvas commands
 # - add "check all" feature
-# - paginate template list
 # - add faction support
 # - add cross-guild template sharing
 # - localize strings
@@ -38,20 +37,21 @@ class Template:
 
     @commands.group(name='templates', invoke_without_command=True, aliases=['t'])
     @commands.cooldown(1, 5, BucketType.guild)
-    async def templates(self, ctx):
+    async def templates(self, ctx, page: int=1):
         ts = sql.get_templates_by_guild(ctx.guild.id)
         if len(ts) > 0:
+            pages = 1 + len(ts) // 10
+            page = min(max(page, 1), pages)
             w1 = max(max(map(lambda tx: len(tx.name), ts)) + 2, len("Name"))
-            w2 = max(max(map(lambda tx: len(str(tx.x)) + len(str(tx.y)), ts)) + 4, len("Coords"))
-            out = "**Template list:**\n```xl\n"
-            out = out + "{0:<{w1}}  {1:<14}  {2:<{w2}}  {3}\n".format("Name", "Canvas", "Coords", "Owner", w1=w1, w2=w2)
-            for t in ts:
-                owner = self.bot.get_user(t.owner_id)
-                owner_name = owner.name + "#" + owner.discriminator
+            out = "**Template List** - Page {0}/{1}\n```xl\n".format(page, pages)  # TODO: Localize string
+            out = out + "{0:<{w1}}  {1:<14}  {2}\n".format("Name", "Canvas", "Coords", w1=w1)  # TODO: Localize string
+            for t in ts[(page-1)*10:page*10]:
                 coords = "({}, {})".format(t.x, t.y)
-                out = out + "{0:<{w1}}  {1:<14}  {2:<{w2}}  {3}\n".format("'" + t.name + "'", canvases.canvas_list[t.canvas], coords, owner_name, w1=w1, w2=w2)
-            out = out + "```"
+                out = out + "{0:<{w1}}  {1:<14}  {2}\n".format('"' + t.name + '"', canvases.canvas_list[t.canvas], coords, w1=w1)
+            out = out + "\n// Use '{0}templates <page>' to see that page\n// Use '{0}templates info <name>' to see more info on a template```".format(sql.get_guild_prefix(ctx.guild.id))  # TODO: Localize string
             await ctx.send(out)
+        else:
+            await ctx.send("This guild currently has no templates.")  # TODO: Localize string
 
     @templates.group(name='add', invoke_without_command=True)
     @commands.cooldown(1, 5, BucketType.guild)
@@ -96,7 +96,8 @@ class Template:
     async def templates_info(self, ctx, name):
         t = sql.get_template_by_name(ctx.guild.id, name)
         if not t:
-            await ctx.send("Could not find template with name '{0}`.".format(t.name))  # TODO: Localize string
+            await ctx.send("Could not find template with name `{0}`.".format(name))  # TODO: Localize string
+            return
 
         canvas_url = canvases.canvas_url_templates[t.canvas].format(*t.center())
         owner = self.bot.get_user(t.owner_id)
@@ -107,7 +108,6 @@ class Template:
             .add_field(name="Canvas", value=canvases.canvas_list[t.canvas], inline=True)\
             .add_field(name="Location", value="({0}, {1})".format(t.x, t.y), inline=True)\
             .add_field(name="Size", value="{0}x{1}px".format(t.width, t.height), inline=True)\
-            .add_field(name="Completion", value="TODO", inline=True)\
             .add_field(name="Added By", value=owner.name + "#" + owner.discriminator, inline=True)\
             .add_field(name="Date Added", value=time_added.strftime("%d %b, %Y"), inline=True)\
             .add_field(name="Date Modified", value=time_modified.strftime("%d %b, %Y"), inline=True)
