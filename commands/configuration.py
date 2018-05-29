@@ -75,7 +75,8 @@ class Configuration:
             'pixelzone': 'Pixelzone.io',
             'pxlsspace': 'Pxls.space'
         }[g['default_canvas']]
-        await ctx.send(getlang(ctx.guild.id, "configuration.canvas_check").format(c, g['prefix']))
+        await ctx.send(getlang(ctx.guild.id, "configuration.canvas_check")
+                       .format(c, sql.get_guild_prefix(ctx.guild.id)))
 
     @canvas.command(name="pixelcanvas", aliases=["pc"])
     @commands.guild_only()

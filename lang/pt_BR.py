@@ -29,7 +29,7 @@ STRINGS = {
     "configuration.alert_channel_set": "O canal de Alerta foi definido para {0}.",
     "configuration.autoscan_disabled": "Autoscan foi desativado.",
     "configuration.autoscan_enabled": "Autoscan foi ativado.",
-    "configuration.canvas_check": "O canvas padrão desta guild é **{0}**. \ n"
+    "configuration.canvas_check": "O canvas padrão desta guild é **{0}**.\n"
                                   "Para alterar o canvas padrão, execute este comando novamente com um canvas suportado. (Use `{1}help canvas` para ver uma lista.)",
     "configuration.canvas_set": "O canvas padrão foi definido para **{0}**.",
     "configuration.language_check": "O idioma atual deste guild é **{1}**.\n"
