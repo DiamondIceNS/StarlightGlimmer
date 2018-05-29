@@ -93,6 +93,11 @@ STRINGS = {
     "brief.registerguild": "Alterna o compartilhamento de emojis para essa guild.",
     "brief.repeat": "Repete o último comando do canvas usado.",
     "brief.suggest": "Envia uma sugestão para o desenvolvedor.",
+    "brief.templates": "Manages templates.",  # TODO
+    "brief.templates.add": "Adds a template.",  # TODO
+    "brief.templates.add.pixelcanvas": "Add a template for Pixelcanvas.io.",  # TODO
+    "brief.unregister": "Opt-out of animated emoji replacement.",  # TODO
+    "brief.unregisterguild": "Opt-out of emoji sharing for this guild.",  # TODO
     "brief.version": "Obtém o número de minha versão.",
 
     # Command long help
@@ -173,7 +178,7 @@ STRINGS = {
     "help.quantize.pixelzone": None,
     "help.quantize.pxlsspace": None,
     "help.register":
-        """Se você optou por ativar este comando, eu assistirei a qualquer momento que você tentar usar um emoji animado e substituir sua mensagem por outra que tenha o emoji nela. Você só precisa se inscrever uma vez para que isso se aplique a todas as guilds. Use este comando novamente para desativar.
+        """Se você optou por ativar este comando, eu assistirei a qualquer momento que você tentar usar um emoji animado e substituir sua mensagem por outra que tenha o emoji nela. Você só precisa se inscrever uma vez para que isso se aplique a todas as guilds. Use 'unregister' para desativar.
         
         Se a sua guild tiver optado pelo compartilhamento de emojis, você poderá usar emojis de qualquer outra guild que também o tenha habilitado. (Veja 'registerguild')
         
@@ -181,13 +186,22 @@ STRINGS = {
         
         Esse recurso requer que eu tenha a permissão Gerenciar Mensagens.""",
     "help.registerguild":
-        """Se ativado, os membros dessa guild poderão usar emojis animados de qualquer outra guild que também tenha optado por participar. Em troca, emojis animados desta guild também podem ser usados por qualquer uma dessas guilds. Isso não é necessário para usar emoticons animados desta guild.
+        """Se ativado, os membros dessa guild poderão usar emojis animados de qualquer outra guild que também tenha optado por participar. Em troca, emojis animados desta guild também podem ser usados por qualquer uma dessas guilds. Isso não é necessário para usar emoticons animados desta guild. Use 'unregisterguild' para desativar.
         
         NOTA: Optar pelo compartilhamento de emojis permitirá que outras guildas vejam o nome e o ID dessa guild. Se sua guild não é uma guild pública, habilitar esse recurso não é recomendado.
         
         Esse comando só pode ser usado por membros com a permissão Gerenciar Emojis.""",
     "help.repeat": "Este comando aplica-se apenas a 'preview', 'diff' e suas invocações automáticas. Apenas 50 mensagens de retorno serão pesquisadas.",
     "help.suggest": None,
+    "help.templates": None,
+    "help.templates.add":
+        """This command can accept either a direct file attachment or a Discord attachment URL. Template must be in PNG format.""",  # TODO
+    "help.templates.add.pixelcanvas": None,
+    "help.unregister": "Veja 'register'.",
+    "help.unregisterguild":
+        """Veja 'registerguild'.
+        
+        Esse comando só pode ser usado por membros com a permissão Gerenciar Emojis.""",
     "help.version": None,
 
     # Command names
@@ -233,6 +247,11 @@ STRINGS = {
     "command.registerguild": "registerguild",
     "command.repeat": "repeat",
     "command.suggest": "suggest",
+    "command.templates": "templates",
+    "command.templates.add": "add",
+    "command.templates.add.pixelcanvas": "pixelcanvas",
+    "command.unregister": "unregister",
+    "command.unregisterguild": "unregisterguild",
     "command.version": "version",
 
     # Command signatures
@@ -278,5 +297,10 @@ STRINGS = {
     "signature.registerguild": "registerguild",
     "signature.repeat": "repeat",
     "signature.suggest": "suggest <sugestão>",
+    "signature.templates": "templates <subcommand>",  # TODO
+    "signature.templates.add": "templates add (canvas) <name> <x> <y> (url)",  # TODO
+    "signature.templates.add.pixelcanvas": "templates add [pixelcanvas|pc] <name> <x> <y> (url)",  # TODO
+    "signature.unregister": "unregister",
+    "signature.unregisterguild": "unregisterguild",
     "signature.version": "version",
 }

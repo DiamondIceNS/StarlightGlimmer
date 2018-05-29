@@ -87,10 +87,15 @@ STRINGS = {
     "brief.quantize.pixelzio": "Quantizes colors using the palette of Pixelz.io.",
     "brief.quantize.pixelzone": "Quantizes colors using the palette of Pixelzone.io.",
     "brief.quantize.pxlsspace": "Quantizes colors using the palette of Pxls.space.",
-    "brief.register": "Toggles animated emoji replacement for a user.",
-    "brief.registerguild": "Toggles emoji sharing for this guild.",
+    "brief.register": "Opt-in to animated emoji replacement.",
+    "brief.registerguild": "Opt-in to emoji sharing for this guild.",
     "brief.repeat": "Repeats the last used canvas command.",
     "brief.suggest": "Sends a suggestion to the developer.",
+    "brief.templates": "Manages templates.",
+    "brief.templates.add": "Adds a template.",
+    "brief.templates.add.pixelcanvas": "Add a template for Pixelcanvas.io.",
+    "brief.unregister": "Opt-out of animated emoji replacement.",
+    "brief.unregisterguild": "Opt-out of emoji sharing for this guild.",
     "brief.version": "Gets my version number.",
 
     # Command long help
@@ -188,6 +193,15 @@ STRINGS = {
         This command can only be used by members with the Manage Emojis permission.""",
     "help.repeat": "This command only applies to 'preview', 'diff', and their autoscan invocations. Only 50 messages back will be searched.",
     "help.suggest": None,
+    "help.templates": None,
+    "help.templates.add":
+        """This command can accept either a direct file attachment or a Discord attachment URL. Template must be in PNG format.""",  # TODO
+    "help.templates.add.pixelcanvas": None,
+    "help.unregister": "See 'register'.",
+    "help.unregisterguild":
+        """See 'registerguild'.
+        
+        This command can only be used by members with the Manage Emojis permission.""",
     "help.version": None,
 
     # Command names
@@ -233,6 +247,11 @@ STRINGS = {
     "command.registerguild": "registerguild",
     "command.repeat": "repeat",
     "command.suggest": "suggest",
+    "command.templates": "templates",
+    "command.templates.add": "add",
+    "command.templates.add.pixelcanvas": "pixelcanvas",
+    "command.unregister": "unregister",
+    "command.unregisterguild": "unregisterguild",
     "command.version": "version",
 
     # Command signatures
@@ -278,5 +297,10 @@ STRINGS = {
     "signature.registerguild": "registerguild",
     "signature.repeat": "repeat",
     "signature.suggest": "suggest <suggestion>",
+    "signature.templates": "templates <subcommand>",
+    "signature.templates.add": "templates add (canvas) <name> <x> <y> (url)",
+    "signature.templates.add.pixelcanvas": "templates add [pixelcanvas|pc] <name> <x> <y> (url)",
+    "signature.unregister": "unregister",
+    "signature.unregisterguild": "unregisterguild",
     "signature.version": "version",
 }

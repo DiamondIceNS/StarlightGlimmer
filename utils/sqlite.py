@@ -1,7 +1,9 @@
 import sqlite3
 import os
+import time
 
 from utils.config import Config
+from objects.template import Template
 
 if not os.path.exists('data'):
     os.makedirs('data')
@@ -134,6 +136,67 @@ def get_guild_prefix(gid):
     if row is not None and row['prefix'] is not None:
         return row['prefix']
     return cfg.prefix
+
+
+def get_template_by_name(gid, name):
+    c.execute('SELECT * FROM templates WHERE gid=? AND name=?', (gid, name))
+    try:
+        return Template(*c.fetchone())
+    except:
+        return None
+
+
+def get_templates_by_hash(gid, md5):
+    c.execute('SELECT * FROM templates WHERE gid=? AND md5=?', (gid, md5))
+    try:
+        templates = []
+        for t in c.fetchall():
+            templates.append(Template(*t))
+        return templates
+    except:
+        return None
+
+
+def add_template(gid, name, x, y, canvas, url, md5, owner):
+    now = int(time.time())
+    c.execute('INSERT INTO templates(gid, name, url, canvas, x, y, date_added, date_updated, md5, owner)'
+              'VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', (gid, name, url, canvas, x, y, now, now, md5, owner))
+    conn.commit()
+
+
+def update_template(gid, name, x, y, canvas, url, md5, owner=None):
+    if owner is None:
+        c.execute('UPDATE templates SET x=?, y=?, canvas=?, url=?, date_updated=?, md5=? WHERE gid=? AND name=?',
+                  (x, y, canvas, url, int(time.time()), md5, gid, name))
+    else:
+        c.execute('UPDATE templates SET x=?, y=?, canvas=?, url=?, date_updated=?, md5=?, owner=?'
+                  'WHERE gid=? AND name=?', (x, y, canvas, url, int(time.time()), md5, owner, gid, name))
+    conn.commit()
+
+
+def drop_template(gid, name):
+    c.execute('DELETE FROM templates WHERE gid=? AND name=?', (gid, name))
+    conn.commit()
+
+
+def add_menu_lock(cid, uid):
+    c.execute('INSERT INTO menu_locks(channel_id, user_id, lock_time) VALUES(?, ?, ?)', (cid, uid, int(time.time())))
+    conn.commit()
+
+
+def remove_menu_lock(cid, uid):
+    c.execute('DELETE FROM menu_locks WHERE channel_id=? AND user_id=?', (cid, uid))
+    conn.commit()
+
+
+def get_menu_locks():
+    c.execute('SELECT * FROM menu_locks')
+    return c.fetchall()
+
+
+def reset_locks():
+    c.execute('DELETE FROM menu_locks')
+    conn.commit()
 
 
 create_tables()

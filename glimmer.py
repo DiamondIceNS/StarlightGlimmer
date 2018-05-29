@@ -28,8 +28,10 @@ channel_logger = ChannelLogger(bot)
 extensions = [
     "commands.animotes",
     "commands.canvas",
-    "commands.configuration"
+    "commands.configuration",
+    "commands.template",
 ]
+sql.reset_locks()
 
 
 @bot.event
@@ -156,6 +158,11 @@ async def on_command_error(ctx, error):
 async def on_message(message):
     if message.author.bot:
         return
+
+    locks = sql.get_menu_locks()
+    for l in locks:
+        if message.author.id == l['user_id'] and message.channel.id == l['channel_id']:
+            return
 
     ctx = await bot.get_context(message)
     if ctx.invoked_with:
