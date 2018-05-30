@@ -10,7 +10,7 @@ import utils.sqlite as sql
 from utils.canvases import use_default_canvas
 from utils.channel_logger import ChannelLogger
 from utils.config import Config
-from utils.exceptions import NoPermission
+from utils.checks import NoPermission
 from utils.language import getlang
 from utils.logger import Log
 from utils.help_formatter import GlimmerHelpFormatter
@@ -123,6 +123,11 @@ async def on_guild_update(before, after):
         await channel_logger.log_to_channel("Guild **{0.name}** is now known as **{1.name}** (ID: `{1.id}`)"
                                             .format(before, after))
         sql.update_guild(after.id, name=after.name)
+
+
+@bot.event
+async def on_guild_role_delete(role):
+    sql.delete_role(role.id)
 
 
 @bot.event

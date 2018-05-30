@@ -13,6 +13,8 @@ from utils.language import getlang
 
 import utils.sqlite as sql
 import utils.canvases as canvases
+from utils import checks
+from utils import utils
 from utils.logger import Log
 from utils.config import Config
 from objects.template import Template as T2
@@ -21,8 +23,6 @@ log = Log(__name__)
 cfg = Config()
 
 # TODO:
-# - allow Admin to bypass owner check
-# - add ability to give bot permissions to arbitrary roles
 # - link templates to canvas commands
 # - add "check all" feature
 # - add faction support
@@ -55,38 +55,44 @@ class Template:
 
     @templates.group(name='add', invoke_without_command=True)
     @commands.cooldown(1, 5, BucketType.guild)
+    @checks.template_adder_only()
     async def templates_add(self, ctx):
         await canvases.use_default_canvas(ctx, self.bot, "templates.add")
 
     @templates_add.command(name="pixelcanvas", aliases=['pc'])
     @commands.cooldown(1, 5, BucketType.guild)
+    @checks.template_adder_only()
     async def templates_add_pixelcanvas(self, ctx, name, x, y, url=None):
         await self.add_template(ctx, "pixelcanvas", name, x, y, url)
 
     @templates_add.command(name="pixelzio", aliases=['pzi'])
     @commands.cooldown(1, 5, BucketType.guild)
+    @checks.template_adder_only()
     async def templates_add_pixelzio(self, ctx, name, x, y, url=None):
         await self.add_template(ctx, "pixelzio", name, x, y, url)
 
     @templates_add.command(name="pixelzone", aliases=['pz'])
     @commands.cooldown(1, 5, BucketType.guild)
+    @checks.template_adder_only()
     async def templates_add_pixelzone(self, ctx, name, x, y, url=None):
         await self.add_template(ctx, "pixelzone", name, x, y, url)
 
     @templates_add.command(name="pxlsspace", aliases=['ps'])
     @commands.cooldown(1, 5, BucketType.guild)
+    @checks.template_adder_only()
     async def templates_add_pxlsspace(self, ctx, name, x, y, url=None):
         await self.add_template(ctx, "pxlsspace", name, x, y, url)
 
     @templates.command(name='remove', aliases=['rm'])
     @commands.cooldown(1, 5, BucketType.guild)
+    @checks.template_adder_only()
     async def templates_remove(self, ctx, name):
         t = sql.get_template_by_name(ctx.guild.id, name)
         if not t:
             await ctx.send("There is no template named '{0}'.".format(name))  # TODO: Localize string
             return
-        if t.owner_id != ctx.author.id:
-            await ctx.send("You don't have permission to do that.")  # TODO: Localize string
+        if t.owner_id != ctx.author.id and not utils.is_template_admin(ctx) and not utils.is_admin(ctx):
+            await ctx.send("You do not have permission to modify a template you did not add.")  # TODO: Localize string
             return
         sql.drop_template(t.gid, t.name)
         await ctx.send("Successfully removed '{0}'.".format(name))  # TODO: Localize string
@@ -189,6 +195,9 @@ class Template:
         t_by_name = sql.get_template_by_name(ctx.guild.id, t.name)
         ts_by_mdd5 = sql.get_templates_by_hash(ctx.guild.id, t.md5)
         if t_by_name:
+            if t.owner_id != ctx.author.id and not utils.is_admin(ctx):
+                await ctx.send("A template with that name already exists. You do not have permission to modify a template you did not add.")  # TODO: Localize string
+                return
             query_msg = await ctx.send(
                 "A template with the name '{0}' already exists for {1} at ({2}, {3}). Replace it?\n  `0` - No\n  `1` - Yes".format(
                     t_by_name.name, canvases.canvas_list[t_by_name.canvas], t_by_name.x, t_by_name.y))  # TODO: localize string

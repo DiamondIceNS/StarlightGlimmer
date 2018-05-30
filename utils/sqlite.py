@@ -63,7 +63,7 @@ def get_all_guilds():
 
 
 def update_guild(gid, name=None, prefix=None, alert_channel=None, emojishare=None, autoscan=None, default_canvas=None,
-                 language=None):
+                 language=None, template_admin_role_id=None, template_adder_role_id=None):
     if name is not None:
         c.execute("""UPDATE guilds SET name=? WHERE id=?""", (name, gid))
     if prefix is not None:
@@ -78,6 +78,26 @@ def update_guild(gid, name=None, prefix=None, alert_channel=None, emojishare=Non
         c.execute("""UPDATE guilds SET default_canvas=? WHERE id=?""", (default_canvas, gid))
     if language is not None:
         c.execute("""UPDATE guilds SET language=? WHERE id=?""", (language, gid))
+    if template_admin_role_id is not None:
+        c.execute("UPDATE guilds SET template_admin_role=? WHERE id=?", (template_admin_role_id, gid))
+    if template_adder_role_id is not None:
+        c.execute("UPDATE guilds SET template_adder_role=? WHERE id=?", (template_adder_role_id, gid))
+    conn.commit()
+
+
+def clear_template_admin_role(gid):
+    c.execute("UPDATE guilds SET template_admin_role=NULL WHERE id=?", (gid,))
+    conn.commit()
+
+
+def clear_template_adder_role(gid):
+    c.execute("UPDATE guilds SET template_adder_role=NULL WHERE id=?", (gid,))
+    conn.commit()
+
+
+def delete_role(role_id):
+    c.execute("UPDATE guilds SET template_adder_role=NULL WHERE template_adder_role=?", (role_id,))
+    c.execute("UPDATE guilds SET template_admin_role=NULL WHERE template_admin_role=?", (role_id,))
     conn.commit()
 
 
