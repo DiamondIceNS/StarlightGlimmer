@@ -9,9 +9,10 @@ from time import time
 import utils.sqlite as sql
 from utils.channel_logger import ChannelLogger
 from utils.config import Config
-from utils.checks import NoPermission
+from utils import checks
 from utils.language import getlang
 from utils.logger import Log
+from objects.glimcontext import GlimContext
 from utils.help_formatter import GlimmerHelpFormatter
 from utils.version import VERSION
 
@@ -140,14 +141,33 @@ async def on_command_error(ctx, error):
         return
     if isinstance(error, commands.BadArgument):
         return
-    if isinstance(error, NoPermission):
-        await ctx.send(getlang(ctx.guild.id, "bot.error.no_permission"))
-        return
     if isinstance(error, commands.NoPrivateMessage):
         await ctx.send(getlang(ctx.guild.id, "bot.error.no_private_message"))
         return
     if isinstance(error, commands.CommandInvokeError) and isinstance(error.original, discord.HTTPException) \
             and error.original.code == 50013:
+        return
+    if isinstance(error, checks.NoPermissionError):
+        await ctx.send(getlang(ctx.guild.id, "bot.error.no_permission"))
+        return
+    if isinstance(error, checks.NoJpegsError):
+        try:
+            f = discord.File("assets/disdain_for_jpegs.gif", "disdain_for_jpegs.gif")
+            await ctx.send(getlang(ctx.guild.id, "bot.error.jpeg"), file=f)
+        except IOError:
+            await ctx.send(getlang(ctx.guild.id, "bot.error.jpeg"))
+        return
+    if isinstance(error, checks.TemplateHttpError):
+        await ctx.send("Could not access template URL. (Was the original attachment deleted?)")  # TODO: Localize string
+        return
+    if isinstance(error, checks.UrlError):
+        await ctx.send("That URL is invalid. I can only accept Discord attachment URLs.")  # TODO: Localize string
+        return
+    if isinstance(error, checks.NotPngError):
+        await ctx.send(ctx.getlang("bot.error.no_png"))
+        return
+    if isinstance(error, checks.PilImageError):
+        await ctx.send(ctx.getlang("bot.error._pil_open_exception"))
         return
     cname = ctx.command.qualified_name if ctx.command is not None else "None"
     await channel_logger.log_to_channel("An error occurred while executing command `{0}` in server **{1.name}** "
@@ -168,7 +188,7 @@ async def on_message(message):
         if message.author.id == l['user_id'] and message.channel.id == l['channel_id']:
             return
 
-    ctx = await bot.get_context(message)
+    ctx = await bot.get_context(message, cls=GlimContext)
     if ctx.invoked_with:
         await bot.invoke(ctx)
         return

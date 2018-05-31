@@ -12,6 +12,7 @@ import utils.render as render
 import utils.sqlite as sql
 from utils import canvases
 from utils.logger import Log
+from utils import utils
 
 log = Log(__name__)
 
@@ -29,12 +30,7 @@ class Canvas:
     async def diff(self, ctx, a=None, b=None):
         t = next((x for x in sql.get_templates_by_guild(ctx.guild.id) if x.name == a), None)
         if t:
-            async with aiohttp.ClientSession() as sess:
-                async with sess.get(t.url) as resp:
-                    if resp.status != 200:
-                        print("Response not OK")  # TODO: Add output and localize string
-                        return
-                    data = io.BytesIO(await resp.read())
+            data = await utils.get_template(t.url)
             try:
                 zoom = int(b[1:]) if b and b.startswith("#") else 1
                 zoom = max(1, min(zoom, 400 // t.width, 400 // t.height))
@@ -170,12 +166,7 @@ class Canvas:
     async def gridify(self, ctx, a=None, b=None):
         t = next((x for x in sql.get_templates_by_guild(ctx.guild.id) if x.name == a), None)
         if t:
-            async with aiohttp.ClientSession() as sess:
-                async with sess.get(t.url) as resp:
-                    if resp.status != 200:
-                        print("Response not OK")  # TODO: Add output and localize string
-                        return
-                    data = io.BytesIO(await resp.read())
+            data = await utils.get_template(t.url)
             try:
                 max_zoom = int(math.sqrt(4000000 // (t.width * t.height)))
                 zoom = max(1, min(int(b[1:]) if b and b.startswith("#") else 1, max_zoom))
@@ -184,7 +175,7 @@ class Canvas:
             log.command("gridify", ctx.author, ctx.guild)
             await render.gridify(ctx, data, zoom)
             return
-        att = await Canvas.verify_attachment(ctx)
+        att = await utils.verify_attachment(ctx)
         if att:
             log.command("gridify", ctx.author, ctx.guild)
             data = io.BytesIO()
@@ -391,30 +382,12 @@ class Canvas:
     # ======================
 
     @staticmethod
-    async def verify_attachment(ctx):
-        if len(ctx.message.attachments) < 1:
-            await ctx.send(getlang(ctx.guild.id, "bot.error.missing_attachment"))
-            return
-        att = ctx.message.attachments[0]
-        if att.filename[-4:].lower() != ".png":
-            if att.filename[-4:].lower() == ".jpg" or att.filename[-5:].lower() == ".jpeg":
-                try:
-                    f = discord.File("assets/disdain_for_jpegs.gif", "disdain_for_jpegs.gif")
-                    await ctx.send(getlang(ctx.guild.id, "bot.error.jpeg"), file=f)
-                except IOError:
-                    await ctx.send(getlang(ctx.guild.id, "bot.error.jpeg"))
-                return
-            await ctx.send(getlang(ctx.guild.id, "bot.error.no_png"))
-            return
-        return att
-
-    @staticmethod
     async def parse_diff(ctx, raw_arg):
         m = re.search('(-?\d+)(?:,| |, )(-?\d+)(?: #(\d+))?', raw_arg)
         if not m:
             await ctx.send("Invalid input: does not match any template name or supported coordinates format.")  # TODO: Localize string
             return
-        att = await Canvas.verify_attachment(ctx)
+        att = await utils.verify_attachment(ctx)
         if att:
             x = int(m.group(1))
             y = int(m.group(2))
@@ -449,14 +422,8 @@ class Canvas:
                 except IOError:
                     await ctx.send("But... why?")  # TODO: Localize string
                 return
-            async with aiohttp.ClientSession() as sess:
-                async with sess.get(t.url) as resp:
-                    if resp.status != 200:
-                        print("Response not OK")  # TODO: Add output and localize string
-                        return
-                    data = io.BytesIO(await resp.read())
-            return data
-        att = await Canvas.verify_attachment(ctx)
+            return await utils.get_template(t.url)
+        att = await utils.verify_attachment(ctx)
         if att:
             data = io.BytesIO()
             await att.save(data)

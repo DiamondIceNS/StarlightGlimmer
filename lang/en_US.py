@@ -5,6 +5,7 @@ STRINGS = {
         """Hi! I'm {0}! I'm here to help coordinate pixel art on pixel-placing websites.
         I've got features like canvas preview and template checking that are sure to be useful.
         Let's get pixel painting!""",
+    "bot.discord_urls_only": "I can only accept Discord attachment URLs.",  # TODO: Translate
     "bot.help_ending_note": "Type '{0}{1} <command>' for more info on a command.",
     "bot.ping": "Pinging...",
     "bot.pong": "Pong! | **{0}ms**",
@@ -23,6 +24,32 @@ STRINGS = {
     "render.large_template": "(Processing large template, this might take a few seconds...)",
     "render.quantize": "Fixed {0} pixels.",
     "render.repeat_not_found": "Could not find a valid command to repeat.",
+
+    # Template messages
+    "template.added": "Template '{0}' added!",  # TODO: Translate
+    "template.duplicate_list_open": "The following templates already match this image:\n```xl\n",  # TODO: Translate
+    "template.duplicate_list_close": "```\nCreate a new template anyway?",  # TODO: Translate
+    "template.info_added_by": "Added By",  # TODO: Translate
+    "template.info_date_added": "Date Added",  # TODO: Translate
+    "template.info_date_modified": "Date Modified",  # TODO: Translate
+    "template.info_canvas": "Canvas",  # TODO: Translate
+    "template.info_coords": "Coords",  # TODO: Translate
+    "template.info_name": "Name",  # TODO: Translate
+    "template.info_size": "Size",  # TODO: Translate
+    "template.list_close": "\n// Use '{0}templates <page>' to see that page\n// Use '{0}templates info <name>' to see more info on a template```",  # TODO: Translate
+    "template.list_no_templates": "This guild currently has no templates.",  # TODO: Translate
+    "template.list_open": "**Template List** - Page {0}/{1}\n```xl\n",  # TODO: Translate
+    "template.max_templates": "This guild already has the maximum number of templates. Please remove a template before adding another.",  # TODO: Translate
+    "template.name_exists_ask_replace": "A template with the name '{0}' already exists for {1} at ({2}, {3}). Replace it?",  # TODO: Translate
+    "template.name_exists_no_permission": "A template with that name already exists. Please choose a different name.",  # TODO: Translate
+    "template.name_not_found": "Could not find template with name `{0}`.",  # TODO: Translate
+    "template.name_too_long": "That name is too long. Please use a name under {0} characters.",  # TODO: Translate
+    "template.no_template_named": "There is no template named '{0}'.",  # TODO: Translate
+    "template.not_owner": "You do not have permission to modify that template.",  # TODO: Translate
+    "template.not_quantized": "This image contains colors that are not part of this canvas's palette. Would you like to quantize it?",  # TODO: Translate
+    "template.remove": "Successfully removed '{0}'.",  # TODO: Translate
+    "template.updated": "Template '{0}' updated!",  # TODO: Translate
+
 
     # Configuration messages
     "configuration.alert_channel_cleared": "Alert channel has been cleared.",
@@ -46,7 +73,8 @@ STRINGS = {
     "bot.error.no_png": "That command requires a PNG image.",
     "bot.error.jpeg": "Seriously? A JPEG? Gross! Please create a PNG template instead.",
     "bot.error.no_private_message": "That command only works in guilds.",
-    "bot.error.unhandled_command_error": "An error occurred with that command. The dev has been notified.",
+    "bot.error.pil_image_open_exception": "An error occurred while attempting to open an image. Ensure that the supplied image is not corrupted.",  # TODO: Translate
+    "bot.error.unhandled_command_error": "An unknown error occurred. The dev has been notified.",  # TODO: Update translation
 
     # Command brief help
     "brief.alertchannel": "Set or clear the channel used for update alerts.",
