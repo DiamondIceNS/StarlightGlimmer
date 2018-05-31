@@ -8,7 +8,7 @@ import websockets
 import time
 import cfscrape
 from math import sqrt, pow
-from PIL import Image
+from PIL import Image, ImageDraw
 
 import utils.colors as colors
 from utils.config import Config
@@ -27,11 +27,10 @@ class Coords:
         self.y = y
 
 
-async def diff(ctx, x, y, att, zoom, fetch, palette):
+async def diff(ctx, x, y, data, zoom, fetch, palette):
     async with ctx.typing():
-        with io.BytesIO() as bio:
-            await att.save(bio)
-            template = Image.open(bio).convert('RGBA')
+        template = Image.open(data).convert('RGBA')
+        data.close()
 
         log.debug("(X:{0} | Y:{1} | Dim:{2}x{3} | Zoom:{4})".format(x, y, template.width, template.height, zoom))
 
@@ -102,74 +101,64 @@ async def preview(ctx, x, y, zoom, fetch):
             await ctx.send(file=f)
 
 
-async def quantize(ctx, att, palette):
-    with io.BytesIO() as bio:
-        await att.save(bio)
-        template = Image.open(bio).convert('RGBA')
+async def quantize(ctx, data, palette):
+    with data:
+        template = Image.open(data).convert('RGBA')
+    with template:
+        log.debug("(Dim:{0}x{1})".format(template.width, template.height))
+        bad_pixels = template.height * template.width
+        for py in range(template.height):
+            await asyncio.sleep(0)
+            for px in range(template.width):
+                pix = template.getpixel((px, py))
 
-    log.debug("(Dim:{0}x{1})".format(template.width, template.height))
+                if pix[3] == 0:  # Ignore fully transparent pixels
+                    bad_pixels -= 1
+                    continue
+                if pix[3] < 30:  # Make barely visible pixels transparent
+                    template.putpixel((px, py), (0, 0, 0, 0))
+                    continue
 
-    bad_pixels = template.height * template.width
-    for py in range(template.height):
-        await asyncio.sleep(0)
-        for px in range(template.width):
-            pix = template.getpixel((px, py))
+                dist = 450
+                best_fit = (0, 0, 0)
+                for c in palette:
+                    if pix[:3] == c:  # If pixel matches exactly, break
+                        best_fit = c
+                        if pix[3] == 255:  # Pixel is only not bad if it's fully opaque
+                            bad_pixels -= 1
+                        break
+                    tmp = sqrt(pow(pix[0]-c[0], 2) + pow(pix[1]-c[1], 2) + pow(pix[2]-c[2], 2))
+                    if tmp < dist:
+                        dist = tmp
+                        best_fit = c
+                template.putpixel((px, py), best_fit + (255,))
 
-            if pix[3] == 0:  # Ignore fully transparent pixels
-                bad_pixels -= 1
-                continue
-            if pix[3] < 30:  # Make barely visible pixels transparent
-                template.putpixel((px, py), (0, 0, 0, 0))
-                continue
-
-            dist = 450
-            best_fit = (0, 0, 0)
-            for c in palette:
-                if pix[:3] == c:  # If pixel matches exactly, break
-                    best_fit = c
-                    if pix[3] == 255:  # Pixel is only not bad if it's fully opaque
-                        bad_pixels -= 1
-                    break
-                tmp = sqrt(pow(pix[0]-c[0], 2) + pow(pix[1]-c[1], 2) + pow(pix[2]-c[2], 2))
-                if tmp < dist:
-                    dist = tmp
-                    best_fit = c
-            template.putpixel((px, py), best_fit + (255,))
-
-    with io.BytesIO() as bio:
-        template.save(bio, format="PNG")
-        bio.seek(0)
-        f = discord.File(bio, "template.png")
-        await ctx.send(getlang(ctx.guild.id, "render.quantize").format(bad_pixels), file=f)
+        with io.BytesIO() as bio:
+            template.save(bio, format="PNG")
+            bio.seek(0)
+            f = discord.File(bio, "template.png")
+            return await ctx.send(getlang(ctx.guild.id, "render.quantize").format(bad_pixels), file=f)
 
 
-async def gridify(ctx, att, zoom):
-    with io.BytesIO() as bio:
-        await att.save(bio)
-        template = Image.open(bio).convert('RGBA')
+async def gridify(ctx, data, zoom):
+    zoom += 1
+    with data:
+        template = Image.open(data).convert('RGBA')
+    with template:
+        log.debug("(Dim:{0}x{1} | Zoom:{2})".format(template.width, template.height, zoom))
+        template = template.resize((template.width * zoom, template.height * zoom), Image.NEAREST)
+        draw = ImageDraw.Draw(template)
+        for i in range(1, template.height):
+            draw.line((0, i * zoom, template.width, i * zoom), fill=(128, 128, 128, 255))
+        for i in range(1, template.width):
+            draw.line((i * zoom, 0, i * zoom, template.height), fill=(128, 128, 128, 255))
+        del draw
 
-    log.debug("(Dim:{0}x{1} | Zoom:{2})".format(template.width, template.height, zoom))
-
-    grid_img = Image.new('RGBA', (template.width * (zoom + 1) - 1, template.height * (zoom + 1) - 1))
-    for iy in range(template.height):
-        await asyncio.sleep(0)
-        for ix in range(template.width):
-            for ziy in range(zoom):
-                for zix in range(zoom):
-                    grid_img.putpixel((ix * (zoom + 1) + zix, iy * (zoom + 1) + ziy), template.getpixel((ix, iy)))
-
-    for iy in range(template.height - 1):
-        for ix in range(grid_img.width):
-            grid_img.putpixel((ix, (iy + 1) * (zoom + 1) - 1), (128, 128, 128, 255))
-    for ix in range(template.width - 1):
-        for iy in range(grid_img.height):
-            grid_img.putpixel(((ix + 1) * (zoom + 1) - 1, iy), (128, 128, 128, 255))
-
-    with io.BytesIO() as bio:
-        grid_img.save(bio, format="PNG")
-        bio.seek(0)
-        f = discord.File(bio, "gridded.png")
-        await ctx.send(file=f)
+        with io.BytesIO() as bio:
+            template.save(bio, format="PNG")
+            bio.seek(0)
+            f = discord.File(bio, "gridded.png")
+            await ctx.send(file=f)
 
 
 async def fetch_pixelcanvas(x, y, dx, dy):

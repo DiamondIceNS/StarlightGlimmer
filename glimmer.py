@@ -7,7 +7,6 @@ from discord.utils import get as dget
 from time import time
 
 import utils.sqlite as sql
-from utils.canvases import use_default_canvas
 from utils.channel_logger import ChannelLogger
 from utils.config import Config
 from utils.checks import NoPermission
