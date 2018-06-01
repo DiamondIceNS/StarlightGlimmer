@@ -125,6 +125,35 @@ class Configuration:
 
     @checks.admin_only()
     @commands.guild_only()
+    @role.group(name="botadmin", invoke_without_command=True)
+    async def role_botadmin(self, ctx):
+        r = utils.get_botadmin_role(ctx)
+        if r:
+            await ctx.send(ctx.get_str("configuration.role_bot_admin_check").format(r.name))
+        else:
+            await ctx.send(ctx.get_str("configuration.role_bot_admin_not_set"))
+
+    @checks.admin_only()
+    @commands.guild_only()
+    @role_botadmin.command(name="set")
+    async def role_botadmin_set(self, ctx, role=None):
+        m = re.match('<@&(\d+)>', role)
+        r = dget(ctx.guild.role_hierarchy, id=int(m.group(1))) if m else dget(ctx.guild.role_hierarchy, name=role)
+        if r:
+            sql.update_guild(ctx.guild.id, bot_admin_role_id=r.id)
+            await ctx.send(ctx.get_str("configuration.role_bot_admin_set").format(r.name))
+        else:
+            await ctx.send(ctx.get_str("configuration.role_not_found"))
+
+    @checks.admin_only()
+    @commands.guild_only()
+    @role_botadmin.command(name="clear")
+    async def role_botadmin_clear(self, ctx):
+        sql.clear_bot_admin_role(ctx.guild.id)
+        await ctx.send(ctx.get_str("configuration.role_bot_admin_cleared"))
+
+    @checks.admin_only()
+    @commands.guild_only()
     @role.group(name="templateadder", invoke_without_command=True)
     async def role_templateadder(self, ctx):
         r = utils.get_templateadder_role(ctx)

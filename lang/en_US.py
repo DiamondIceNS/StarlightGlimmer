@@ -72,10 +72,15 @@ STRINGS = {
     "configuration.language_set": "Language has been set to **English (US)**.",
     "configuration.prefix_set": "Prefix for this guild has been set to **{0}**.",
     "configuration.role_list": "**Roles List**\n```xl\n"
+                               "'botadmin'      - Can do anything an Administrator can do\n"
                                "'templateadder' - Can add templates, and remove templates they added themself\n"
                                "'templateadmin' - Can add and remove any template\n"
                                "\n// Use '{0}role <type>' to view the current linked role.\n```",  # TODO: Translate
     "configuration.role_not_found": "That role could not be found.",  # TODO: Translate
+    "configuration.role_bot_admin_check": "Bot admin privileges are currently assigned to `@{0}`.",  # TODO: Translate
+    "configuration.role_bot_admin_cleared": "Bot admin privileges successfully cleared.",  # TODO: Translate
+    "configuration.role_bot_admin_not_set": "Bot admin privileges have not been assigned to a role.",  # TODO: Translate
+    "configuration.role_bot_admin_set": "Bot admin privileges assigned to role `@{0}`.",  # TODO: Translate
     "configuration.role_template_adder_check": "Template adder privileges are currently assigned to `@{0}`.",  # TODO: Translate
     "configuration.role_template_adder_cleared": "Template adder privileges successfully cleared.",  # TODO: Translate
     "configuration.role_template_adder_not_set": "Template adder privileges have not been assigned to a role.",  # TODO: Translate

@@ -46,6 +46,15 @@ async def get_template(url):
             return io.BytesIO(await resp.read())
 
 
+def get_botadmin_role(ctx):
+    role_id = sql.select_guild_by_id(ctx.guild.id)['bot_admin_role']
+    r = dget(ctx.guild.roles, id=role_id)
+    if role_id and not r:
+        sql.clear_template_admin_role(ctx.guild.id)
+        return None
+    return r
+
+
 def get_templateadmin_role(ctx):
     role_id = sql.select_guild_by_id(ctx.guild.id)['template_admin_role']
     r = dget(ctx.guild.roles, id=role_id)
@@ -65,7 +74,9 @@ def get_templateadder_role(ctx):
 
 
 def is_admin(ctx):
-    return ctx.author.permissions_in(ctx.channel).administrator
+    role_id = sql.select_guild_by_id(ctx.guild.id)['bot_admin_role']
+    r = dget(ctx.author.roles, id=role_id)
+    return bool(r) or ctx.author.permissions_in(ctx.channel).administrator
 
 
 def is_template_admin(ctx):
