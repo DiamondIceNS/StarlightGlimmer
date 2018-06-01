@@ -11,6 +11,10 @@ STRINGS = {
     "bot.pong": "Pong! | **{0}ms**",
     "bot.suggest": "Your suggestion has been sent. Thank you for your input!",
     "bot.version": "My version number is **{0}**",
+    "bot.why": "But... why?",  # TODO: Translate
+    "bot.yes_no": "\n  `0` - No\n  `1` - Yes",  # TODO: Translate
+    "bot.yes_no_invalid": "That is not a valid option. Please try again.",  # TODO: Translate
+    "bot.yes_no_timed_out": "Command timed out.",  # TODO: Translate
 
     # Animotes messages
     "animotes.guild_opt_in": "Emoji sharing has been **enabled** for this guild.",
@@ -19,11 +23,14 @@ STRINGS = {
     "animotes.member_opt_out": "You have successfully **opted-out** of emoji conversion.",
 
     # Canvas messages
+    "canvas.invalid_input": "Invalid input: does not match any template name or supported coordinates format.",  # TODO: Translate
+    "canvas.repeat_not_found": "Could not find a valid command to repeat.",
+
+    # Render messages
     "render.diff": "{0}/{1} | {2} errors | {3:.2f}% complete",
     "render.diff_bad_color": "{0}/{1} | {2} errors | {3} bad color | {4:.2f}% complete",
     "render.large_template": "(Processing large template, this might take a few seconds...)",
     "render.quantize": "Fixed {0} pixels.",
-    "render.repeat_not_found": "Could not find a valid command to repeat.",
 
     # Template messages
     "template.added": "Template '{0}' added!",  # TODO: Translate
@@ -64,17 +71,32 @@ STRINGS = {
                                    "```{0}```",
     "configuration.language_set": "Language has been set to **English (US)**.",
     "configuration.prefix_set": "Prefix for this guild has been set to **{0}**.",
+    "configuration.role_list": "**Roles List**\n```xl\n"
+                               "'templateadder' - Can add templates, and remove templates they added themself\n"
+                               "'templateadmin' - Can add and remove any template\n"
+                               "\n// Use '{0}role <type>' to view the current linked role.\n```",  # TODO: Translate
+    "configuration.role_not_found": "That role could not be found.",  # TODO: Translate
+    "configuration.role_template_adder_check": "Template adder privileges are currently assigned to `@{0}`.",  # TODO: Translate
+    "configuration.role_template_adder_cleared": "Template adder privileges successfully cleared.",  # TODO: Translate
+    "configuration.role_template_adder_not_set": "Template adder privileges have not been assigned to a role.",  # TODO: Translate
+    "configuration.role_template_adder_set": "Template adder privileges assigned to role `@{0}`.",  # TODO: Translate
+    "configuration.role_template_admin_check": "Template admin privileges are currently assigned to `@{0}`.",  # TODO: Translate
+    "configuration.role_template_admin_cleared": "Template admin privileges successfully cleared.",  # TODO: Translate
+    "configuration.role_template_admin_not_set": "Template admin privileges have not been assigned to a role.",  # TODO: Translate
+    "configuration.role_template_admin_set": "Template admin privileges assigned to role `@{0}`.",  # TODO: Translate
 
     # Error messages
     "bot.error.bad_png": "This image seems to be corrupted. Try re-saving it with an image editor or using `{0}quantize`.",
     "bot.error.command_on_cooldown": "That command is on cooldown. Try again in {0:.01f}s.",
+    "bot.error.jpeg": "Seriously? A JPEG? Gross! Please create a PNG template instead.",
     "bot.error.missing_attachment": "That command requires an attachment.",
     "bot.error.no_permission": "You do not have permission to use that command.",
     "bot.error.no_png": "That command requires a PNG image.",
-    "bot.error.jpeg": "Seriously? A JPEG? Gross! Please create a PNG template instead.",
     "bot.error.no_private_message": "That command only works in guilds.",
     "bot.error.pil_image_open_exception": "An error occurred while attempting to open an image. Ensure that the supplied image is not corrupted.",  # TODO: Translate
-    "bot.error.unhandled_command_error": "An unknown error occurred. The dev has been notified.",  # TODO: Update translation
+    "bot.error.template.http_error": "Could not access template URL. (Was the original attachment deleted?)",  # TODO: Translate
+    "bot.error.unhandled_command_error": "An unknown error occurred. The dev has been notified.",  # TODO: Update
+    "bot.error.url_error": "That URL is invalid. I can only accept Discord attachment URLs.",  # TODO: Update
 
     # Command brief help
     "brief.alertchannel": "Set or clear the channel used for update alerts.",

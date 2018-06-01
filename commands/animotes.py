@@ -2,11 +2,9 @@ import re
 import discord
 from discord.ext import commands
 
-import utils.sqlite as sql
-from utils.channel_logger import ChannelLogger
-from utils.exceptions import NoPermission
-from utils.language import getlang
-from utils.logger import Log
+from utils import checks, sqlite as sql
+from objects.channel_logger import ChannelLogger
+from objects.logger import Log
 
 
 #    Cog to reformat messages to allow for animated emotes, regardless of nitro status
@@ -30,7 +28,7 @@ from utils.logger import Log
 class Animotes:
     def __init__(self, bot):
         self.bot = bot
-        self.channel_logger = ChannelLogger(bot)
+        self.ch_log = ChannelLogger(bot)
         self.log = Log(__name__)
 
     async def on_message(self, message):
@@ -44,39 +42,33 @@ class Animotes:
     @commands.command()
     async def register(self, ctx):
         sql.add_animote_user(ctx.author.id)
-        self.log.command("register", ctx.author, ctx.guild)
-        await ctx.author.send(getlang(ctx.guild.id, "animotes.member_opt_in"))
+        await ctx.send(ctx.get_str("animotes.member_opt_in"))
 
     @commands.command()
     async def unregister(self, ctx):
         sql.delete_animote_user(ctx.author.id)
-        self.log.command("unregister", ctx.author, ctx.guild)
-        await ctx.author.send(getlang(ctx.guild.id, "animotes.member_opt_out"))
+        await ctx.send(ctx.get_str("animotes.member_opt_out"))
 
-    @commands.command()
+    @checks.admin_only()
     @commands.guild_only()
+    @commands.command()
     async def registerguild(self, ctx):
-        if not ctx.author.permissions_in(ctx.channel).manage_emojis:
-            raise NoPermission
         sql.update_guild(ctx.guild.id, emojishare=1)
-        self.log.command("registerguild", ctx.author, ctx.guild)
-        await self.channel_logger.log_to_channel("Guild **{0.name}** (ID: `{0.id}`) has opted in to emoji sharing."
-                                                 .format(ctx.guild))
-        await ctx.send(getlang(ctx.guild.id, "animotes.guild_opt_in"))
+        await self.ch_log.log("Guild **{0.name}** (ID: `{0.id}`) has opted in to emoji sharing.".format(ctx.guild))
+        await ctx.send(ctx.get_str("animotes.guild_opt_in"))
 
-    @commands.command()
+    @checks.admin_only()
     @commands.guild_only()
+    @commands.command()
     async def unregisterguild(self, ctx):
-        if not ctx.author.permissions_in(ctx.channel).manage_emojis:
-            raise NoPermission
         sql.update_guild(ctx.guild.id, emojishare=0)
-        self.log.command("unregisterguild", ctx.author, ctx.guild)
-        await self.channel_logger.log_to_channel("Guild **{0.name}** (ID: `{0.id}`) has opted out of emoji sharing."
-                                                 .format(ctx.guild))
-        await ctx.send(getlang(ctx.guild.id, "animotes.guild_opt_out"))
+        await self.ch_log.log("Guild **{0.name}** (ID: `{0.id}`) has opted out of emoji sharing.".format(ctx.guild))
+        await ctx.send(ctx.get_str("animotes.guild_opt_out"))
 
+    @commands.guild_only()
     @commands.command()
     async def listemotes(self, ctx):
+        # TODO: WHY IS THIS NEVER CONSISTENT???
         guilds = []
         blacklist = []
         whitelist = []
@@ -112,7 +104,6 @@ class Animotes:
 
 
 def emote_corrector(self, message):
-    '''Locate and change any emotes to emote objects'''
     r = re.compile(r'(?<![a<]):[\w~]+:')
     found = r.findall(message.content)
     emotes = []

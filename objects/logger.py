@@ -1,5 +1,5 @@
 import logging
-from utils.config import Config
+from objects.config import Config
 
 cfg = Config()
 
@@ -12,14 +12,16 @@ class Log:
         handler.setFormatter(logging.Formatter('{asctime} [{levelname}] {name}: {message}', style='{'))
         self.logger.addHandler(handler)
 
-    def command(self, cmd, author, guild, autoscan=False, repeat=False):
-        invocation_type = "I"
-        if autoscan:
-            invocation_type = "A"
-        if repeat:
-            invocation_type = invocation_type + "R"
+    def command(self, ctx):
+        invocation_type = "A" if ctx.is_autoscan else "I"
+        if ctx.is_default:
+            invocation_type += "D"
+        if ctx.is_template:
+            invocation_type += "T"
+        if ctx.is_repeat:
+            invocation_type += "R"
         self.debug("[{0}] {1.name}#{1.discriminator} used '{2}' in {3.name} (UID:{1.id} GID:{3.id})"
-                   .format(invocation_type, author, cmd, guild))
+                   .format(invocation_type, ctx.author, ctx.command.qualified_name, ctx.guild))
 
     def debug(self, msg):
         if cfg.debug:

@@ -2,6 +2,10 @@ from discord.ext import commands
 from utils import utils
 
 
+class IdempotentActionError(commands.CommandError):
+    pass
+
+
 class NoPermissionError(commands.CommandError):
     pass
 

@@ -1,8 +1,8 @@
 import discord
 import time
 
-from utils.logger import Log
-from utils.config import Config
+from objects.logger import Log
+from objects.config import Config
 
 log = Log(__name__)
 cfg = Config()
@@ -12,8 +12,8 @@ class ChannelLogger:
     def __init__(self, bot):
         self.bot = bot
 
-    async def log_to_channel(self, msg):
-        if cfg.logging_channel_id is not None:
+    async def log(self, msg):
+        if cfg.logging_channel_id:
             channel = self.bot.get_channel(cfg.logging_channel_id)
             if not channel:
                 log.warning("Can't find logging channel")

@@ -2,7 +2,7 @@ import sqlite3
 import os
 import time
 
-from utils.config import Config
+from objects.config import Config
 from objects.template import Template
 
 if not os.path.exists('data'):

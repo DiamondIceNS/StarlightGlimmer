@@ -4,8 +4,7 @@ import inspect
 from discord.ext.commands import Command
 from discord.ext.commands.formatter import HelpFormatter, Paginator
 
-from utils.config import Config
-from utils.language import getlang
+from objects.config import Config
 
 cfg = Config()
 
@@ -13,20 +12,19 @@ cfg = Config()
 class GlimmerHelpFormatter(HelpFormatter):
     def __init__(self):
         super().__init__(width=100)
+        self._paginator = None
 
     def get_localized_ending_note(self):
-        gid = self.context.guild.id
         command_name = self.context.invoked_with
-        return getlang(gid, "bot.help_ending_note").format(self.clean_prefix, command_name)
+        return self.context.get_str("bot.help_ending_note").format(self.clean_prefix, command_name)
 
     def add_localized_subcommands_to_page(self, max_width, commands):
-        gid = self.context.guild.id
         for name, command in commands:
             if name in command.aliases:
                 # skip aliases
                 continue
 
-            short_doc = getlang(gid, "brief."+command.qualified_name.replace(' ', '.'))
+            short_doc = self.context.get_str("brief." + command.qualified_name.replace(' ', '.'))
             entry = '  {0:<{width}} - {1}'.format(name, short_doc, width=max_width)
             shortened = self.shorten(entry)
             self._paginator.add_line(shortened)
@@ -34,15 +32,15 @@ class GlimmerHelpFormatter(HelpFormatter):
     @asyncio.coroutine
     def format(self):
         self._paginator = Paginator()
-        gid = self.context.guild.id
 
         if self.is_bot():
-            self._paginator.add_line(inspect.cleandoc(getlang(gid, "bot.description").format(cfg.name)), empty=True)
+            self._paginator.add_line(inspect.cleandoc(self.context.get_str("bot.description").format(cfg.name)),
+                                     empty=True)
         elif self.is_cog():
-            # self._paginator.add_line(getlang(gid, ))
             pass  # TODO: HELP!!
         elif isinstance(self.command, Command):
-            self._paginator.add_line(getlang(gid, "brief."+self.command.qualified_name.replace(' ', '.')), empty=True)
+            self._paginator.add_line(self.context.get_str("brief." + self.command.qualified_name.replace(' ', '.')),
+                                     empty=True)
 
             # TODO: Translate signatures
             # <signature portion>
@@ -50,7 +48,7 @@ class GlimmerHelpFormatter(HelpFormatter):
             self._paginator.add_line(signature, empty=True)
 
             # <long doc> section
-            long_doc = getlang(gid, "help." + self.command.qualified_name.replace(' ', '.'))
+            long_doc = self.context.get_str("help." + self.command.qualified_name.replace(' ', '.'))
             if long_doc:
                 self._paginator.add_line(inspect.cleandoc(long_doc), empty=True)
 
