@@ -23,7 +23,7 @@ class Canvas:
     @commands.cooldown(1, 5, BucketType.guild)
     @commands.group(name="diff", invoke_without_command=True, aliases=["d"])
     async def diff(self, ctx, a=None, b=None):
-        t = next((x for x in sql.get_templates_by_guild(ctx.guild.id) if x.name == a), None)
+        t = next((x for x in sql.template_get_all_by_guild_id(ctx.guild.id) if x.name == a), None)
         if t:
             data = await utils.get_template(t.url)
             try:
@@ -146,7 +146,7 @@ class Canvas:
     @commands.cooldown(1, 5, BucketType.guild)
     @commands.command(name="gridify", aliases=["g"])
     async def gridify(self, ctx, a=None, b=None):
-        t = next((x for x in sql.get_templates_by_guild(ctx.guild.id) if x.name == a), None)
+        t = next((x for x in sql.template_get_all_by_guild_id(ctx.guild.id) if x.name == a), None)
         if t:
             data = await utils.get_template(t.url)
             max_zoom = int(math.sqrt(4000000 // (t.width * t.height)))
@@ -202,7 +202,7 @@ class Canvas:
             new_ctx = await self.bot.get_context(msg, cls=GlimContext)
             new_ctx.is_repeat = True
 
-            match = re.match('^{}(diff|d|preview|p)'.format(sql.get_guild_prefix(ctx.guild.id)), msg.content)
+            match = re.match('^{}(diff|d|preview|p)'.format(sql.guild_get_prefix_by_id(ctx.guild.id)), msg.content)
             if match:
                 await self.bot.invoke(new_ctx)
                 return
@@ -245,7 +245,7 @@ class Canvas:
 
     @staticmethod
     async def parse_quantize(ctx, a, canvas):
-        t = next((x for x in sql.get_templates_by_guild(ctx.guild.id) if x.name == a), None)
+        t = next((x for x in sql.template_get_all_by_guild_id(ctx.guild.id) if x.name == a), None)
         if t:
             if t.canvas == canvas:
                 raise checks.IdempotentActionError

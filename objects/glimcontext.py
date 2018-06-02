@@ -20,7 +20,7 @@ class GlimContext(commands.Context):
 
     @property
     def canvas(self):
-        return sql.select_guild_by_id(self.guild.id)['default_canvas']
+        return sql.guild_get_canvas_by_id(self.guild.id)
 
     @property
     def canvas_pretty(self):
@@ -28,18 +28,18 @@ class GlimContext(commands.Context):
 
     @property
     def lang(self):
-        return sql.get_guild_language(self.guild.id)
+        return sql.guild_get_language_by_id(self.guild.id)
 
     @staticmethod
     def get_str_from_guild(guild, str_id):
-        language = sql.get_guild_language(guild.id).lower()
+        language = sql.guild_get_language_by_id(guild.id).lower()
         if language == "en-us":
             return en_US.STRINGS[str_id]
         if language == "pt-br":
             return en_US.STRINGS[str_id]
 
     def get_str(self, str_id):
-        language = sql.get_guild_language(self.guild.id).lower()
+        language = sql.guild_get_language_by_id(self.guild.id).lower()
 
         if language == "en-us":
             return en_US.STRINGS[str_id]

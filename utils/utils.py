@@ -9,8 +9,8 @@ from utils import checks, sqlite as sql
 
 
 async def autoscan(ctx):
-    if sql.select_guild_by_id(ctx.guild.id)['autoscan'] == 1:
-        default_canvas = sql.select_guild_by_id(ctx.guild.id)['default_canvas']
+    if sql.guild_is_autoscan(ctx.guild.id):
+        canvas = sql.guild_get_canvas_by_id(ctx.guild.id)
 
         cmd = None
         if re.search('pixelcanvas\.io/@-?\d+,-?\d+', ctx.message.content) is not None:
@@ -22,10 +22,10 @@ async def autoscan(ctx):
         elif re.search('pxls\.space/#x=\d+&y=\d+', ctx.message.content) is not None:
             cmd = dget(dget(ctx.bot.commands, name='preview').commands, name='pxlsspace')
         elif re.search('@\(?-?\d+, ?-?\d+\)?', ctx.message.content) is not None:
-            cmd = dget(dget(ctx.bot.commands, name='preview').commands, name=default_canvas)
+            cmd = dget(dget(ctx.bot.commands, name='preview').commands, name=canvas)
         elif re.search('\(?-?\d+, ?-?\d+\)?', ctx.message.content) is not None and len(ctx.message.attachments) > 0 \
                 and ctx.message.attachments[0].filename[-4:].lower() == ".png":
-            cmd = dget(dget(ctx.bot.commands, name='diff').commands, name=default_canvas)
+            cmd = dget(dget(ctx.bot.commands, name='diff').commands, name=canvas)
 
         if cmd:
             ctx.command = cmd
@@ -47,46 +47,46 @@ async def get_template(url):
 
 
 def get_botadmin_role(ctx):
-    role_id = sql.select_guild_by_id(ctx.guild.id)['bot_admin_role']
+    role_id = sql.guild_get_by_id(ctx.guild.id)['bot_admin_role']
     r = dget(ctx.guild.roles, id=role_id)
     if role_id and not r:
-        sql.clear_template_admin_role(ctx.guild.id)
+        sql.guild_update(ctx.guild.id, bot_admin_role_id=None)
         return None
     return r
 
 
 def get_templateadmin_role(ctx):
-    role_id = sql.select_guild_by_id(ctx.guild.id)['template_admin_role']
+    role_id = sql.guild_get_by_id(ctx.guild.id)['template_admin_role']
     r = dget(ctx.guild.roles, id=role_id)
     if role_id and not r:
-        sql.clear_template_admin_role(ctx.guild.id)
+        sql.guild_update(ctx.guild.id, template_admin_role=None)
         return None
     return r
 
 
 def get_templateadder_role(ctx):
-    role_id = sql.select_guild_by_id(ctx.guild.id)['template_adder_role']
+    role_id = sql.guild_get_by_id(ctx.guild.id)['template_adder_role']
     r = dget(ctx.guild.roles, id=role_id)
     if role_id and not r:
-        sql.clear_template_adder_role(ctx.guild.id)
+        sql.guild_update(ctx.guild.id, template_adder_role=None)
         return None
     return r
 
 
 def is_admin(ctx):
-    role_id = sql.select_guild_by_id(ctx.guild.id)['bot_admin_role']
+    role_id = sql.guild_get_by_id(ctx.guild.id)['bot_admin_role']
     r = dget(ctx.author.roles, id=role_id)
     return bool(r) or ctx.author.permissions_in(ctx.channel).administrator
 
 
 def is_template_admin(ctx):
-    role_id = sql.select_guild_by_id(ctx.guild.id)['template_admin_role']
+    role_id = sql.guild_get_by_id(ctx.guild.id)['template_admin_role']
     r = dget(ctx.author.roles, id=role_id)
     return bool(r)
 
 
 def is_template_adder(ctx):
-    role_id = sql.select_guild_by_id(ctx.guild.id)['template_adder_role']
+    role_id = sql.guild_get_by_id(ctx.guild.id)['template_adder_role']
     r = dget(ctx.author.roles, id=role_id)
     return bool(not role_id or r)
 
@@ -110,7 +110,7 @@ async def verify_attachment(ctx):
 
 
 async def yes_no(ctx, question):
-    sql.add_menu_lock(ctx.channel.id, ctx.author.id)
+    sql.menu_locks_add(ctx.channel.id, ctx.author.id)
     query_msg = await ctx.send(question + ctx.get_str("bot.yes_no"))
 
     def check(m):
@@ -125,5 +125,5 @@ async def yes_no(ctx, question):
         await query_msg.edit(content=ctx.get_str("bot.yes_no_timed_out"))
         return False
     finally:
-        sql.remove_menu_lock(ctx.channel.id, ctx.author.id)
+        sql.menu_locks_delete(ctx.channel.id, ctx.author.id)
     return resp_msg.content == "1"

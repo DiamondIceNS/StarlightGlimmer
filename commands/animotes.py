@@ -32,7 +32,7 @@ class Animotes:
         self.log = Log(__name__)
 
     async def on_message(self, message):
-        if not message.author.bot and sql.is_user_animote_user(message.author.id):
+        if not message.author.bot and sql.animotes_users_is_registered(message.author.id):
             channel = message.channel
             content = emote_corrector(self, message)
             if content:
@@ -41,19 +41,19 @@ class Animotes:
 
     @commands.command()
     async def register(self, ctx):
-        sql.add_animote_user(ctx.author.id)
+        sql.animotes_users_add(ctx.author.id)
         await ctx.send(ctx.get_str("animotes.member_opt_in"))
 
     @commands.command()
     async def unregister(self, ctx):
-        sql.delete_animote_user(ctx.author.id)
+        sql.animotes_users_delete(ctx.author.id)
         await ctx.send(ctx.get_str("animotes.member_opt_out"))
 
     @checks.admin_only()
     @commands.guild_only()
     @commands.command()
     async def registerguild(self, ctx):
-        sql.update_guild(ctx.guild.id, emojishare=1)
+        sql.guild_update(ctx.guild.id, emojishare=1)
         await self.ch_log.log("Guild **{0.name}** (ID: `{0.id}`) has opted in to emoji sharing.".format(ctx.guild))
         await ctx.send(ctx.get_str("animotes.guild_opt_in"))
 
@@ -61,7 +61,7 @@ class Animotes:
     @commands.guild_only()
     @commands.command()
     async def unregisterguild(self, ctx):
-        sql.update_guild(ctx.guild.id, emojishare=0)
+        sql.guild_update(ctx.guild.id, emojishare=0)
         await self.ch_log.log("Guild **{0.name}** (ID: `{0.id}`) has opted out of emoji sharing.".format(ctx.guild))
         await ctx.send(ctx.get_str("animotes.guild_opt_out"))
 
@@ -72,7 +72,7 @@ class Animotes:
         guilds = []
         blacklist = []
         whitelist = []
-        opted_in = sql.is_server_emojishare_server(ctx.guild.id)
+        opted_in = sql.guild_is_emojishare(ctx.guild.id)
         whitelist.append(ctx.guild.id)  # Emoji from this server are allowed automatically
         for e in self.bot.emojis:
             if e.animated:
@@ -83,7 +83,7 @@ class Animotes:
                 if e.guild_id != ctx.guild.id and not opted_in:
                     continue
                 # Blacklist servers that have not themselves opted in
-                if not (e.guild_id in whitelist or sql.is_server_emojishare_server(e.guild_id)):
+                if not (e.guild_id in whitelist or sql.guild_is_emojishare(e.guild_id)):
                     blacklist.append(e.guild_id)
                     continue
                 # If passed all checks, ensure this server is whitelisted so we can skip future opt-in checks
@@ -113,8 +113,8 @@ def emote_corrector(self, message):
             if temp.animated:
                 if temp.guild_id == message.guild.id:
                     emotes.append((em, str(temp)))
-                elif sql.is_server_emojishare_server(message.guild.id) \
-                        and sql.is_server_emojishare_server(temp.guild_id):
+                elif sql.guild_is_emojishare(message.guild.id) \
+                        and sql.guild_is_emojishare(temp.guild_id):
                     emotes.append((em, str(temp)))
         except AttributeError:
             pass  # We only care about catching this, not doing anything with it

@@ -13,7 +13,7 @@ from utils.version import VERSION
 
 
 def get_prefix(bot, msg):
-    return sql.get_guild_prefix(msg.guild.id)
+    return sql.guild_get_prefix_by_id(msg.guild.id)
 
 
 cfg = Config()
@@ -27,20 +27,20 @@ extensions = [
     "commands.general",
     "commands.template",
 ]
-sql.reset_locks()
+sql.menu_locks_delete_all()
 
 
 @bot.event
 async def on_ready():
     log.info("Starting Starlight Glimmer v{}!".format(VERSION))
-    if sql.get_version() is None:
-        sql.init_version(VERSION)
+    if sql.version_get() is None:
+        sql.version_init(VERSION)
         is_new_version = False
     else:
-        is_new_version = sql.get_version() != VERSION and sql.get_version() is not None
+        is_new_version = sql.version_get() != VERSION and sql.version_get() is not None
         if is_new_version:
             log.info("Database is a previous version. Updating...")
-            sql.update_version(VERSION)
+            sql.version_update(VERSION)
 
     log.info("Loading extensions...")
     for extension in extensions:
@@ -52,12 +52,12 @@ async def on_ready():
     log.info("Performing guilds check...")
     for g in bot.guilds:
         log.info("'{0.name}' (ID: {0.id})".format(g))
-        row = sql.select_guild_by_id(g.id)
+        row = sql.guild_get_by_id(g.id)
         if row:
             prefix = row['prefix'] if row['prefix'] else cfg.prefix
             if g.name != row['name']:
                 await ch_log.log("Guild **{1}** is now known as **{0.name}** `(ID:{0.id})`".format(g, row['name']))
-                sql.update_guild(g.id, name=g.name)
+                sql.guild_update(g.id, name=g.name)
             if is_new_version:
                 ch = next((x for x in g.channels if x.id == row['alert_channel']), None)
                 if ch:
@@ -69,16 +69,16 @@ async def on_ready():
             j = g.me.joined_at
             await ch_log.log("Joined guild **{0.name}** (ID: `{0.id}`)".format(g, j.isoformat(' ')))
             log.info("Joined guild '{0.name}' (ID: {0.id}) between sessions at {1}".format(g, j.timestamp()))
-            sql.add_guild(g.id, g.name, int(j.timestamp()))
+            sql.guild_add(g.id, g.name, int(j.timestamp()))
             await print_welcome_message(g)
 
-    db_guilds = sql.get_all_guilds()
+    db_guilds = sql.guild_get_all()
     if len(bot.guilds) != len(db_guilds):
         for g in db_guilds:
             if not any(x for x in bot.guilds if x.id == g['id']):
                 log.info("Kicked from guild '{0}' (ID: {1}) between sessions".format(g['name'], g['id']))
                 await ch_log.log("Kicked from guild **{0}** (ID: `{1}`)".format(g['name'], g['id']))
-                sql.delete_guild(g['id'])
+                sql.guild_delete(g['id'])
 
     log.info('I am ready!')
     await ch_log.log("I am ready!")
@@ -89,7 +89,7 @@ async def on_ready():
 async def on_guild_join(guild):
     log.info("Joined new guild '{0.name}' (ID: {0.id})".format(guild))
     await ch_log.log("Joined new guild **{0.name}** (ID: `{0.id}`)".format(guild))
-    sql.add_guild(guild.id, guild.name, int(guild.me.joined_at.timestamp()))
+    sql.guild_add(guild.id, guild.name, int(guild.me.joined_at.timestamp()))
     await print_welcome_message(guild)
 
 
@@ -97,7 +97,7 @@ async def on_guild_join(guild):
 async def on_guild_remove(guild):
     log.info("Kicked from guild '{0.name}' (ID: {0.id})".format(guild))
     await ch_log.log("Kicked from guild **{0.name}** (ID: `{0.id}`)".format(guild))
-    sql.delete_guild(guild.id)
+    sql.guild_delete(guild.id)
 
 
 @bot.event
@@ -105,12 +105,12 @@ async def on_guild_update(before, after):
     if before.name != after.name:
         log.info("Guild {0.name} is now known as {1.name} (ID: {1.id})")
         await ch_log.log("Guild **{0.name}** is now known as **{1.name}** (ID: `{1.id}`)".format(before, after))
-        sql.update_guild(after.id, name=after.name)
+        sql.guild_update(after.id, name=after.name)
 
 
 @bot.event
 async def on_guild_role_delete(role):
-    sql.delete_role(role.id)
+    sql.guild_delete_role(role.id)
 
 
 @bot.before_invoke
@@ -188,7 +188,7 @@ async def on_message(message):
         return
 
     # Ignore messages from users currently making a menu choice
-    locks = sql.get_menu_locks()
+    locks = sql.menu_locks_get_all()
     for l in locks:
         if message.author.id == l['user_id'] and message.channel.id == l['channel_id']:
             return

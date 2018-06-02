@@ -30,7 +30,7 @@ class Template:
     @commands.cooldown(1, 5, BucketType.guild)
     @commands.group(name='template', invoke_without_command=True, aliases=['t'])
     async def template(self, ctx, page: int=1):
-        ts = sql.get_templates_by_guild(ctx.guild.id)
+        ts = sql.template_get_all_by_guild_id(ctx.guild.id)
         if len(ts) > 0:
             pages = 1 + len(ts) // 10
             page = min(max(page, 1), pages)
@@ -46,7 +46,7 @@ class Template:
                 name = '"{}"'.format(t.name)
                 canvas_name = canvases.pretty_print[t.canvas]
                 msg.append("{0:<{w1}}  {1:<14}  {2}\n".format(name, canvas_name, coords, w1=w1))
-            msg.append(ctx.get_str("template.list_close").format(sql.get_guild_prefix(ctx.guild.id)))
+            msg.append(ctx.get_str("template.list_close").format(sql.guild_get_prefix_by_id(ctx.guild.id)))
             await ctx.send(''.join(msg))
         else:
             await ctx.send(ctx.get_str("template.list_no_templates"))
@@ -90,7 +90,7 @@ class Template:
     @commands.cooldown(1, 5, BucketType.guild)
     @template.command(name='info')
     async def template_info(self, ctx, name):
-        t = sql.get_template_by_name(ctx.guild.id, name)
+        t = sql.template_get_by_name(ctx.guild.id, name)
         if not t:
             await ctx.send(ctx.get_str("template.name_not_found").format(name))
             return
@@ -119,14 +119,14 @@ class Template:
     @checks.template_adder_only()
     @template.command(name='remove', aliases=['rm'])
     async def template_remove(self, ctx, name):
-        t = sql.get_template_by_name(ctx.guild.id, name)
+        t = sql.template_get_by_name(ctx.guild.id, name)
         if not t:
             await ctx.send(ctx.get_str("template.no_template_named").format(name))
             return
         if t.owner_id != ctx.author.id and not utils.is_template_admin(ctx) and not utils.is_admin(ctx):
             await ctx.send(ctx.get_str("template.not_owner"))
             return
-        sql.drop_template(t.gid, t.name)
+        sql.template_delete(t.gid, t.name)
         await ctx.send(ctx.get_str("template.remove").format(name))
 
     @staticmethod
@@ -134,7 +134,7 @@ class Template:
         if len(name) > cfg.max_template_name_length:
             await ctx.send(ctx.get_str("template.name_too_long").format(cfg.max_template_name_length))
             return
-        if sql.count_templates(ctx.guild.id) >= cfg.max_templates_per_guild:
+        if sql.template_count_by_guild_id(ctx.guild.id) >= cfg.max_templates_per_guild:
             await ctx.send(ctx.get_str("template.max_templates"))
             return
         url = await Template.select_url(ctx, url)
@@ -146,12 +146,12 @@ class Template:
         if chk is not None:
             if not chk or await Template.check_for_duplicates_by_md5(ctx, t) is False:
                 return
-            sql.update_template(t)
+            sql.template_update(t)
             await ctx.send(ctx.get_str("template.updated").format(name))
             return
         elif await Template.check_for_duplicates_by_md5(ctx, t) is False:
             return
-        sql.add_template(t)
+        sql.template_add(t)
         await ctx.send(ctx.get_str("template.added").format(name))
 
     @staticmethod
@@ -192,7 +192,7 @@ class Template:
 
     @staticmethod
     async def check_for_duplicates_by_md5(ctx, template):
-        dups = sql.get_templates_by_hash(ctx.guild.id, template.md5)
+        dups = sql.template_get_by_hash(ctx.guild.id, template.md5)
         if len(dups) > 0:
             msg = [ctx.get_str("template.duplicate_list_open")]
             w = max(map(lambda tx: len(tx.name), dups)) + 2
@@ -205,7 +205,7 @@ class Template:
 
     @staticmethod
     async def check_for_duplicate_by_name(ctx, template):
-        dup = sql.get_template_by_name(ctx.guild.id, template.name)
+        dup = sql.template_get_by_name(ctx.guild.id, template.name)
         if dup:
             if template.owner_id != ctx.author.id and not utils.is_admin(ctx):
                 await ctx.send(ctx.get_str("template.name_exists_no_permission"))
