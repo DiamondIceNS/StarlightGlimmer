@@ -197,11 +197,11 @@ STRINGS = {
     "help.canvas.pxlsspace": """This command can only be used by members with the Administrator permission.""",
     "help.changelog": None,
     "help.diff":
-        """Takes an uploaded template, compares it to the current state of the canvas, and calculates how complete it is. It will also generate an image showing you where the unfinished pixels are.
+        """Takes either a template or an image attachment, compares it to the current state of the canvas, and calculates how complete it is. It will also generate an image showing you where the unfinished pixels are.
         
-        If the template is smaller than 200x200, you can create a larger image with a zoom factor. (i.e. "0, 0 #4) You cannot zoom an image to be larger than 400x400.
+        If the image is smaller than 200x200, you can create a larger image with a zoom factor. (i.e. "0, 0 #4) You cannot zoom an image to be larger than 400x400.
         
-        Template must be PNG format.
+        Attachments must be PNG format.
         
         NOTE: "Bad color" pixels are pixels that are not part of the canvas's palette. (See `quantize`)
         
@@ -216,8 +216,7 @@ STRINGS = {
     "help.ditherchart.pixelzone": None,
     "help.ditherchart.pxlsspace": None,
     "help.github": None,
-    "help.gridify":
-        """Takes an uploaded template and creates a gridded version for an easier reference. Use the 'size' parameter to set how large the individual pixels should be. (Default 1) You cannot zoom an image to be larger than 1000x1000.""",
+    "help.gridify": "Takes either a template or an image attachment and creates a gridded version for an easier reference. Use the 'size' parameter to set how large the individual pixels should be. (Default 1) You cannot zoom an image to contain more than 4 million pixels.",
     "help.help": None,
     "help.invite": None,
     "help.language": """Use this command with no arguments to see the current and available languages.""",
@@ -230,7 +229,7 @@ STRINGS = {
     "help.preview":
         """Given a coordinate pair or a URL, renders a live view of a canvas at those coordinates.
         
-        You can create a zoomed-in preview by adding a zoom factor. (i.e. "0, 0 #4") Maximum zoom is 16.
+        You can create a zoomed-in preview by adding a zoom factor. (i.e. "0, 0 #4") Maximum zoom is 16. You can also create a zoomed-out preview by using a negative zoom. (i.e. "0,0 #-4) Minimum zoom is -8.
         
         If you do not specify a canvas to use, the default canvas will be used.
         
@@ -240,9 +239,9 @@ STRINGS = {
     "help.preview.pixelzone": None,
     "help.preview.pxlsspace": None,
     "help.quantize":
-        """Takes an attached image and converts its colors to the palette of a given canvas.
+        """Takes either a template or an image attachment and converts its colors to the palette of a given canvas.
         
-        This should primarily be used if the 'pcdiff' command is telling you your template has 'bad color' in it. Using this command to create templates from raw images is not suggested.""",
+        This should primarily be used if the 'pcdiff' command is telling you your image has 'bad color' in it. Using this command to create templates from raw images is not suggested.""",
     "help.quantize.pixelcanvas": None,
     "help.quantize.pixelzio": None,
     "help.quantize.pixelzone": None,
