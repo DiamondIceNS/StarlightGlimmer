@@ -18,15 +18,8 @@ log = Log(__name__)
 cfg = Config()
 
 # TODO:
-# - add admin privilege
-# - add "check all" feature
-# - add faction support
-# - add cross-guild template sharing
 # - add help for new commands
 # - write database update sql
-# - localize new strings
-# - extract duplicate code and refactor the ugly shit
-# - housekeeping
 # - update wiki
 
 
