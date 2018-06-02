@@ -24,6 +24,7 @@ extensions = [
     "commands.animotes",
     "commands.canvas",
     "commands.configuration",
+    "commands.general",
     "commands.template",
 ]
 sql.reset_locks()

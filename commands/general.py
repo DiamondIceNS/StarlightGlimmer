@@ -47,3 +47,7 @@ class General:
     @commands.command()
     async def version(self, ctx):
         await ctx.send(ctx.get_str("bot.version").format(VERSION))
+
+
+def setup(bot):
+    bot.add_cog(General(bot))

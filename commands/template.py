@@ -18,7 +18,6 @@ log = Log(__name__)
 cfg = Config()
 
 # TODO:
-# - add help for new commands
 # - write database update sql
 # - update wiki
 
@@ -29,8 +28,8 @@ class Template:
 
     @commands.guild_only()
     @commands.cooldown(1, 5, BucketType.guild)
-    @commands.group(name='templates', invoke_without_command=True, aliases=['t'])
-    async def templates(self, ctx, page: int=1):
+    @commands.group(name='template', invoke_without_command=True, aliases=['t'])
+    async def template(self, ctx, page: int=1):
         ts = sql.get_templates_by_guild(ctx.guild.id)
         if len(ts) > 0:
             pages = 1 + len(ts) // 10
@@ -55,42 +54,42 @@ class Template:
     @commands.guild_only()
     @commands.cooldown(1, 5, BucketType.guild)
     @checks.template_adder_only()
-    @templates.group(name='add', invoke_without_command=True)
-    async def templates_add(self, ctx):
+    @template.group(name='add', invoke_without_command=True)
+    async def template_add(self, ctx):
         await ctx.invoke_default("templates.add")
 
     @commands.guild_only()
     @commands.cooldown(1, 5, BucketType.guild)
     @checks.template_adder_only()
-    @templates_add.command(name="pixelcanvas", aliases=['pc'])
-    async def templates_add_pixelcanvas(self, ctx, name: str, x: int, y: int, url=None):
+    @template_add.command(name="pixelcanvas", aliases=['pc'])
+    async def template_add_pixelcanvas(self, ctx, name: str, x: int, y: int, url=None):
         await self.add_template(ctx, "pixelcanvas", name, x, y, url)
 
     @commands.guild_only()
     @commands.cooldown(1, 5, BucketType.guild)
     @checks.template_adder_only()
-    @templates_add.command(name="pixelzio", aliases=['pzi'])
-    async def templates_add_pixelzio(self, ctx, name: str, x: int, y: int, url=None):
+    @template_add.command(name="pixelzio", aliases=['pzi'])
+    async def template_add_pixelzio(self, ctx, name: str, x: int, y: int, url=None):
         await self.add_template(ctx, "pixelzio", name, x, y, url)
 
     @commands.guild_only()
     @commands.cooldown(1, 5, BucketType.guild)
     @checks.template_adder_only()
-    @templates_add.command(name="pixelzone", aliases=['pz'])
-    async def templates_add_pixelzone(self, ctx, name: str, x: int, y: int, url=None):
+    @template_add.command(name="pixelzone", aliases=['pz'])
+    async def template_add_pixelzone(self, ctx, name: str, x: int, y: int, url=None):
         await self.add_template(ctx, "pixelzone", name, x, y, url)
 
     @commands.guild_only()
     @commands.cooldown(1, 5, BucketType.guild)
     @checks.template_adder_only()
-    @templates_add.command(name="pxlsspace", aliases=['ps'])
-    async def templates_add_pxlsspace(self, ctx, name: str, x: int, y: int, url=None):
+    @template_add.command(name="pxlsspace", aliases=['ps'])
+    async def template_add_pxlsspace(self, ctx, name: str, x: int, y: int, url=None):
         await self.add_template(ctx, "pxlsspace", name, x, y, url)
 
     @commands.guild_only()
     @commands.cooldown(1, 5, BucketType.guild)
-    @templates.command(name='info')
-    async def templates_info(self, ctx, name):
+    @template.command(name='info')
+    async def template_info(self, ctx, name):
         t = sql.get_template_by_name(ctx.guild.id, name)
         if not t:
             await ctx.send(ctx.get_str("template.name_not_found").format(name))
@@ -118,8 +117,8 @@ class Template:
     @commands.guild_only()
     @commands.cooldown(1, 5, BucketType.guild)
     @checks.template_adder_only()
-    @templates.command(name='remove', aliases=['rm'])
-    async def templates_remove(self, ctx, name):
+    @template.command(name='remove', aliases=['rm'])
+    async def template_remove(self, ctx, name):
         t = sql.get_template_by_name(ctx.guild.id, name)
         if not t:
             await ctx.send(ctx.get_str("template.no_template_named").format(name))
