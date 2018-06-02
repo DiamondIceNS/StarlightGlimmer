@@ -244,7 +244,7 @@ async def fetch_pixelzio(x, y, dx, dy):
                 if not -6000 <= chk.x + ix < 6000:  # Ignore out of bounds chunks
                     continue
                 url = "http://pixelz.io/api/{0}_{1}/img".format(chk.x + ix, chk.y + iy)
-                async with session.get(url, headers=headers) as resp:
+                async with session.get(url) as resp:
                     data = await resp.read()
                     tmp = Image.open(io.BytesIO(data)).convert('RGB')
                     fetched.paste(tmp, (ix, iy, ix + 500, iy + 500))
