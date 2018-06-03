@@ -290,12 +290,12 @@ STRINGS = {
         By default, everyone can use this command. If the Template Adder privilege is bound to any role, only users who are Template Adders and above can use this command (see 'role').
         
         A template is stored as the URL of an attachment. If the message that uploaded that attachment is deleted, the template that references it will break. It is recommended that you save backup copies of templates to your computer just in case.""",  # TODO: Translate
-    "help.templates.add.pixelcanvas": None,
-    "help.templates.add.pixelzio": None,
-    "help.templates.add.pixelzone": None,
-    "help.templates.add.pxlsspace": None,
-    "help.templates.info": None,
-    "help.templates.remove": "This command can only be used if the template being removed was added by you, unless you are a Template Admin, Bot Admin, or have the Administrator permission (see 'role').",  # TODO: Translate
+    "help.template.add.pixelcanvas": None,
+    "help.template.add.pixelzio": None,
+    "help.template.add.pixelzone": None,
+    "help.template.add.pxlsspace": None,
+    "help.template.info": None,
+    "help.template.remove": "This command can only be used if the template being removed was added by you, unless you are a Template Admin, Bot Admin, or have the Administrator permission (see 'role').",  # TODO: Translate
     "help.unregister": "See 'register'.",
     "help.unregisterguild":
         """See 'registerguild'.
