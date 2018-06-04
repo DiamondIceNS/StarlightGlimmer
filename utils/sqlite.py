@@ -294,7 +294,7 @@ def template_update(template):
 
 def version_get():
     c.execute("""SELECT version FROM version""")
-    return c.fetchone()
+    return c.fetchone()[0]
 
 
 def version_init(version):
