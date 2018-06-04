@@ -140,7 +140,7 @@ class Configuration:
         m = re.match('<@&(\d+)>', role)
         r = dget(ctx.guild.role_hierarchy, id=int(m.group(1))) if m else dget(ctx.guild.role_hierarchy, name=role)
         if r:
-            sql.guild_update(ctx.guild.id, bot_admin_role_id=r.id)
+            sql.guild_update(ctx.guild.id, bot_admin=r.id)
             await ctx.send(ctx.get_str("configuration.role_bot_admin_set").format(r.name))
         else:
             await ctx.send(ctx.get_str("configuration.role_not_found"))
@@ -149,7 +149,7 @@ class Configuration:
     @commands.guild_only()
     @role_botadmin.command(name="clear")
     async def role_botadmin_clear(self, ctx):
-        sql.guild_update(ctx.guild.id, bot_admin_role_id=None)
+        sql.guild_update(ctx.guild.id, bot_admin=None)
         await ctx.send(ctx.get_str("configuration.role_bot_admin_cleared"))
 
     @checks.admin_only()
@@ -169,7 +169,7 @@ class Configuration:
         m = re.match('<@&(\d+)>', role)
         r = dget(ctx.guild.role_hierarchy, id=int(m.group(1))) if m else dget(ctx.guild.role_hierarchy, name=role)
         if r:
-            sql.guild_update(ctx.guild.id, template_adder_role=r.id)
+            sql.guild_update(ctx.guild.id, template_adder=r.id)
             await ctx.send(ctx.get_str("configuration.role_template_adder_set").format(r.name))
         else:
             await ctx.send(ctx.get_str("configuration.role_not_found"))
@@ -178,7 +178,7 @@ class Configuration:
     @commands.guild_only()
     @role_templateadder.command(name="clear")
     async def role_templateadder_clear(self, ctx):
-        sql.guild_update(ctx.guild.id, template_adder_role=None)
+        sql.guild_update(ctx.guild.id, template_adder=None)
         await ctx.send(ctx.get_str("configuration.role_template_adder_cleared"))
 
     @checks.admin_only()
@@ -198,7 +198,7 @@ class Configuration:
         m = re.match('<@&(\d+)>', role)
         r = dget(ctx.guild.role_hierarchy, id=int(m.group(1))) if m else dget(ctx.guild.role_hierarchy, name=role)
         if r:
-            sql.guild_update(ctx.guild.id, template_admin_role=r.id)
+            sql.guild_update(ctx.guild.id, template_admin=r.id)
             await ctx.send(ctx.get_str("configuration.role_template_admin_set").format(r.name))
         else:
             await ctx.send(ctx.get_str("configuration.role_not_found"))
@@ -207,7 +207,7 @@ class Configuration:
     @commands.guild_only()
     @role_templateadmin.command(name="clear")
     async def role_templateadmin_clear(self, ctx):
-        sql.guild_update(ctx.guild.id, template_admin_role=None)
+        sql.guild_update(ctx.guild.id, template_admin=None)
         await ctx.send(ctx.get_str("configuration.role_template_admin_cleared"))
 
 

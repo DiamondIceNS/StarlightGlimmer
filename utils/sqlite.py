@@ -147,9 +147,9 @@ def guild_delete(gid):
 
 
 def guild_delete_role(role_id):
-    c.execute("UPDATE guilds SET bot_admin_role=NULL WHERE bot_admin_role=?", (role_id,))
-    c.execute("UPDATE guilds SET template_adder_role=NULL WHERE template_adder_role=?", (role_id,))
-    c.execute("UPDATE guilds SET template_admin_role=NULL WHERE template_admin_role=?", (role_id,))
+    c.execute("UPDATE guilds SET bot_admin=NULL WHERE bot_admin=?", (role_id,))
+    c.execute("UPDATE guilds SET template_adder=NULL WHERE template_adder=?", (role_id,))
+    c.execute("UPDATE guilds SET template_admin=NULL WHERE template_admin=?", (role_id,))
     conn.commit()
 
 
@@ -191,7 +191,7 @@ def guild_is_emojishare(gid):
 
 
 def guild_update(gid, name=None, prefix=None, alert_channel=None, emojishare=None, autoscan=None, canvas=None,
-                 language=None, template_admin_role=None, template_adder_role=None, bot_admin_role_id=None):
+                 language=None, template_admin=None, template_adder=None, bot_admin=None):
     if name:
         c.execute("UPDATE guilds SET name=? WHERE id=?", (name, gid))
     if prefix:
@@ -206,12 +206,12 @@ def guild_update(gid, name=None, prefix=None, alert_channel=None, emojishare=Non
         c.execute("UPDATE guilds SET canvas=? WHERE id=?", (canvas, gid))
     if language:
         c.execute("UPDATE guilds SET language=? WHERE id=?", (language, gid))
-    if template_admin_role:
-        c.execute("UPDATE guilds SET template_admin_role=? WHERE id=?", (template_admin_role, gid))
-    if template_adder_role:
-        c.execute("UPDATE guilds SET template_adder_role=? WHERE id=?", (template_adder_role, gid))
-    if bot_admin_role_id:
-        c.execute("UPDATE guilds SET bot_admin_role=? WHERE id=?", (bot_admin_role_id, gid))
+    if template_admin:
+        c.execute("UPDATE guilds SET template_admin=? WHERE id=?", (template_admin, gid))
+    if template_adder:
+        c.execute("UPDATE guilds SET template_adder=? WHERE id=?", (template_adder, gid))
+    if bot_admin:
+        c.execute("UPDATE guilds SET bot_admin=? WHERE id=?", (bot_admin, gid))
     conn.commit()
 
 
