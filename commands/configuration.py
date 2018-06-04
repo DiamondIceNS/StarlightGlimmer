@@ -109,12 +109,7 @@ class Configuration:
                 lang_list = lang_list + "{0} - {1}".format(code, name)
                 if i < len(ctx.langs):
                     lang_list = lang_list + "\n"
-<<<<<<< HEAD
-            current_lang = langs[sql.get_guild_language(ctx.guild.id).lower()]
-            await ctx.send(getlang(ctx.guild.id, "configuration.language_check").format(lang_list, current_lang))
-=======
             await ctx.send(ctx.get_str("configuration.language_check").format(lang_list, ctx.lang))
->>>>>>> 1.5
             return
         if option.lower() not in ctx.langs:
             return
