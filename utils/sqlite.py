@@ -170,14 +170,13 @@ def guild_get_canvas_by_id(gid):
 
 def guild_get_language_by_id(gid):
     c.execute("""SELECT language FROM guilds WHERE id=?""", (gid,))
-    return c.fetchone()[0]
+    g = c.fetchone()
+    return g[0] if c else None
 
 
 def guild_get_prefix_by_id(gid):
-    row = guild_get_by_id(gid)
-    if row and row['prefix']:
-        return row['prefix']
-    return cfg.prefix
+    g = guild_get_by_id(gid)
+    return g['prefix'] if g else cfg.prefix
 
 
 def guild_is_autoscan(gid):
@@ -251,7 +250,8 @@ def template_add(template):
 
 def template_count_by_guild_id(gid):
     c.execute('SELECT COUNT(*) FROM templates WHERE guild_id=?', (gid,))
-    return c.fetchone()[0]
+    ct = c.fetchone()
+    return ct[0] if ct else 0
 
 
 def template_delete(gid, name):
@@ -277,7 +277,8 @@ def template_get_by_hash(gid, md5):
 
 def template_get_by_name(gid, name):
     c.execute('SELECT * FROM templates WHERE guild_id=? AND name=?', (gid, name))
-    return Template(*c.fetchone())
+    t = c.fetchone()
+    return Template(*t) if t else None
 
 
 def template_update(template):
@@ -293,10 +294,7 @@ def template_update(template):
 
 def version_get():
     c.execute("""SELECT version FROM version""")
-    result = c.fetchone()
-    if result is None:
-        return None
-    return result[0]
+    return c.fetchone()
 
 
 def version_init(version):
