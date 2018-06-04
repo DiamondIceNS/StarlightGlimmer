@@ -1,234 +1,217 @@
 import discord
-import re
 import traceback
 from discord import TextChannel
 from discord.ext import commands
-from discord.utils import get as dget
-from time import time
 
-import utils.sqlite as sql
-from utils.canvases import use_default_canvas
-from utils.channel_logger import ChannelLogger
-from utils.config import Config
-from utils.exceptions import NoPermission
-from utils.language import getlang
-from utils.logger import Log
-from utils.help_formatter import GlimmerHelpFormatter
+from objects.glimcontext import GlimContext
+from utils import checks, sqlite as sql, utils
+from objects.channel_logger import ChannelLogger
+from objects.config import Config
+from objects.help_formatter import GlimmerHelpFormatter
+from objects.logger import Log
 from utils.version import VERSION
 
 
 def get_prefix(bot, msg):
-    return sql.get_guild_prefix(msg.guild.id)
+    return sql.guild_get_prefix_by_id(msg.guild.id)
 
 
 cfg = Config()
 log = Log(''.join(cfg.name.split()))
 bot = commands.Bot(command_prefix=get_prefix, formatter=GlimmerHelpFormatter())
-channel_logger = ChannelLogger(bot)
+ch_log = ChannelLogger(bot)
 extensions = [
     "commands.animotes",
     "commands.canvas",
-    "commands.configuration"
+    "commands.configuration",
+    "commands.general",
+    "commands.template",
 ]
+sql.menu_locks_delete_all()
 
 
 @bot.event
 async def on_ready():
-    log.info("Performing guild check...")
-    if sql.get_version() is None:
-        sql.init_version(VERSION)
-        new_ver_alert = False
+    log.info("Starting Starlight Glimmer v{}!".format(VERSION))
+    if sql.version_get() is None:
+        sql.version_init(VERSION)
+        is_new_version = False
     else:
-        new_ver_alert = sql.get_version() != VERSION and sql.get_version() is not None
-        if new_ver_alert:
-            sql.update_version(VERSION)
-    for g in bot.guilds:
-        log.info("Servicing guild '{0.name}' (ID: {0.id})".format(g))
-        row = sql.select_guild_by_id(g.id)
-        if row is not None:
-            prefix = row['prefix'] if row['prefix'] is not None else cfg.prefix
-            if g.name != row['name']:
-                await channel_logger.log_to_channel("Guild ID `{0.id}` changed name from **{1}** to **{0.name}** since "
-                                                    "last bot start".format(g, row['name']))
-                sql.update_guild(g.id, name=g.name)
-            alert_channel_id = row['alert_channel'] if row['alert_channel'] is not None else 0
-            if new_ver_alert and alert_channel_id is not 0:
-                alert_channel = next((x for x in g.channels if x.id == alert_channel_id), None)
-                if alert_channel is not None:
-                    await alert_channel.send(getlang(g.id, "bot.alert_update").format(VERSION, prefix))
-                    log.info("Sent update message to guild {0.name} (ID: {0.id})")
-                else:
-                    log.info("Could not send update message to guild {0.name} (ID: {0.id}): "
-                             "Alert channel could not be found.")
-        else:
-            await channel_logger.log_to_channel("Joined guild **{0.name}** (ID: `{0.id}`) between sessions at `{1}`"
-                                                .format(g, g.me.joined_at.isoformat(' ')))
-            sql.add_guild(g.id, g.name, int(g.me.joined_at.timestamp()))
-            await print_welcome_message(g)
+        is_new_version = sql.version_get() != VERSION and sql.version_get() is not None
+        if is_new_version:
+            log.info("Database is a previous version. Updating...")
+            sql.version_update(VERSION)
 
-    db_guilds = sql.get_all_guilds()
-    if len(bot.guilds) != len(db_guilds):
-        for g in db_guilds:
-            if not any(x for x in bot.guilds if x.id == g['id']):
-                log.info("Kicked from guild '{0}' (ID: {1}) between sessions".format(g['name'], g['id']))
-                await channel_logger.log_to_channel("Kicked from guild **{0}** (ID: `{1}`)".format(g['name'], g['id']))
-                sql.delete_guild(g['id'])
-
+    log.info("Loading extensions...")
     for extension in extensions:
         try:
             bot.load_extension(extension)
         except Exception as e:
             log.error("Failed to load extension {}\n{}: {}".format(extension, type(e).__name__, e))
 
-    print("I am ready!")
+    log.info("Performing guilds check...")
+    for g in bot.guilds:
+        log.info("'{0.name}' (ID: {0.id})".format(g))
+        row = sql.guild_get_by_id(g.id)
+        if row:
+            prefix = row['prefix'] if row['prefix'] else cfg.prefix
+            if g.name != row['name']:
+                await ch_log.log("Guild **{1}** is now known as **{0.name}** `(ID:{0.id})`".format(g, row['name']))
+                sql.guild_update(g.id, name=g.name)
+            if is_new_version:
+                ch = next((x for x in g.channels if x.id == row['alert_channel']), None)
+                if ch:
+                    await ch.send(GlimContext.get_str_from_guild(g, "bot.alert_update").format(VERSION, prefix))
+                    log.info("- Sent update message")
+                else:
+                    log.info("- Could not send update message: alert channel not found.")
+        else:
+            j = g.me.joined_at
+            await ch_log.log("Joined guild **{0.name}** (ID: `{0.id}`)".format(g, j.isoformat(' ')))
+            log.info("Joined guild '{0.name}' (ID: {0.id}) between sessions at {1}".format(g, j.timestamp()))
+            sql.guild_add(g.id, g.name, int(j.timestamp()))
+            await print_welcome_message(g)
+
+    db_guilds = sql.guild_get_all()
+    if len(bot.guilds) != len(db_guilds):
+        for g in db_guilds:
+            if not any(x for x in bot.guilds if x.id == g['id']):
+                log.info("Kicked from guild '{0}' (ID: {1}) between sessions".format(g['name'], g['id']))
+                await ch_log.log("Kicked from guild **{0}** (ID: `{1}`)".format(g['name'], g['id']))
+                sql.guild_delete(g['id'])
+
     log.info('I am ready!')
-    await channel_logger.log_to_channel("I am ready!")
-
-
-async def print_welcome_message(guild):
-    c = next((x for x in guild.channels if x.name == "general" and x.permissions_for(guild.me).send_messages
-              and type(x) is TextChannel),
-             next((x for x in guild.channels if x.permissions_for(guild.me).send_messages and type(x) is TextChannel),
-                  None))
-    if c is not None:
-        log.info("Printing welcome message to guild {0.name} (ID: {0.id})".format(guild))
-        await c.send("Hi! I'm {0}. For a full list of commands, pull up my help page with `{1}help`. "
-                     "Happy pixel painting!".format(cfg.name, cfg.prefix))
-    else:
-        log.info("Welcome message not printed for channel {0.name} (ID: {0.id}): Could not find a default channel."
-                 .format(guild))
+    await ch_log.log("I am ready!")
+    print("I am ready!")
 
 
 @bot.event
 async def on_guild_join(guild):
     log.info("Joined new guild '{0.name}' (ID: {0.id})".format(guild))
-    await channel_logger.log_to_channel("Joined new guild **{0.name}** (ID: `{0.id}`)".format(guild))
-    sql.add_guild(guild.id, guild.name, int(guild.me.joined_at.timestamp()))
+    await ch_log.log("Joined new guild **{0.name}** (ID: `{0.id}`)".format(guild))
+    sql.guild_add(guild.id, guild.name, int(guild.me.joined_at.timestamp()))
     await print_welcome_message(guild)
 
 
 @bot.event
 async def on_guild_remove(guild):
     log.info("Kicked from guild '{0.name}' (ID: {0.id})".format(guild))
-    await channel_logger.log_to_channel("Kicked from guild **{0.name}** (ID: `{0.id}`)".format(guild))
-    sql.delete_guild(guild.id)
+    await ch_log.log("Kicked from guild **{0.name}** (ID: `{0.id}`)".format(guild))
+    sql.guild_delete(guild.id)
 
 
 @bot.event
 async def on_guild_update(before, after):
     if before.name != after.name:
         log.info("Guild {0.name} is now known as {1.name} (ID: {1.id})")
-        await channel_logger.log_to_channel("Guild **{0.name}** is now known as **{1.name}** (ID: `{1.id}`)"
-                                            .format(before, after))
-        sql.update_guild(after.id, name=after.name)
+        await ch_log.log("Guild **{0.name}** is now known as **{1.name}** (ID: `{1.id}`)".format(before, after))
+        sql.guild_update(after.id, name=after.name)
+
+
+@bot.event
+async def on_guild_role_delete(role):
+    sql.guild_delete_role(role.id)
+
+
+@bot.before_invoke
+async def on_command_preprocess(ctx):
+    log.command(ctx)
 
 
 @bot.event
 async def on_command_error(ctx, error):
+    # Command errors
+    if isinstance(error, commands.BadArgument):
+        return
+    if isinstance(error, commands.CommandInvokeError):
+        if isinstance(error.original, discord.HTTPException) and error.original.code == 50013:
+            return
     if isinstance(error, commands.CommandOnCooldown):
-        await ctx.send(getlang(ctx.guild.id, "bot.error.command_on_cooldown").format(error.retry_after))
+        await ctx.send(ctx.get_str("bot.error.command_on_cooldown").format(error.retry_after))
         return
     if isinstance(error, commands.CommandNotFound):
         return
     if isinstance(error, commands.MissingRequiredArgument):
         return
-    if isinstance(error, commands.BadArgument):
-        return
-    if isinstance(error, NoPermission):
-        await ctx.send(getlang(ctx.guild.id, "bot.error.no_permission"))
-        return
     if isinstance(error, commands.NoPrivateMessage):
-        await ctx.send(getlang(ctx.guild.id, "bot.error.no_private_message"))
+        await ctx.send(ctx.get_str("bot.error.no_private_message"))
         return
-    if isinstance(error, commands.CommandInvokeError) and isinstance(error.original, discord.HTTPException) \
-            and error.original.code == 50013:
+
+    # Check errors
+    if isinstance(error, checks.IdempotentActionError):
+        try:
+            f = discord.File("assets/y_tho.png", "y_tho.png")
+            await ctx.send(ctx.get_str("bot.why"), file=f)
+        except IOError:
+            await ctx.send(ctx.get_str("bot.why"))
         return
-    cname = ctx.command.qualified_name if ctx.command is not None else "None"
-    await channel_logger.log_to_channel("An error occurred while executing command `{0}` in server **{1.name}** "
-                                        "(ID: `{1.id}`):".format(cname, ctx.guild))
-    await channel_logger.log_to_channel("```{}```".format(error))
-    log.error("An error occurred while executing command {}: {}\n{}"
-              .format(cname, error, ''.join(traceback.format_exception(None, error, error.__traceback__))))
-    await ctx.send(getlang(ctx.guild.id, "bot.error.unhandled_command_error"))
+    if isinstance(error, checks.NoJpegsError):
+        try:
+            f = discord.File("assets/disdain_for_jpegs.gif", "disdain_for_jpegs.gif")
+            await ctx.send(ctx.get_str("bot.error.jpeg"), file=f)
+        except IOError:
+            await ctx.send(ctx.get_str("bot.error.jpeg"))
+        return
+    if isinstance(error, checks.NoPermissionError):
+        await ctx.send(ctx.get_str("bot.error.no_permission"))
+        return
+    if isinstance(error, checks.NotPngError):
+        await ctx.send(ctx.get_str("bot.error.no_png"))
+        return
+    if isinstance(error, checks.PilImageError):
+        await ctx.send(ctx.get_str("bot.error.pil_open_exception"))
+        return
+    if isinstance(error, checks.TemplateHttpError):
+        await ctx.send(ctx.get_str("bot.error.template_http_error"))
+        return
+    if isinstance(error, checks.UrlError):
+        await ctx.send(ctx.get_str("bot.error.url_error"))
+        return
+
+    # Uncaught error
+    name = ctx.command.qualified_name if ctx.command else "None"
+    await ch_log.log("An error occurred executing `{0}` in server **{1.name}** (ID: `{1.id}`):".format(name, ctx.guild))
+    await ch_log.log("```{}```".format(error))
+    log.error("An error occurred executing '{}': {}\n{}"
+              .format(name, error, ''.join(traceback.format_exception(None, error, error.__traceback__))))
+    await ctx.send(ctx.get_str("bot.error.unhandled_command_error"))
 
 
 @bot.event
 async def on_message(message):
+    # Ignore channels that can't be posted in
+    if message.guild and not message.channel.permissions_for(message.guild.me).send_messages:
+        return
+
+    # Ignore other bots
     if message.author.bot:
         return
 
-    ctx = await bot.get_context(message)
+    # Ignore messages from users currently making a menu choice
+    locks = sql.menu_locks_get_all()
+    for l in locks:
+        if message.author.id == l['user_id'] and message.channel.id == l['channel_id']:
+            return
+
+    # Invoke a command if there is one
+    ctx = await bot.get_context(message, cls=GlimContext)
     if ctx.invoked_with:
         await bot.invoke(ctx)
         return
 
-    if message.guild is not None and not message.channel.permissions_for(message.guild.me).send_messages:
-        return
-
-    if sql.select_guild_by_id(ctx.guild.id)['autoscan'] == 1:
-        default_canvas = sql.select_guild_by_id(ctx.guild.id)['default_canvas']
-
-        if re.search('pixelcanvas\.io/@-?\d+,-?\d+', message.content) is not None:
-            ctx.command = dget(dget(bot.commands, name='preview').commands, name='pixelcanvas')
-        elif re.search('pixelz\.io/@-?\d+,-?\d+', message.content) is not None:
-            ctx.command = dget(dget(bot.commands, name='preview').commands, name='pixelzio')
-        elif re.search('pixelzone\.io/\?p=-?\d+,-?\d+', message.content) is not None:
-            ctx.command = dget(dget(bot.commands, name='preview').commands, name='pixelzone')
-        elif re.search('pxls\.space/#x=\d+&y=\d+', message.content) is not None:
-            ctx.command = dget(dget(bot.commands, name='preview').commands, name='pxlsspace')
-        elif re.search('@\(?-?\d+, ?-?\d+\)?', message.content) is not None:
-            ctx.command = dget(dget(bot.commands, name='preview').commands, name=default_canvas)
-        elif re.search('\(?-?\d+, ?-?\d+\)?', message.content) is not None and len(message.attachments) > 0 \
-                and message.attachments[0].filename[-4:].lower() == ".png":
-            ctx.command = dget(dget(bot.commands, name='diff').commands, name=default_canvas)
-
-        if ctx.command is not None:
-            ctx.invoked_with = "autoscan"
-            await bot.invoke(ctx)
+    # Autoscan
+    await utils.autoscan(ctx)
 
 
-@bot.command()
-async def ping(ctx):
-    log.command("ping", ctx.author, ctx.guild)
-    ping_start = time()
-    ping_msg = await ctx.send(getlang(ctx.guild.id, "bot.ping"))
-    ping_time = time() - ping_start
-    log.debug("(Ping:{0}ms)".format(int(ping_time*1000)))
-    await ping_msg.edit(content=getlang(ctx.guild.id, "bot.pong").format(int(ping_time*1000)))
-
-
-@bot.command()
-async def github(ctx):
-    log.command("github", ctx.author, ctx.guild)
-    await ctx.send("https://github.com/DiamondIceNS/StarlightGlimmer")
-
-
-@bot.command()
-async def changelog(ctx):
-    log.command("changelog", ctx.author, ctx.guild)
-    await ctx.send("https://github.com/DiamondIceNS/StarlightGlimmer/releases")
-
-
-@bot.command()
-async def version(ctx):
-    log.command("version", ctx.author, ctx.guild)
-    await ctx.send(getlang(ctx.guild.id, "bot.version").format(VERSION))
-
-
-@bot.command()
-async def suggest(ctx, *, suggestion: str):
-    log.command("suggest", ctx.author, ctx.guild)
-    log.debug("Suggestion: {0}".format(suggestion))
-    await channel_logger.log_to_channel("New suggestion from **{0.name}#{0.discriminator}** (ID: `{0.id}`) in guild "
-                                        "**{1.name}** (ID: `{1.id}`):".format(ctx.author, ctx.guild))
-    await channel_logger.log_to_channel("> `{}`".format(suggestion))
-    await ctx.send(getlang(ctx.guild.id, "bot.suggest"))
-
-
-@bot.command()
-async def invite(ctx):
-    log.command("invite", ctx.author, ctx.guild)
-    await ctx.send(cfg.invite)
+async def print_welcome_message(guild):
+    channels = [x for x in guild.channels if x.permissions_for(guild.me).send_messages and type(x) is TextChannel]
+    c = next((x for x in channels if x.name == "general"), next(channels, None))
+    if c:
+        await c.send("Hi! I'm {0}. For a full list of commands, pull up my help page with `{1}help`. "
+                     "Happy pixel painting!".format(cfg.name, cfg.prefix))
+        log.info(" - Printed welcome message".format(guild))
+    else:
+        log.info("- Could not print welcome message: no default channel found".format(guild))
 
 
 bot.run(cfg.token)

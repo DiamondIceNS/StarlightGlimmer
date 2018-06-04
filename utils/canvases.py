@@ -1,7 +1,6 @@
-import utils.sqlite as sql
-from discord.utils import get as dget
+from utils import render
 
-canvas_list = {
+pretty_print = {
     'pixelcanvas': "Pixelcanvas.io",
     'pc': "Pixelcanvas.io",
     'pixelzio': "Pixelz.io",
@@ -12,9 +11,16 @@ canvas_list = {
     'ps': "Pxls.space"
 }
 
+url_templates = {
+    'pixelcanvas': "https://pixelcanvas.io/@{0},{1}",
+    'pixelzio': "https://pixelz.io/@{0},{1}",
+    'pixelzone': "http://pixelzone.io/?p={0},{1}",
+    'pxlsspace': "https://pxls.space/#x={0}&y={1}"
+}
 
-async def use_default_canvas(ctx, bot, cmd):
-    default_canvas = sql.select_guild_by_id(ctx.guild.id)['default_canvas']
-    ctx.command = dget(dget(bot.commands, name=cmd).commands, name=default_canvas)
-    if ctx.command is not None:
-        await bot.invoke(ctx)
+fetchers = {
+    'pixelcanvas': render.fetch_pixelcanvas,
+    'pixelzio': render.fetch_pixelzio,
+    'pixelzone': render.fetch_pixelzone,
+    'pxlsspace': render.fetch_pxlsspace
+}

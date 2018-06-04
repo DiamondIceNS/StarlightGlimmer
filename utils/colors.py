@@ -81,3 +81,10 @@ pxlsspace = [
     (255,   0, 255),  # Magenta
     (102,   3,  60)   # Purple
 ]
+
+by_name = {
+    "pixelcanvas": pixelcanvas,
+    "pixelzio": pixelzio,
+    "pixelzone": pixelzone,
+    "pxlsspace": pxlsspace
+}
