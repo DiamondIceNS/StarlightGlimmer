@@ -5,6 +5,8 @@ A template utility bot based on [Alastair](Make-Alastair-Great-Again) and [Pinki
 
 Currently supports [Pixelcanvas.io](http://pixelcanvas.io/), [Pixelz.io](http://pixelz.io/), [Pixelzone.io](http://pixelzone.io/), and [Pxls.space](http://pxls.space/).
 
+**Invite:** `https://discordapp.com/oauth2/authorize?&client_id=405480380930588682&scope=bot&permissions=101376`
+
 #### Requires:
 - [Python 3.6](https://www.python.org/downloads/release/python-365/)
 - [Discord.py rewrite](https://github.com/Rapptz/discord.py/tree/rewrite)
@@ -24,9 +26,11 @@ Currently supports [Pixelcanvas.io](http://pixelcanvas.io/), [Pixelz.io](http://
 #### Features:
 - Automatic live canvas preview
 - Automatic live template checking
+- Template storage for easy access to templates you care about most
 - Color quantization of templates to canvas palette
 - Gridifyer to create gridded, human-readable templates
 - Dithering sample charts for assisting color selection when you are making a template
+- Configurable roles
 - [Animotes](https://github.com/ev1l0rd/animotes) support, just because
 - Cross-guild emoji through Animotes (must opt-in)
 - Full language localization
@@ -40,6 +44,7 @@ For a more in-depth walkthrough of Glimmer's core functions, see [the wiki page]
 If you happen to know a language that is not listed and would be willing to translate, please translate the strings in `lang/en_US.py` and submit a pull request.
 (Currently looking for: French, Turkish)
 
-**Invite:** `https://discordapp.com/oauth2/authorize?&client_id=405480380930588682&scope=bot&permissions=101376`
+#### Help:
+If you need assistance with the bot, have a problem, or would like to recommend a feature to me directly, you can contact me [on my support server](https://discord.gg/UtyJx2x). You can also DM me if you see me around -- I am `Fawfulcopter#3234` on Discord.
 
 [avatar]: avatar.jpg
