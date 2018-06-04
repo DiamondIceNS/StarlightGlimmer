@@ -176,7 +176,7 @@ def guild_get_language_by_id(gid):
 
 def guild_get_prefix_by_id(gid):
     g = guild_get_by_id(gid)
-    return g['prefix'] if g else cfg.prefix
+    return g['prefix'] if g and g['prefix'] else cfg.prefix
 
 
 def guild_is_autoscan(gid):
