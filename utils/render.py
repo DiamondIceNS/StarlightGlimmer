@@ -263,7 +263,7 @@ async def fetch_pixelzone(x, y, dx, dy):
     pkts_expected = 0
     async with aiohttp.ClientSession() as session:
         async with session.get(url.format("http", "polling")) as r:
-            sid = json.loads(str((await r.read())[5:], "utf-8"))['sid']
+            sid = json.loads(str((await r.read())[4:-4], "utf-8"))['sid']
     async with websockets.connect(url.format("ws", "websocket&sid=") + sid) as ws:
         await ws.send("2probe")
         await ws.recv()
