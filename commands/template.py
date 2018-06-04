@@ -17,10 +17,6 @@ from objects.config import Config
 log = Log(__name__)
 cfg = Config()
 
-# TODO:
-# - write database update sql
-# - update wiki
-
 
 class Template:
     def __init__(self, bot):

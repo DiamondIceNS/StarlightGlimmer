@@ -5,16 +5,16 @@ STRINGS = {
         """Hi! I'm {0}! I'm here to help coordinate pixel art on pixel-placing websites.
         I've got features like canvas preview and template checking that are sure to be useful.
         Let's get pixel painting!""",
-    "bot.discord_urls_only": "I can only accept Discord attachment URLs.",  # TODO: Translate
+    "bot.discord_urls_only": "I can only accept Discord attachment URLs.",  
     "bot.help_ending_note": "Type '{0}{1} <command>' for more info on a command.",
     "bot.ping": "Pinging...",
     "bot.pong": "Pong! | **{0}ms**",
     "bot.suggest": "Your suggestion has been sent. Thank you for your input!",
     "bot.version": "My version number is **{0}**",
-    "bot.why": "But... why?",  # TODO: Translate
-    "bot.yes_no": "\n  `0` - No\n  `1` - Yes",  # TODO: Translate
-    "bot.yes_no_invalid": "That is not a valid option. Please try again.",  # TODO: Translate
-    "bot.yes_no_timed_out": "Command timed out.",  # TODO: Translate
+    "bot.why": "But... why?",  
+    "bot.yes_no": "\n  `0` - No\n  `1` - Yes",  
+    "bot.yes_no_invalid": "That is not a valid option. Please try again.",  
+    "bot.yes_no_timed_out": "Command timed out.",  
 
     # Animotes messages
     "animotes.guild_opt_in": "Emoji sharing has been **enabled** for this guild.",
@@ -23,7 +23,7 @@ STRINGS = {
     "animotes.member_opt_out": "You have successfully **opted-out** of emoji conversion.",
 
     # Canvas messages
-    "canvas.invalid_input": "Invalid input: does not match any template name or supported coordinates format.",  # TODO: Translate
+    "canvas.invalid_input": "Invalid input: does not match any template name or supported coordinates format.",  
     "canvas.repeat_not_found": "Could not find a valid command to repeat.",
 
     # Render messages
@@ -33,29 +33,29 @@ STRINGS = {
     "render.quantize": "Fixed {0} pixels.",
 
     # Template messages
-    "template.added": "Template '{0}' added!",  # TODO: Translate
-    "template.duplicate_list_open": "The following templates already match this image:\n```xl\n",  # TODO: Translate
-    "template.duplicate_list_close": "```\nCreate a new template anyway?",  # TODO: Translate
-    "template.info_added_by": "Added By",  # TODO: Translate
-    "template.info_date_added": "Date Added",  # TODO: Translate
-    "template.info_date_modified": "Date Modified",  # TODO: Translate
-    "template.info_canvas": "Canvas",  # TODO: Translate
-    "template.info_coords": "Coords",  # TODO: Translate
-    "template.info_name": "Name",  # TODO: Translate
-    "template.info_size": "Size",  # TODO: Translate
-    "template.list_close": "\n// Use '{0}templates <page>' to see that page\n// Use '{0}templates info <name>' to see more info on a template```",  # TODO: Translate
-    "template.list_no_templates": "This guild currently has no templates.",  # TODO: Translate
-    "template.list_open": "**Template List** - Page {0}/{1}\n```xl\n",  # TODO: Translate
-    "template.max_templates": "This guild already has the maximum number of templates. Please remove a template before adding another.",  # TODO: Translate
-    "template.name_exists_ask_replace": "A template with the name '{0}' already exists for {1} at ({2}, {3}). Replace it?",  # TODO: Translate
-    "template.name_exists_no_permission": "A template with that name already exists. Please choose a different name.",  # TODO: Translate
-    "template.name_not_found": "Could not find template with name `{0}`.",  # TODO: Translate
-    "template.name_too_long": "That name is too long. Please use a name under {0} characters.",  # TODO: Translate
-    "template.no_template_named": "There is no template named '{0}'.",  # TODO: Translate
-    "template.not_owner": "You do not have permission to modify that template.",  # TODO: Translate
-    "template.not_quantized": "This image contains colors that are not part of this canvas's palette. Would you like to quantize it?",  # TODO: Translate
-    "template.remove": "Successfully removed '{0}'.",  # TODO: Translate
-    "template.updated": "Template '{0}' updated!",  # TODO: Translate
+    "template.added": "Template '{0}' added!",  
+    "template.duplicate_list_open": "The following templates already match this image:\n```xl\n",  
+    "template.duplicate_list_close": "```\nCreate a new template anyway?",  
+    "template.info_added_by": "Added By",  
+    "template.info_date_added": "Date Added",  
+    "template.info_date_modified": "Date Modified",  
+    "template.info_canvas": "Canvas",  
+    "template.info_coords": "Coords",  
+    "template.info_name": "Name",  
+    "template.info_size": "Size",  
+    "template.list_close": "\n// Use '{0}templates <page>' to see that page\n// Use '{0}templates info <name>' to see more info on a template```",  
+    "template.list_no_templates": "This guild currently has no templates.",  
+    "template.list_open": "**Template List** - Page {0}/{1}\n```xl\n",  
+    "template.max_templates": "This guild already has the maximum number of templates. Please remove a template before adding another.",  
+    "template.name_exists_ask_replace": "A template with the name '{0}' already exists for {1} at ({2}, {3}). Replace it?",  
+    "template.name_exists_no_permission": "A template with that name already exists. Please choose a different name.",  
+    "template.name_not_found": "Could not find template with name `{0}`.",  
+    "template.name_too_long": "That name is too long. Please use a name under {0} characters.",  
+    "template.no_template_named": "There is no template named '{0}'.",  
+    "template.not_owner": "You do not have permission to modify that template.",  
+    "template.not_quantized": "This image contains colors that are not part of this canvas's palette. Would you like to quantize it?",  
+    "template.remove": "Successfully removed '{0}'.",  
+    "template.updated": "Template '{0}' updated!",  
 
 
     # Configuration messages
@@ -75,20 +75,20 @@ STRINGS = {
                                "'botadmin'      - Can do anything an Administrator can do\n"
                                "'templateadder' - Can add templates, and remove templates they added themself\n"
                                "'templateadmin' - Can add and remove any template\n"
-                               "\n// Use '{0}role <type>' to view the current linked role.\n```",  # TODO: Translate
-    "configuration.role_not_found": "That role could not be found.",  # TODO: Translate
-    "configuration.role_bot_admin_check": "Bot admin privileges are currently assigned to `@{0}`.",  # TODO: Translate
-    "configuration.role_bot_admin_cleared": "Bot admin privileges successfully cleared.",  # TODO: Translate
-    "configuration.role_bot_admin_not_set": "Bot admin privileges have not been assigned to a role.",  # TODO: Translate
-    "configuration.role_bot_admin_set": "Bot admin privileges assigned to role `@{0}`.",  # TODO: Translate
-    "configuration.role_template_adder_check": "Template adder privileges are currently assigned to `@{0}`.",  # TODO: Translate
-    "configuration.role_template_adder_cleared": "Template adder privileges successfully cleared.",  # TODO: Translate
-    "configuration.role_template_adder_not_set": "Template adder privileges have not been assigned to a role.",  # TODO: Translate
-    "configuration.role_template_adder_set": "Template adder privileges assigned to role `@{0}`.",  # TODO: Translate
-    "configuration.role_template_admin_check": "Template admin privileges are currently assigned to `@{0}`.",  # TODO: Translate
-    "configuration.role_template_admin_cleared": "Template admin privileges successfully cleared.",  # TODO: Translate
-    "configuration.role_template_admin_not_set": "Template admin privileges have not been assigned to a role.",  # TODO: Translate
-    "configuration.role_template_admin_set": "Template admin privileges assigned to role `@{0}`.",  # TODO: Translate
+                               "\n// Use '{0}role <type>' to view the current linked role.\n```",  
+    "configuration.role_not_found": "That role could not be found.",  
+    "configuration.role_bot_admin_check": "Bot admin privileges are currently assigned to `@{0}`.",  
+    "configuration.role_bot_admin_cleared": "Bot admin privileges successfully cleared.",  
+    "configuration.role_bot_admin_not_set": "Bot admin privileges have not been assigned to a role.",  
+    "configuration.role_bot_admin_set": "Bot admin privileges assigned to role `@{0}`.",  
+    "configuration.role_template_adder_check": "Template adder privileges are currently assigned to `@{0}`.",  
+    "configuration.role_template_adder_cleared": "Template adder privileges successfully cleared.",  
+    "configuration.role_template_adder_not_set": "Template adder privileges have not been assigned to a role.",  
+    "configuration.role_template_adder_set": "Template adder privileges assigned to role `@{0}`.",  
+    "configuration.role_template_admin_check": "Template admin privileges are currently assigned to `@{0}`.",  
+    "configuration.role_template_admin_cleared": "Template admin privileges successfully cleared.",  
+    "configuration.role_template_admin_not_set": "Template admin privileges have not been assigned to a role.",  
+    "configuration.role_template_admin_set": "Template admin privileges assigned to role `@{0}`.",  
 
     # Error messages
     "bot.error.bad_png": "This image seems to be corrupted. Try re-saving it with an image editor or using `{0}quantize`.",
@@ -98,10 +98,10 @@ STRINGS = {
     "bot.error.no_permission": "You do not have permission to use that command.",
     "bot.error.no_png": "That command requires a PNG image.",
     "bot.error.no_private_message": "That command only works in guilds.",
-    "bot.error.pil_image_open_exception": "An error occurred while attempting to open an image. Ensure that the supplied image is not corrupted.",  # TODO: Translate
-    "bot.error.template.http_error": "Could not access template URL. (Was the original attachment deleted?)",  # TODO: Translate
-    "bot.error.unhandled_command_error": "An unknown error occurred. The dev has been notified.",  # TODO: Update
-    "bot.error.url_error": "That URL is invalid. I can only accept Discord attachment URLs.",  # TODO: Update
+    "bot.error.pil_image_open_exception": "An error occurred while attempting to open an image. Ensure that the supplied image is not corrupted.",  
+    "bot.error.template.http_error": "Could not access template URL. (Was the original attachment deleted?)",  
+    "bot.error.unhandled_command_error": "An unknown error occurred. The dev has been notified.",
+    "bot.error.url_error": "That URL is invalid. I can only accept Discord attachment URLs.",
 
     # Command brief help
     "brief.alertchannel": "Set or clear the channel used for update alerts.",
@@ -281,7 +281,7 @@ STRINGS = {
     "help.role.templateadmin.clear": None,
     "help.role.templateadmin.set": None,
     "help.suggest": None,
-    "help.template": "Use this command with no arguments to view a list of all added templates.",  # TODO: Translate
+    "help.template": "Use this command with no arguments to view a list of all added templates.",  
     "help.template.add":
         """This command can accept either a direct file attachment or a Discord attachment URL. Template must be in PNG format and must already be quantized to the palette of the canvas it belongs to. If the image is not quantized, the command will offer to quantize it for you. A guild can have up to 25 templates at any time.
         
@@ -289,13 +289,13 @@ STRINGS = {
         
         By default, everyone can use this command. If the Template Adder privilege is bound to any role, only users who are Template Adders and above can use this command (see 'role').
         
-        A template is stored as the URL of an attachment. If the message that uploaded that attachment is deleted, the template that references it will break. It is recommended that you save backup copies of templates to your computer just in case.""",  # TODO: Translate
+        A template is stored as the URL of an attachment. If the message that uploaded that attachment is deleted, the template that references it will break. It is recommended that you save backup copies of templates to your computer just in case.""",  
     "help.template.add.pixelcanvas": None,
     "help.template.add.pixelzio": None,
     "help.template.add.pixelzone": None,
     "help.template.add.pxlsspace": None,
     "help.template.info": None,
-    "help.template.remove": "This command can only be used if the template being removed was added by you, unless you are a Template Admin, Bot Admin, or have the Administrator permission (see 'role').",  # TODO: Translate
+    "help.template.remove": "This command can only be used if the template being removed was added by you, unless you are a Template Admin, Bot Admin, or have the Administrator permission (see 'role').",  
     "help.unregister": "See 'register'.",
     "help.unregisterguild":
         """See 'registerguild'.
@@ -410,7 +410,7 @@ STRINGS = {
     "signature.register": "register",
     "signature.registerguild": "registerguild",
     "signature.repeat": "[repeat|r]",
-    "signature.role": "role (role)",  # TODO: Translate
+    "signature.role": "role (role)",  
     "signature.role.botadmin": "role botadmin (set|clear)",
     "signature.role.botadmin.clear": "role botadmin clear",
     "signature.role.botadmin.set": "role botadmin set",
@@ -421,12 +421,12 @@ STRINGS = {
     "signature.role.templateadmin.clear": "role templateadmin clear",
     "signature.role.templateadmin.set": "role templateadmin set",
     "signature.suggest": "suggest <suggestion>",
-    "signature.template": "[template|t] (subcommand)",  # TODO: Translate
-    "signature.template.add": "[template|t] add (canvas) <name> <x> <y> (url)",  # TODO: Translate
-    "signature.template.add.pixelcanvas": "[template|t] add [pixelcanvas|pc] <name> <x> <y> (url)",  # TODO: Translate
-    "signature.template.add.pixelzio": "[template|t] add [pixelzio|pzi] <name> <x> <y> (url)",  # TODO: Translate
-    "signature.template.add.pixelzone": "[template|t] add [pixelzone|pz] <name> <x> <y> (url)",  # TODO: Translate
-    "signature.template.add.pxlsspace": "[template|t] add [pxlsspace|ps] <name> <x> <y> (url)",  # TODO: Translate
+    "signature.template": "[template|t] (subcommand)",  
+    "signature.template.add": "[template|t] add (canvas) <name> <x> <y> (url)",  
+    "signature.template.add.pixelcanvas": "[template|t] add [pixelcanvas|pc] <name> <x> <y> (url)",  
+    "signature.template.add.pixelzio": "[template|t] add [pixelzio|pzi] <name> <x> <y> (url)",  
+    "signature.template.add.pixelzone": "[template|t] add [pixelzone|pz] <name> <x> <y> (url)",  
+    "signature.template.add.pxlsspace": "[template|t] add [pxlsspace|ps] <name> <x> <y> (url)",  
     "signature.template.info": "[template|t] info",
     "signature.template.remove": "[template|t] remove",
     "signature.unregister": "unregister",
