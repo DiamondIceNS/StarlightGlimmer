@@ -143,12 +143,30 @@ STRINGS = {
     "brief.quantize.pixelzio": "Converte cores usando a paleta do Pixelz.io.",
     "brief.quantize.pixelzone": "Converte cores usando a paleta do Pixelzone.io.",
     "brief.quantize.pxlsspace": "Converte cores usando a paleta do Pxls.space.",
-    # TODO: Register/Registerguild
+    "brief.register": "Optou em aderir substituição de emoji animado.",
+    "brief.registerguild": "Optou em aderir compartilhar emojis para essa guild.",
     "brief.repeat": "Repete o último comando do canvas usado.",
-    # TODO: Roles
+    "brief.role": "Atribuir privilégios do bot a uma cargo.",
+    "brief.role.botadmin": "Configurar privilégios do Bot Admin.",
+    "brief.role.botadmin.clear": "Retire o cargo atribuído a Bot Admin",
+    "brief.role.botadmin.set": "Defina o cargo atribuído ao Bot Admin",
+    "brief.role.templateadder": "Configurar privilégios do Template Adder.",
+    "brief.role.templateadder.clear": "Retire o cargo atribuído ao Template Adder.",
+    "brief.role.templateadder.set": "Defina o cargo atribuído ao Template Adder.",
+    "brief.role.templateadmin": "Configurar privilégios do Template admin.",
+    "brief.role.templateadmin.clear": "Retire a função atribuída ao Template Admin.",
+    "brief.role.templateadmin.set": "Defina o cargo atribuído ao Template Admin.",
     "brief.suggest": "Envia uma sugestão para o desenvolvedor.",
-    # TODO: Templates
-    # TODO: Unregister/Unregisteguild
+    "brief.template": "Gerencia templates.",
+    "brief.template.add": "Adiciona um template.",
+    "brief.template.add.pixelcanvas": "Adiciona um template para Pixelcanvas.io.",
+    "brief.template.add.pixelzio": "Adiciona um template para Pixelz.io.",
+    "brief.template.add.pixelzone": "Adiciona um template para Pixelzone.io.",
+    "brief.template.add.pxlsspace": "Adiciona um template para Pxls.space.",
+    "brief.template.info": "Exibe informações sobre um template.",
+    "brief.template.remove": "Remove um template.",
+    "brief.unregister": "Desativada a substituição de emoji animado.",
+    "brief.unregisterguild": "Desativado o compartilhamento de emojis para essa guild.",
     "brief.version": "Obtém o número de minha versão.",
 
     # Command long help
