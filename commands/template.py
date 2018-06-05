@@ -52,7 +52,7 @@ class Template:
     @checks.template_adder_only()
     @template.group(name='add', invoke_without_command=True)
     async def template_add(self, ctx):
-        await ctx.invoke_default("templates.add")
+        await ctx.invoke_default("template.add")
 
     @commands.guild_only()
     @commands.cooldown(1, 5, BucketType.guild)
