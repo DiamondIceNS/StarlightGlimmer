@@ -165,7 +165,8 @@ def guild_get_by_id(gid):
 
 def guild_get_canvas_by_id(gid):
     c.execute("SELECT canvas FROM guilds WHERE id=?", (gid,))
-    return c.fetchone()
+    ca = c.fetchone()
+    return ca[0] if ca else None
 
 
 def guild_get_language_by_id(gid):
