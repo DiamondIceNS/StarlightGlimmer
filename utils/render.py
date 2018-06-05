@@ -166,7 +166,7 @@ async def quantize(ctx, data, palette):
             template.save(bio, format="PNG")
             bio.seek(0)
             f = discord.File(bio, "template.png")
-            await ctx.send(ctx.get_str("render.quantize").format(bad_pixels), file=f)
+            return await ctx.send(ctx.get_str("render.quantize").format(bad_pixels), file=f)
 
 
 async def gridify(ctx, data, zoom):
