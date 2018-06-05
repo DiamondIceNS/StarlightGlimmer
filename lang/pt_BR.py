@@ -43,7 +43,7 @@ STRINGS = {
     "template.info_coords": "Coordenadas",
     "template.info_name": "Nome",
     "template.info_size": "Tamanho",
-    "template.list_close": "\n// Use '{0}templates <pagina>' para ver essa página\n// Use '{0}templates info <nome>' para ver mais informações do template```",
+    "template.list_close": "\n// Use '{0}template <pagina>' para ver essa página\n// Use '{0}template info <nome>' para ver mais informações do template```",
     "template.list_no_templates": "Esta guild atualmente não possui templates.",
     "template.list_open": "**Lista de templates** - Pagina {0}/{1}\n```xl\n",
     "template.max_templates": "Esta guild já tem o número máximo de templates. Por favor, remova um template antes de adicionar outro.",

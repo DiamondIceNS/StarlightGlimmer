@@ -43,7 +43,7 @@ STRINGS = {
     "template.info_coords": "Coords",  
     "template.info_name": "Name",  
     "template.info_size": "Size",  
-    "template.list_close": "\n// Use '{0}templates <page>' to see that page\n// Use '{0}templates info <name>' to see more info on a template```",  
+    "template.list_close": "\n// Use '{0}template <page>' to see that page\n// Use '{0}template info <name>' to see more info on a template```",
     "template.list_no_templates": "This guild currently has no templates.",  
     "template.list_open": "**Template List** - Page {0}/{1}\n```xl\n",  
     "template.max_templates": "This guild already has the maximum number of templates. Please remove a template before adding another.",  
