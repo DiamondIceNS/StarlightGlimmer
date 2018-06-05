@@ -38,7 +38,7 @@ STRINGS = {
     "template.duplicate_list_close": "```\nCriar um novo template mesmo assim?",
     "template.info_added_by": "Adicionado por",
     "template.info_date_added": "Data adicionada",
-    "template.info_date_modified": "Data aodificada",
+    "template.info_date_modified": "Data modificada",
     "template.info_canvas": "Canvas",
     "template.info_coords": "Coordenadas",
     "template.info_name": "Nome",
