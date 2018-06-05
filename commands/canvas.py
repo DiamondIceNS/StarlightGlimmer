@@ -162,7 +162,7 @@ class Canvas:
             await att.save(data)
             max_zoom = int(math.sqrt(4000000 // (att.width * att.height)))
             try:
-                zoom = max(1, min(int(b) if b and b.startswith("#") else 1, max_zoom))
+                zoom = max(1, min(int(a[1:]) if a and a.startswith("#") else 1, max_zoom))
             except ValueError:
                 zoom = 1
             await render.gridify(ctx, data, zoom)
