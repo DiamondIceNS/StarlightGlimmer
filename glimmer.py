@@ -4,7 +4,7 @@ from discord import TextChannel
 from discord.ext import commands
 
 from objects.glimcontext import GlimContext
-from utils import checks, sqlite as sql, utils
+from utils import canvases, checks, sqlite as sql, utils
 from objects.channel_logger import ChannelLogger
 from objects.config import Config
 from objects.help_formatter import GlimmerHelpFormatter
@@ -167,6 +167,8 @@ async def on_command_error(ctx, error):
     if isinstance(error, checks.UrlError):
         await ctx.send(ctx.get_str("bot.error.url_error"))
         return
+    if isinstance(error, checks.HttpPayloadError):
+        await ctx.send(ctx.get_str("bot.error.http_payload_error").format(canvases.pretty_print(error.canvas)))
 
     # Uncaught error
     name = ctx.command.qualified_name if ctx.command else "None"

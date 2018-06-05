@@ -93,6 +93,7 @@ STRINGS = {
     # Error messages
     "bot.error.bad_png": "This image seems to be corrupted. Try re-saving it with an image editor or using `{0}quantize`.",
     "bot.error.command_on_cooldown": "That command is on cooldown. Try again in {0:.01f}s.",
+    "bot.error.http_payload_error": "{0} seems to be having connection issues. Try again later.",
     "bot.error.jpeg": "Seriously? A JPEG? Gross! Please create a PNG template instead.",
     "bot.error.missing_attachment": "That command requires an attachment.",
     "bot.error.no_permission": "You do not have permission to use that command.",

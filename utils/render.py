@@ -10,7 +10,7 @@ import websockets
 from math import sqrt, pow
 from PIL import Image, ImageDraw
 
-from utils import colors
+from utils import colors, checks
 from objects.config import Config
 from objects.logger import Log
 from utils.lzstring import LZString
@@ -211,8 +211,18 @@ async def fetch_pixelcanvas(x, y, dx, dy):
                 if not -15632 <= tl_bchk.x + ix < 15632:  # Ignore bigchunks that are out of bounds
                     continue
                 url = "http://pixelcanvas.io/api/bigchunk/{0}.{1}.bmp".format(tl_bchk.x + ix, tl_bchk.y + iy)
-                async with session.get(url) as resp:
-                    bigchunks.append(BigChunk(tl_bchk.x + ix, tl_bchk.y + iy, io.BytesIO(await resp.read())))
+                attempts = 0
+                bc_data = None
+                while not bc_data and attempts < 3:
+                    try:
+                        async with session.get(url) as resp:
+                            bc_data = BigChunk(tl_bchk.x + ix, tl_bchk.y + iy, io.BytesIO(await resp.read()))
+                            bigchunks.append(bc_data)
+                    except aiohttp.ClientPayloadError:
+                        attempts += 1
+                        bc_data = None
+                if not bc_data:
+                    raise checks.HttpPayloadError('pixelcanvas')
 
     palette_data = [x for sub in colors.pixelcanvas for x in sub] * 16
     for bc in bigchunks:

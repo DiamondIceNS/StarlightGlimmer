@@ -2,6 +2,11 @@ from discord.ext import commands
 from utils import utils
 
 
+class HttpPayloadError(commands.CommandError):
+    def __init__(self, canvas):
+        self.canvas = canvas
+
+
 class IdempotentActionError(commands.CommandError):
     pass
 
