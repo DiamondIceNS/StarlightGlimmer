@@ -44,7 +44,7 @@ class GlimmerHelpFormatter(HelpFormatter):
 
             # TODO: Translate signatures
             # <signature portion>
-            signature = self.get_command_signature()
+            signature = self.context.get_str("signature." + self.command.qualified_name.replace(' ', '.'))
             self._paginator.add_line(signature, empty=True)
 
             # <long doc> section
