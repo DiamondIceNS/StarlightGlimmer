@@ -202,7 +202,7 @@ class Canvas:
             new_ctx = await self.bot.get_context(msg, cls=GlimContext)
             new_ctx.is_repeat = True
 
-            match = re.match('^{}(diff|d|preview|p)'.format(sql.guild_get_prefix_by_id(ctx.guild.id)), msg.content)
+            match = re.match('^{}(diff|d|preview|p)'.format(ctx.prefix), msg.content)
             if match:
                 await self.bot.invoke(new_ctx)
                 return

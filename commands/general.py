@@ -42,7 +42,7 @@ class General:
         await self.ch_log.log("New suggestion from **{0.name}#{0.discriminator}** (ID: `{0.id}`) in guild "
                               "**{1.name}** (ID: `{1.id}`):".format(ctx.author, ctx.guild))
         await self.ch_log.log("> `{}`".format(suggestion))
-        await ctx.send(ctx.get_str(ctx.guild.id, "bot.suggest"))
+        await ctx.send(ctx.get_str("bot.suggest"))
 
     @commands.command()
     async def version(self, ctx):

@@ -121,7 +121,7 @@ class Configuration:
     @commands.guild_only()
     @commands.group(name="role", invoke_without_command=True)
     async def role(self, ctx):
-        await ctx.send(ctx.get_str("configuration.role_list"))
+        await ctx.send(ctx.get_str("configuration.role_list").format(ctx.prefix))
 
     @checks.admin_only()
     @commands.guild_only()

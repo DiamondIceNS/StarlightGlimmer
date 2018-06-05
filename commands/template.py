@@ -42,7 +42,7 @@ class Template:
                 name = '"{}"'.format(t.name)
                 canvas_name = canvases.pretty_print[t.canvas]
                 msg.append("{0:<{w1}}  {1:<14}  {2}\n".format(name, canvas_name, coords, w1=w1))
-            msg.append(ctx.get_str("template.list_close").format(sql.guild_get_prefix_by_id(ctx.guild.id)))
+            msg.append(ctx.get_str("template.list_close").format(ctx.prefix))
             await ctx.send(''.join(msg))
         else:
             await ctx.send(ctx.get_str("template.list_no_templates"))
