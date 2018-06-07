@@ -138,6 +138,8 @@ class Template:
             return
 
         t = await Template.build_template(ctx, name, x, y, url, canvas)
+        if not t:
+            return
         chk = await Template.check_for_duplicate_by_name(ctx, t)
         if chk is not None:
             if not chk or await Template.check_for_duplicates_by_md5(ctx, t) is False:
