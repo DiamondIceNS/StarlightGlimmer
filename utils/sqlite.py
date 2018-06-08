@@ -4,6 +4,7 @@ import time
 
 from objects.config import Config
 from objects.template import Template
+from utils.version import VERSION
 
 if not os.path.exists('data'):
     os.makedirs('data')
@@ -294,7 +295,10 @@ def template_update(template):
 # =========================
 
 def version_get():
-    c.execute("""SELECT version FROM version""")
+    v = c.execute("""SELECT version FROM version""")
+    if not v:
+        version_init(VERSION)
+        return VERSION
     return c.fetchone()[0]
 
 
