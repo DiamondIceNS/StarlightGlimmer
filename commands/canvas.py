@@ -162,7 +162,7 @@ class Canvas:
             await att.save(data)
             max_zoom = int(math.sqrt(4000000 // (att.width * att.height)))
             try:
-                zoom = max(1, min(int(b) if b and b.startswith("#") else 1, max_zoom))
+                zoom = max(1, min(int(a[1:]) if a and a.startswith("#") else 1, max_zoom))
             except ValueError:
                 zoom = 1
             await render.gridify(ctx, data, zoom)
@@ -209,15 +209,15 @@ class Canvas:
 
             if await utils.autoscan(new_ctx):
                 return
-        await ctx.send(ctx.get_str("canvas.repeat_not_found"))
+        await ctx.send(ctx.get("canvas.repeat_not_found"))
 
     # ======================
 
     @staticmethod
     async def parse_diff(ctx, raw_arg):
-        m = re.search('(-?\d+)(?:,| |, )(-?\d+)(?: #(\d+))?', raw_arg)
+        m = re.search('(-?\d+)(?:,| |, )(-?\d+)(?: #?(\d+))?', raw_arg)
         if not m:
-            await ctx.send(ctx.get_str("canvas.invalid_input"))
+            await ctx.send(ctx.get("canvas.invalid_input"))
             return
         att = await utils.verify_attachment(ctx)
         if att:

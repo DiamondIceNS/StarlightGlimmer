@@ -1,4 +1,3 @@
-import asyncio
 import itertools
 import inspect
 from discord.ext.commands import Command
@@ -12,78 +11,99 @@ cfg = Config()
 class GlimmerHelpFormatter(HelpFormatter):
     def __init__(self):
         super().__init__(width=100)
-        self._paginator = None
 
-    def get_localized_ending_note(self):
-        command_name = self.context.invoked_with
-        return self.context.get_str("bot.help_ending_note").format(self.clean_prefix, command_name)
+    async def add_localized_subcommands_to_page(self):
+        out = ["```xl"]
 
-    def add_localized_subcommands_to_page(self, max_width, commands):
-        for name, command in commands:
-            if name in command.aliases:
-                # skip aliases
-                continue
+        def parent(tup):
+            return tup[1].qualified_name
 
-            short_doc = self.context.get_str("brief." + command.qualified_name.replace(' ', '.'))
-            entry = '  {0:<{width}} - {1}'.format(name, short_doc, width=max_width)
-            shortened = self.shorten(entry)
-            self._paginator.add_line(shortened)
+        def is_alias(tup):
+            return tup[0] in tup[1].aliases
 
-    @asyncio.coroutine
-    def format(self):
-        self._paginator = Paginator()
+        entries = []
+        filtered = await self.filter_command_list()
+        data = sorted(filtered, key=parent)
+        for parent, subcommands in itertools.groupby(data, key=parent):
+            subcommands = sorted(subcommands, key=is_alias)
+            entry = ' OR '.join(["'{}'".format(x[0]) for x in subcommands])
+            cmd = subcommands[0][1]
+            short_doc = self.context.get("brief." + cmd.qualified_name.replace(' ', '.'))
+            entries.append((entry, short_doc))
 
+        width = max(map(lambda en: len(en[0]), entries))
+        for e in entries:
+            out.append('{0:<{width}} // {1}'.format(*e, width=width))
+
+        out.append(
+            "\n# Use '{}help {} (subcommand)' to view more info about a subcommand".format(self.context.prefix,
+                                                                                           self.command.qualified_name))
+        out.append("```")
+        return out
+
+    async def format(self):
         if self.is_bot():
-            self._paginator.add_line(inspect.cleandoc(self.context.get_str("bot.description").format(cfg.name)),
-                                     empty=True)
-        elif self.is_cog():
-            pass  # TODO: HELP!!
-        elif isinstance(self.command, Command):
-            self._paginator.add_line(self.context.get_str("brief." + self.command.qualified_name.replace(' ', '.')),
-                                     empty=True)
+            out = ["```xl\n'Commands List'\n```",
+                   "Use `{}help [command]` to get help about a specific command.\n".format(self.clean_prefix)]
 
-            # TODO: Translate signatures
-            # <signature portion>
-            signature = self.context.get_str("signature." + self.command.qualified_name.replace(' ', '.'))
-            self._paginator.add_line(signature, empty=True)
+            def category(tup):
+                return {
+                    'General': '1. General',
+                    'Canvas': '2. Canvas',
+                    'Template': '3. Template',
+                    'Animotes': '4. Animotes',
+                    'Configuration': '5. Configuration',
+                }[tup[1].cog_name]
 
-            # <long doc> section
-            long_doc = self.context.get_str("help." + self.command.qualified_name.replace(' ', '.'))
-            if long_doc:
-                self._paginator.add_line(inspect.cleandoc(long_doc), empty=True)
-
-            # end it here if it's just a regular command
-            if not self.has_subcommands():
-                self._paginator.close_page()
-                return self._paginator.pages
-
-        max_width = self.max_name_size
-
-        def category(tup):
-            cog = tup[1].cog_name
-            # we insert the zero width space there to give it approximate
-            # last place sorting position.
-            return cog + ':' if cog is not None else '\u200bNo Category:'
-
-        filtered = yield from self.filter_command_list()
-        if self.is_bot():
+            filtered = await self.filter_command_list()
             data = sorted(filtered, key=category)
             for category, commands in itertools.groupby(data, key=category):
-                # there simply is no prettier way of doing this.
                 commands = sorted(commands)
                 if len(commands) > 0:
-                    self._paginator.add_line(category)
+                    cog_str = "**{} -**".format(category)
+                    for name, command in commands:
+                        if name not in command.aliases:
+                            cog_str += " `{}`".format(name)
+                    out.append(cog_str)
 
-                self.add_localized_subcommands_to_page(max_width, commands)
-        else:
-            filtered = sorted(filtered)
+            return out
+
+        if isinstance(self.command, Command):
+            dot_name = self.command.qualified_name.replace(' ', '.')
+            out = ["**`{}`** {}".format(self.command.qualified_name, self.context.get("brief." + dot_name))]
+
+            usage = "**Usage:** "
+            sig = self.context.get("signature." + dot_name)
+            if isinstance(sig, list):
+                usage += ' OR '.join(["`{}{} {}`".format(self.clean_prefix, self.command.qualified_name, x) for x in sig])
+            elif sig is not None:
+                usage += "`{}{} {}`".format(self.clean_prefix, self.command.qualified_name, sig)
+            else:
+                usage += "`{}{}`".format(self.clean_prefix, self.command.qualified_name)
+            out.append(usage)
+
+            if len(self.command.aliases) > 0:
+                aliases = "**Aliases:** "
+                aliases += ' '.join(["`{}`".format(a) for a in self.command.aliases])
+                out.append(aliases)
+
+            # <long doc> section
+            long_doc = self.context.get("help." + dot_name)
+            if long_doc:
+                out.append("\n{}".format(inspect.cleandoc(long_doc)).format(p=self.clean_prefix))
+
+            if not self.has_subcommands():
+                return out
+
+            filtered = await self.filter_command_list()
             if filtered:
-                self._paginator.add_line('Commands:')
-                self.add_localized_subcommands_to_page(max_width, filtered)
+                out.append("\n**Subcommands:**")
+                out += await self.add_localized_subcommands_to_page()
 
-        # add the ending note
-        self._paginator.add_line()
-        ending_note = self.get_localized_ending_note()
-        self._paginator.add_line(ending_note)
+            examples = self.context.get("example." + dot_name)
+            if examples:
+                out.append("\n**Examples:**")
+                for ex in self.context.get("example." + dot_name):
+                    out.append("`{}{} {}` {}".format(self.clean_prefix, self.command.qualified_name, *ex))
 
-        return self._paginator.pages
+            return out

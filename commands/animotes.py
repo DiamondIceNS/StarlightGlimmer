@@ -42,12 +42,12 @@ class Animotes:
     @commands.command()
     async def register(self, ctx):
         sql.animotes_users_add(ctx.author.id)
-        await ctx.send(ctx.get_str("animotes.member_opt_in"))
+        await ctx.send(ctx.get("animotes.member_opt_in"))
 
     @commands.command()
     async def unregister(self, ctx):
         sql.animotes_users_delete(ctx.author.id)
-        await ctx.send(ctx.get_str("animotes.member_opt_out"))
+        await ctx.send(ctx.get("animotes.member_opt_out"))
 
     @checks.admin_only()
     @commands.guild_only()
@@ -55,7 +55,7 @@ class Animotes:
     async def registerguild(self, ctx):
         sql.guild_update(ctx.guild.id, emojishare=1)
         await self.ch_log.log("Guild **{0.name}** (ID: `{0.id}`) has opted in to emoji sharing.".format(ctx.guild))
-        await ctx.send(ctx.get_str("animotes.guild_opt_in"))
+        await ctx.send(ctx.get("animotes.guild_opt_in"))
 
     @checks.admin_only()
     @commands.guild_only()
@@ -63,7 +63,7 @@ class Animotes:
     async def unregisterguild(self, ctx):
         sql.guild_update(ctx.guild.id, emojishare=0)
         await self.ch_log.log("Guild **{0.name}** (ID: `{0.id}`) has opted out of emoji sharing.".format(ctx.guild))
-        await ctx.send(ctx.get_str("animotes.guild_opt_out"))
+        await ctx.send(ctx.get("animotes.guild_opt_out"))
 
     @commands.guild_only()
     @commands.command()

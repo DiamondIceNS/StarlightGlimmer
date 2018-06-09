@@ -4,12 +4,6 @@ from utils import canvases, sqlite as sql
 from lang import en_US, pt_BR
 
 
-langs = {
-    'en-us': "English (US)",
-    'pt-br': "Português (BR)"
-}
-
-
 class GlimContext(commands.Context):
     def __init__(self, **attrs):
         super().__init__(**attrs)
@@ -17,6 +11,11 @@ class GlimContext(commands.Context):
         self.is_autoscan = False
         self.is_default = False
         self.is_template = False
+
+    langs = {
+        'en-us': "English (US)",
+        'pt-br': "Português (BR)"
+    }
 
     @property
     def canvas(self):
@@ -31,20 +30,20 @@ class GlimContext(commands.Context):
         return sql.guild_get_language_by_id(self.guild.id)
 
     @staticmethod
-    def get_str_from_guild(guild, str_id):
+    def get_from_guild(guild, str_id):
         language = sql.guild_get_language_by_id(guild.id).lower()
         if language == "en-us":
-            return en_US.STRINGS[str_id]
+            return en_US.STRINGS.get(str_id, None)
         if language == "pt-br":
-            return en_US.STRINGS[str_id]
+            return en_US.STRINGS.get(str_id, None)
 
-    def get_str(self, str_id):
+    def get(self, str_id):
         language = sql.guild_get_language_by_id(self.guild.id).lower()
 
         if language == "en-us":
-            return en_US.STRINGS[str_id]
+            return en_US.STRINGS.get(str_id, None)
         if language == "pt-br":
-            return pt_BR.STRINGS[str_id]
+            return pt_BR.STRINGS.get(str_id, None)
 
     async def invoke_default(self, cmd: str):
         default_canvas = self.canvas

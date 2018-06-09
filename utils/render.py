@@ -64,7 +64,7 @@ async def diff(ctx, x, y, data, zoom, fetch, palette):
                 log.debug("(X:{0} | Y:{1} | Dim:{2}x{3} | Z:{4})".format(x, y, template.width, template.height, zoom))
 
                 if template.width * template.height > 600000:
-                    await ctx.send(ctx.get_str("render.large_template"))
+                    await ctx.send(ctx.get("render.large_template"))
 
                 tot = 0  # Total non-transparent pixels in template
                 err = 0  # Number of errors
@@ -97,9 +97,9 @@ async def diff(ctx, x, y, data, zoom, fetch, palette):
             if zoom > 1:
                 diff_img = diff_img.resize(tuple(zoom * x for x in diff_img.size), Image.NEAREST)
             if bad > 0:
-                content = ctx.get_str("render.diff_bad_color").format(tot - err, tot, err, bad, 100 * (tot - err) / tot)
+                content = ctx.get("render.diff_bad_color").format(tot - err, tot, err, bad, 100 * (tot - err) / tot)
             else:
-                content = ctx.get_str("render.diff").format(tot - err, tot, err, 100 * (tot - err) / tot)
+                content = ctx.get("render.diff").format(tot - err, tot, err, 100 * (tot - err) / tot)
 
             with io.BytesIO() as bio:
                 diff_img.save(bio, format="PNG")
@@ -166,7 +166,7 @@ async def quantize(ctx, data, palette):
             template.save(bio, format="PNG")
             bio.seek(0)
             f = discord.File(bio, "template.png")
-            return await ctx.send(ctx.get_str("render.quantize").format(bad_pixels), file=f)
+            return await ctx.send(ctx.get("render.quantize").format(bad_pixels), file=f)
 
 
 async def gridify(ctx, data, zoom):

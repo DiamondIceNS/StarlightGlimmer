@@ -93,25 +93,25 @@ def is_template_adder(ctx):
 
 async def verify_attachment(ctx):
     if len(ctx.message.attachments) < 1:
-        await ctx.send(ctx.get_str("bot.error.missing_attachment"))
+        await ctx.send(ctx.get("bot.error.missing_attachment"))
         return
     att = ctx.message.attachments[0]
     if att.filename[-4:].lower() != ".png":
         if att.filename[-4:].lower() == ".jpg" or att.filename[-5:].lower() == ".jpeg":
             try:
                 f = discord.File("assets/disdain_for_jpegs.gif", "disdain_for_jpegs.gif")
-                await ctx.send(ctx.get_str("bot.error.jpeg"), file=f)
+                await ctx.send(ctx.get("bot.error.jpeg"), file=f)
             except IOError:
-                await ctx.send(ctx.get_str("bot.error.jpeg"))
+                await ctx.send(ctx.get("bot.error.jpeg"))
             return
-        await ctx.send(ctx.get_str("bot.error.no_png"))
+        await ctx.send(ctx.get("bot.error.no_png"))
         return
     return att
 
 
 async def yes_no(ctx, question):
     sql.menu_locks_add(ctx.channel.id, ctx.author.id)
-    query_msg = await ctx.send(question + ctx.get_str("bot.yes_no"))
+    query_msg = await ctx.send(question + ctx.get("bot.yes_no"))
 
     def check(m):
         return ctx.channel.id == m.channel.id and ctx.author.id == m.author.id
@@ -119,10 +119,10 @@ async def yes_no(ctx, question):
     try:
         resp_msg = await ctx.bot.wait_for('message', timeout=60.0, check=check)
         while not (resp_msg.content == "0" or resp_msg.content == "1"):
-            await ctx.send(ctx.get_str("bot.yes_no_invalid"))
+            await ctx.send(ctx.get("bot.yes_no_invalid"))
             resp_msg = await ctx.bot.wait_for('message', timeout=60.0, check=check)
     except asyncio.TimeoutError:
-        await query_msg.edit(content=ctx.get_str("bot.yes_no_timed_out"))
+        await query_msg.edit(content=ctx.get("bot.yes_no_timed_out"))
         return False
     finally:
         sql.menu_locks_delete(ctx.channel.id, ctx.author.id)

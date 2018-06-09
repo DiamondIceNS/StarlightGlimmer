@@ -30,22 +30,22 @@ class Template:
         if len(ts) > 0:
             pages = 1 + len(ts) // 10
             page = min(max(page, 1), pages)
-            w1 = max(max(map(lambda tx: len(tx.name), ts)) + 2, len(ctx.get_str("template.info_name")))
+            w1 = max(max(map(lambda tx: len(tx.name), ts)) + 2, len(ctx.get("template.info_name")))
             msg = [
-                ctx.get_str("template.list_open").format(page, pages),
-                "{0:<{w1}}  {1:<14}  {2}\n".format(ctx.get_str("template.info_name"),
-                                                   ctx.get_str("template.info_canvas"),
-                                                   ctx.get_str("template.info_coords"), w1=w1)
+                ctx.get("template.list_open").format(page, pages),
+                "{0:<{w1}}  {1:<14}  {2}\n".format(ctx.get("template.info_name"),
+                                                   ctx.get("template.info_canvas"),
+                                                   ctx.get("template.info_coords"), w1=w1)
             ]
             for t in ts[(page-1)*10:page*10]:
                 coords = "({}, {})".format(t.x, t.y)
                 name = '"{}"'.format(t.name)
                 canvas_name = canvases.pretty_print[t.canvas]
                 msg.append("{0:<{w1}}  {1:<14}  {2}\n".format(name, canvas_name, coords, w1=w1))
-            msg.append(ctx.get_str("template.list_close").format(sql.guild_get_prefix_by_id(ctx.guild.id)))
+            msg.append(ctx.get("template.list_close").format(sql.guild_get_prefix_by_id(ctx.guild.id)))
             await ctx.send(''.join(msg))
         else:
-            await ctx.send(ctx.get_str("template.list_no_templates"))
+            await ctx.send(ctx.get("template.list_no_templates"))
 
     @commands.guild_only()
     @commands.cooldown(1, 5, BucketType.guild)
@@ -88,7 +88,7 @@ class Template:
     async def template_info(self, ctx, name):
         t = sql.template_get_by_name(ctx.guild.id, name)
         if not t:
-            await ctx.send(ctx.get_str("template.name_not_found").format(name))
+            await ctx.send(ctx.get("template.name_not_found").format(name))
             return
 
         canvas_url = canvases.url_templates[t.canvas].format(*t.center())
@@ -102,12 +102,12 @@ class Template:
 
         e = discord.Embed(title=t.name, url=canvas_url, color=13594340) \
             .set_image(url=t.url) \
-            .add_field(name=ctx.get_str("template.info_canvas"), value=canvas_name, inline=True) \
-            .add_field(name=ctx.get_str("template.info_coords"), value=coords, inline=True) \
-            .add_field(name=ctx.get_str("template.info_size"), value=size, inline=True) \
-            .add_field(name=ctx.get_str("template.info_added_by"), value=added_by, inline=True) \
-            .add_field(name=ctx.get_str("template.info_date_added"), value=date_added, inline=True) \
-            .add_field(name=ctx.get_str("template.info_date_modified"), value=date_modified, inline=True)
+            .add_field(name=ctx.get("template.info_canvas"), value=canvas_name, inline=True) \
+            .add_field(name=ctx.get("template.info_coords"), value=coords, inline=True) \
+            .add_field(name=ctx.get("template.info_size"), value=size, inline=True) \
+            .add_field(name=ctx.get("template.info_added_by"), value=added_by, inline=True) \
+            .add_field(name=ctx.get("template.info_date_added"), value=date_added, inline=True) \
+            .add_field(name=ctx.get("template.info_date_modified"), value=date_modified, inline=True)
         await ctx.send(embed=e)
 
     @commands.guild_only()
@@ -117,21 +117,21 @@ class Template:
     async def template_remove(self, ctx, name):
         t = sql.template_get_by_name(ctx.guild.id, name)
         if not t:
-            await ctx.send(ctx.get_str("template.no_template_named").format(name))
+            await ctx.send(ctx.get("template.no_template_named").format(name))
             return
         if t.owner_id != ctx.author.id and not utils.is_template_admin(ctx) and not utils.is_admin(ctx):
-            await ctx.send(ctx.get_str("template.not_owner"))
+            await ctx.send(ctx.get("template.not_owner"))
             return
         sql.template_delete(t.gid, t.name)
-        await ctx.send(ctx.get_str("template.remove").format(name))
+        await ctx.send(ctx.get("template.remove").format(name))
 
     @staticmethod
     async def add_template(ctx, canvas, name, x, y, url):
         if len(name) > cfg.max_template_name_length:
-            await ctx.send(ctx.get_str("template.name_too_long").format(cfg.max_template_name_length))
+            await ctx.send(ctx.get("template.name_too_long").format(cfg.max_template_name_length))
             return
         if sql.template_count_by_guild_id(ctx.guild.id) >= cfg.max_templates_per_guild:
-            await ctx.send(ctx.get_str("template.max_templates"))
+            await ctx.send(ctx.get("template.max_templates"))
             return
         url = await Template.select_url(ctx, url)
         if url is None:
@@ -143,12 +143,12 @@ class Template:
             if not chk or await Template.check_for_duplicates_by_md5(ctx, t) is False:
                 return
             sql.template_update(t)
-            await ctx.send(ctx.get_str("template.updated").format(name))
+            await ctx.send(ctx.get("template.updated").format(name))
             return
         elif await Template.check_for_duplicates_by_md5(ctx, t) is False:
             return
         sql.template_add(t)
-        await ctx.send(ctx.get_str("template.added").format(name))
+        await ctx.send(ctx.get("template.added").format(name))
 
     @staticmethod
     async def build_template(ctx, name, x, y, url, canvas):
@@ -159,7 +159,7 @@ class Template:
                     w, h = tmp.size
                     quantized = await Template.check_colors(tmp, colors.by_name[canvas])
                 if not quantized:
-                    if not await utils.yes_no(ctx, ctx.get_str("template.not_quantized")):
+                    if not await utils.yes_no(ctx, ctx.get("template.not_quantized")):
                         return
                     new_msg = await render.quantize(ctx, data, colors.by_name[canvas])
                     url = new_msg.attachments[0].url
@@ -190,13 +190,13 @@ class Template:
     async def check_for_duplicates_by_md5(ctx, template):
         dups = sql.template_get_by_hash(ctx.guild.id, template.md5)
         if len(dups) > 0:
-            msg = [ctx.get_str("template.duplicate_list_open")]
+            msg = [ctx.get("template.duplicate_list_open")]
             w = max(map(lambda tx: len(tx.name), dups)) + 2
             for d in dups:
                 name = '"{}"'.format(d.name)
                 canvas_name = canvases.pretty_print[d.canvas]
                 msg.append("{0:<{w}} {1:>15} ({2}, {3})\n".format(name, canvas_name, d.x, d.y, w=w))
-            msg.append(ctx.get_str("template.duplicate_list_close"))
+            msg.append(ctx.get("template.duplicate_list_close"))
             return await utils.yes_no(ctx, ''.join(msg))
 
     @staticmethod
@@ -204,10 +204,10 @@ class Template:
         dup = sql.template_get_by_name(ctx.guild.id, template.name)
         if dup:
             if template.owner_id != ctx.author.id and not utils.is_admin(ctx):
-                await ctx.send(ctx.get_str("template.name_exists_no_permission"))
+                await ctx.send(ctx.get("template.name_exists_no_permission"))
                 return False
             print(dup.x)
-            q = ctx.get_str("template.name_exists_ask_replace")\
+            q = ctx.get("template.name_exists_ask_replace")\
                 .format(dup.name, canvases.pretty_print[dup.canvas], dup.x, dup.y)
             return await utils.yes_no(ctx, q)
 
