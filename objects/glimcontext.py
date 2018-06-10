@@ -4,12 +4,6 @@ from utils import canvases, sqlite as sql
 from lang import en_US, pt_BR
 
 
-langs = {
-    'en-us': "English (US)",
-    'pt-br': "Português (BR)"
-}
-
-
 class GlimContext(commands.Context):
     def __init__(self, **attrs):
         super().__init__(**attrs)
@@ -17,6 +11,11 @@ class GlimContext(commands.Context):
         self.is_autoscan = False
         self.is_default = False
         self.is_template = False
+
+    langs = {
+        'en-us': "English (US)",
+        'pt-br': "Português (BR)"
+    }
 
     @property
     def canvas(self):
