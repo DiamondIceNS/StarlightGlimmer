@@ -234,7 +234,10 @@ async def fetch_pixelcanvas(x, y, dx, dy):
                 if not -1000000 <= bchk_tlp.x + cx < 1000000 or not -1000000 <= bchk_tlp.y + cy < 1000000:
                     bc.data.seek(2048, 1)  # Skip out of bounds chunks
                     continue
-                img = Image.frombuffer('P', (64, 64), bc.data.read(2048), 'raw', 'P;4')
+                try:
+                    img = Image.frombuffer('P', (64, 64), bc.data.read(2048), 'raw', 'P;4')
+                except ValueError:
+                    raise checks.HttpPayloadError("pixelcanvas")
                 img.putpalette(palette_data)
                 fetched.paste(img, (bchk_off.x + cx, bchk_off.y + cy, bchk_off.x + cx + 64, bchk_off.y + cy + 64))
 
