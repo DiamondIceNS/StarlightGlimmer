@@ -3,13 +3,17 @@ import asyncio
 import datetime
 import discord
 import hashlib
+import math
+import numpy as np
+import io
 import re
 import time
-from PIL import Image
+from PIL import Image, ImageChops
 from discord.ext import commands
 from discord.ext.commands import BucketType
 
 from objects.template import Template as Template_
+from objects.coords import Coords
 from utils import canvases, checks, colors, render, sqlite as sql, utils
 from objects.logger import Log
 from objects.config import Config
@@ -81,6 +85,125 @@ class Template:
     @template_add.command(name="pxlsspace", aliases=['ps'])
     async def template_add_pxlsspace(self, ctx, name: str, x: int, y: int, url=None):
         await self.add_template(ctx, "pxlsspace", name, x, y, url)
+
+    @commands.guild_only()
+    #@commands.cooldown(1, 300, BucketType.guild)
+    @template.group(name='check')
+    async def template_check(self, ctx):
+        pass
+
+    @commands.guild_only()
+    #@commands.cooldown(1, 300, BucketType.guild)
+    @template_check.command(name='pixelcanvas', aliases=['pc'])
+    async def template_check_pixelcanvas(self, ctx):
+        ts = [x for x in sql.template_get_all_by_guild_id(ctx.guild.id) if x.canvas == "pixelcanvas"]
+        if len(ts) > 0:
+            msg = await ctx.send("Fetching data from Pixelcanvas...")  # TODO: Translate
+            bigchunks_needed = set()
+            for t in ts:
+                x, y = (t.x + 448) // 960, (t.y + 448) // 960
+                dx, dy = (t.x + t.width + 448) // 960, (t.y + t.height + 448) // 960
+                for bc_x in range(x, dx+1):
+                    for bc_y in range(y, dy+1):
+                        bigchunks_needed.add((bc_x, bc_y))
+
+            class BigChunk:
+                def __init__(self, x, y, data):
+                    self.x = x
+                    self.y = y
+                    self.data = data
+                    self.img = None
+
+            bigchunks = dict()
+            async with aiohttp.ClientSession() as session:
+                for bc in bigchunks_needed:
+                    url = "http://pixelcanvas.io/api/bigchunk/{0}.{1}.bmp".format(bc[0] * 15, bc[1] * 15)
+                    attempts = 0
+                    bc_data = None
+                    while not bc_data and attempts < 3:
+                        try:
+                            async with session.get(url) as resp:
+                                data = await resp.read()
+                                if len(data) != 460800:
+                                    attempts += 1
+                                    continue
+                                bc_data = BigChunk(*bc, io.BytesIO(data))
+                                bigchunks[bc] = bc_data
+                        except aiohttp.ClientPayloadError:
+                            attempts += 1
+                            bc_data = None
+                    if not bc_data:
+                        raise checks.HttpPayloadError('pixelcanvas')
+
+            palette_data = [x for sub in colors.pixelcanvas for x in sub] * 16
+
+            async def decode_bigchunk(bc):
+                bg_chk = Image.new("RGB", (960, 960), colors.pixelcanvas[1])
+                bchk_tlp = Coords(bc.x, bc.y) * 960 - 448
+                for cy in range(0, 960, 64):
+                    await asyncio.sleep(0)
+                    for cx in range(0, 960, 64):
+                        if not -1000000 <= bchk_tlp.x + cx < 1000000 or not -1000000 <= bchk_tlp.y + cy < 1000000:
+                            bc.data.seek(2048, 1)  # Skip out of bounds chunks
+                            continue
+                        img = Image.frombuffer('P', (64, 64), bc.data.read(2048), 'raw', 'P;4')
+                        img.putpalette(palette_data)
+                        bg_chk.paste(img, (cx, cy))
+                return bg_chk
+
+            await msg.edit(content="Calculating...")  # TODO: Translate
+
+            results = []
+            for t in ts:
+                x, y, dx, dy = (t.x + 448) // 960, (t.y + 448) // 960, (t.x + t.width + 448) // 960, (t.y + t.height + 448) // 960
+                tmp = Image.new("RGB", ((dx-x+1)*960, (dy-y+1)*960))
+                for bc_x in range(x, dx + 1):
+                    for bc_y in range(y, dy + 1):
+                        bc = bigchunks[(bc_x, bc_y)]
+                        if not bc.img:
+                            bc.img = await decode_bigchunk(bc)
+                        bbox = ((bc_x - x) * 960, (bc_y - y) * 960)
+                        tmp.paste(bc.img, bbox)
+                x = t.x - (x * 960 - 448)
+                y = t.y - (y * 960 - 448)
+                dx = x + t.width
+                dy = y + t.height
+                tmp = tmp.crop((x, y, dx, dy))
+
+                # Diff
+                template = Image.open(await utils.get_template(t.url)).convert('RGBA')
+                tmp.convert('RGBA')
+                alpha = Image.new('RGBA', template.size, (255, 255, 255, 0))
+                template = Image.composite(template, alpha, template)
+                tmp = Image.composite(tmp, alpha, template)
+                tmp = ImageChops.difference(tmp.convert('RGB'), template.convert('RGB'))
+                err = np.array(tmp).any(axis=-1).sum()
+                results.append((t, err))
+
+            def by_name(tup):
+                return tup[0].name
+
+            results = sorted(results, key=by_name)
+            w1 = max(max(map(lambda tx: len(tx.name), ts)) + 2, len(ctx.get("template.info_name")))
+            w2 = max(max(map(lambda tx: len(str(tx.height * tx.width)), ts)), len("Total"))
+            w3 = max(max(map(lambda tx: len(str(tx[1])), results)), len("Errors"))
+            w4 = max(len("Percent"), 6)
+            out = ["**Template Report**\n```xl",  # TODO: Translate
+                   "{0:<{w1}}  {1:>{w2}}  {2:>{w3}}  {3:>{w4}}".format(ctx.get("template.info_name"),
+                                                            "Total", "Errors", "Percent", w1=w1, w2=w2, w3=w3, w4=w4)  # TODO: Translate
+                   ]
+            for r in results:
+                t = r[0]
+                err = r[1]
+                tot = t.width * t.height
+                name = '"{}"'.format(t.name)
+                perc = "{:>6.2f}%".format(100 * (tot - err) / tot)
+                out.append('{0:<{w1}}  {1:>{w2}}  {2:>{w3}}  {3:>{w4}}'.format(name, tot, err, perc, w1=w1, w2=w2, w3=w3, w4=w4))
+
+            out.append("```")
+            await msg.edit(content='\n'.join(out))
+
+
 
     @commands.guild_only()
     @commands.cooldown(1, 5, BucketType.guild)

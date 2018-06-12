@@ -16,4 +16,4 @@ config.json
 *.sh
 
 # Testing
-test/
+scratches/
