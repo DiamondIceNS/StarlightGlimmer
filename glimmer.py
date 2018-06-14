@@ -168,7 +168,8 @@ async def on_command_error(ctx, error):
         await ctx.send(ctx.get_str("bot.error.url_error"))
         return
     if isinstance(error, checks.HttpPayloadError):
-        await ctx.send(ctx.get_str("bot.error.http_payload_error").format(canvases.pretty_print(error.canvas)))
+        await ctx.send(ctx.get_str("bot.error.http_payload_error").format(canvases.pretty_print[error.canvas]))
+        return
 
     # Uncaught error
     name = ctx.command.qualified_name if ctx.command else "None"
