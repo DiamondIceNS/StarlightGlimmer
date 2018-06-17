@@ -306,7 +306,7 @@ async def fetch_pixelzone(x, y, dx, dy):
             await asyncio.sleep(0)
             for px in range(chunk.width):
                 i = (py * 512 + px) / 2
-                color_id = tmp[int(i)] & 15 if i % 1 == 0 else tmp[int(i)] >> 4
+                color_id = tmp[int(i)] & 15 if i % 1 != 0 else tmp[int(i)] >> 4
                 color = colors.pixelzone[color_id]
                 chunk.putpixel((px, py), color)
         fetched.paste(chunk, (chk_off.x, chk_off.y, chk_off.x + 512, chk_off.y + 512))
