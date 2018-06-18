@@ -12,6 +12,7 @@ class Template:
         self.date_updated = date_updated
         self.md5 = md5
         self.owner_id = owner_id
+        self.errors = None
 
     def to_tuple(self):
         return (

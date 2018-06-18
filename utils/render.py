@@ -1,57 +1,17 @@
-import aiohttp
 import asyncio
-import cfscrape
 import discord
 import io
-import json
-import lz4.frame
-import time
-import websockets
 from math import sqrt, pow
 from PIL import Image, ImageDraw
 
-from utils import colors, checks
+from utils import colors, http
+from objects.chunks import BigChunk, ChunkPz, ChunkPzi, PxlsBoard
 from objects.config import Config
+from objects.coords import Coords
 from objects.logger import Log
-from utils.lzstring import LZString
 
 cfg = Config()
 log = Log(__name__)
-
-
-# Helper class to store coordinate pairs
-class Coords:
-    def __init__(self, x, y):
-        self.coord = (x, y)
-
-    @property
-    def x(self):
-        return self.coord[0]
-
-    @property
-    def y(self):
-        return self.coord[1]
-
-    def __iter__(self):
-        yield from self.coord
-
-    def __add__(self, other):
-        return Coords(self.coord[0] + other, self.coord[1] + other)
-
-    def __sub__(self, other):
-        return Coords(self.coord[0] - other, self.coord[1] - other)
-
-    def __mul__(self, other):
-        return Coords(self.coord[0] * other, self.coord[1] * other)
-
-    def __floordiv__(self, other):
-        return Coords(self.coord[0] // other, self.coord[1] // other)
-
-    def __mod__(self, other):
-        return Coords(self.coord[0] % other, self.coord[1] % other)
-
-    def __repr__(self):
-        return "Coord({}, {})".format(*self.coord)
 
 
 async def diff(ctx, x, y, data, zoom, fetch, palette):
@@ -191,141 +151,45 @@ async def gridify(ctx, data, zoom):
 
 
 async def fetch_pixelcanvas(x, y, dx, dy):
-    tl_chk = Coords(x, y) % 64
-    tl_bchk = Coords(x, y) // 64 + 7
-    bchks_needed = Coords(dx + tl_chk.x, dy + tl_chk.y) // 960 + 1
-    fetched = Image.new('RGB', tuple(bchks_needed * 960), colors.pixelcanvas[1])
+    bigchunks, shape = BigChunk.get_intersecting(x, y, dx, dy)
+    fetched = Image.new('RGB', tuple([960 * x for x in shape]), colors.pixelcanvas[1])
 
-    class BigChunk:
-        def __init__(self, x, y, data):
-            self.x = x
-            self.y = y
-            self.data = data
+    await http.fetch_chunks_pixelcanvas(bigchunks)
 
-    bigchunks = []
-    async with aiohttp.ClientSession() as session:
-        for iy in range(0, bchks_needed.y * 15, 15):
-            if not -15632 <= tl_bchk.y + iy < 15632:  # Ignore bigchunks that are out of bounds
-                continue
-            for ix in range(0, bchks_needed.x * 15, 15):
-                if not -15632 <= tl_bchk.x + ix < 15632:  # Ignore bigchunks that are out of bounds
-                    continue
-                url = "http://pixelcanvas.io/api/bigchunk/{0}.{1}.bmp".format(tl_bchk.x + ix, tl_bchk.y + iy)
-                attempts = 0
-                bc_data = None
-                while not bc_data and attempts < 3:
-                    try:
-                        async with session.get(url) as resp:
-                            bc_data = BigChunk(tl_bchk.x + ix, tl_bchk.y + iy, io.BytesIO(await resp.read()))
-                            bigchunks.append(bc_data)
-                    except aiohttp.ClientPayloadError:
-                        attempts += 1
-                        bc_data = None
-                if not bc_data:
-                    raise checks.HttpPayloadError('pixelcanvas')
+    for i, bc in enumerate(bigchunks):
+        fetched.paste(bc.image, ((i % shape[0]) * 960, (i // shape[0]) * 960))
 
-    palette_data = [x for sub in colors.pixelcanvas for x in sub] * 16
-    for bc in bigchunks:
-        bchk_tlp = Coords(bc.x, bc.y) * 64 - 448
-        bchk_off = Coords(bc.x - tl_bchk.x, bc.y - tl_bchk.y) // 15 * 960
-        for cy in range(0, 960, 64):
-            await asyncio.sleep(0)
-            for cx in range(0, 960, 64):
-                if not -1000000 <= bchk_tlp.x + cx < 1000000 or not -1000000 <= bchk_tlp.y + cy < 1000000:
-                    bc.data.seek(2048, 1)  # Skip out of bounds chunks
-                    continue
-                img = Image.frombuffer('P', (64, 64), bc.data.read(2048), 'raw', 'P;4')
-                img.putpalette(palette_data)
-                fetched.paste(img, (bchk_off.x + cx, bchk_off.y + cy, bchk_off.x + cx + 64, bchk_off.y + cy + 64))
-
-    return fetched.crop((tl_chk.x, tl_chk.y, tl_chk.x + dx, tl_chk.y + dy))
+    x, y = x - (x + 448) // 960 * 960 + 448, y - (y + 448) // 960 * 960 + 448
+    return fetched.crop((x, y, x + dx, y + dy))
 
 
 async def fetch_pixelzio(x, y, dx, dy):
-    chk = Coords(x, y) // 500 * 500
-    chks_needed = Coords((x + dx) // 500 - x // 500 + 1, (y + dy) // 500 - y // 500 + 1)
-    fetched = Image.new('RGB', (500 * chks_needed.x, 500 * chks_needed.y), colors.pixelzio[1])
+    chunks, shape = ChunkPzi.get_intersecting(x, y, dx, dy)
+    fetched = Image.new('RGB', tuple([500 * x for x in shape]), colors.pixelzio[1])
 
-    async with cfscrape.create_scraper_async() as session:
-        for iy in range(0, chks_needed.y * 500, 500):
-            if not -6000 <= chk.y + iy < 6000:  # Ignore out of bounds chunks
-                continue
-            for ix in range(0, chks_needed.x * 500, 500):
-                if not -6000 <= chk.x + ix < 6000:  # Ignore out of bounds chunks
-                    continue
-                url = "http://pixelz.io/api/{0}_{1}/img".format(chk.x + ix, chk.y + iy)
-                async with session.get(url) as resp:
-                    data = await resp.read()
-                    tmp = Image.open(io.BytesIO(data)).convert('RGB')
-                    fetched.paste(tmp, (ix, iy, ix + 500, iy + 500))
+    await http.fetch_chunks_pixelzio(chunks)
+
+    for i, ch in enumerate(chunks):
+        fetched.paste(ch.image, ((i % shape[0]) * 500, (i // shape[0]) * 500))
 
     return fetched.crop((x % 500, y % 500, (x % 500) + dx, (y % 500) + dy))
 
 
 async def fetch_pixelzone(x, y, dx, dy):
-    x += 4096
-    y += 4096
-    chk = Coords(x, y) // 512
-    chks_needed = Coords((x + dx) // 512 - x // 512 + 1, (y + dy) // 512 - y // 512 + 1)
-    fetched = Image.new('RGB', (512 * chks_needed.x, 512 * chks_needed.y), colors.pixelzone[2])
+    chunks, shape = ChunkPz.get_intersecting(x, y, dx, dy)
+    fetched = Image.new('RGB', tuple([512 * x for x in shape]), colors.pixelzone[2])
 
-    url = "{0}://pixelzone.io/socket.io/?EIO=3&transport={1}"
-    pkts_expected = 0
-    async with aiohttp.ClientSession() as session:
-        async with session.get(url.format("http", "polling")) as r:
-            sid = json.loads(str((await r.read())[4:-4], "utf-8"))['sid']
-    async with websockets.connect(url.format("ws", "websocket&sid=") + sid) as ws:
-        await ws.send("2probe")
-        await ws.recv()
-        await ws.send("5")
-        await ws.recv()
-        for iy in range(chks_needed.y):
-            for ix in range(chks_needed.x):
-                if 0 <= chk.x + ix < 16 and 0 <= chk.y + iy < 16:
-                    await ws.send("42[\"getChunkData\", {{\"cx\": {0}, \"cy\": {1}}}]".format(chk.x + ix, chk.y + iy))
-                    pkts_expected = pkts_expected + 1
-        chunks = []
-        if pkts_expected > 0:
-            async for msg in ws:
-                d = json.loads(msg[msg.find('['):])
-                if d[0] == "chunkData":
-                    chunks.append(d[1])
-                if len(chunks) == pkts_expected:
-                    break
+    await http.fetch_chunks_pixelzone(chunks)
 
-    for data in chunks:
-        chk_off = Coords(data['cx'] - chk.x, data['cy'] - chk.y) * 512
-        tmp = LZString().decompressFromBase64(data['data'])
-        tmp = json.loads("[" + tmp + "]")
-        tmp = lz4.frame.decompress(bytes(tmp))
-        chunk = Image.new('RGB', (512, 512), (255, 255, 255, 255))
-        for py in range(chunk.height):
-            await asyncio.sleep(0)
-            for px in range(chunk.width):
-                i = (py * 512 + px) / 2
-                color_id = tmp[int(i)] & 15 if i % 1 == 0 else tmp[int(i)] >> 4
-                color = colors.pixelzone[color_id]
-                chunk.putpixel((px, py), color)
-        fetched.paste(chunk, (chk_off.x, chk_off.y, chk_off.x + 512, chk_off.y + 512))
+    for i, ch in enumerate(chunks):
+        fetched.paste(ch.image, ((i % shape[0]) * 512, (i // shape[0]) * 512))
 
     return fetched.crop((x % 512, y % 512, (x % 512) + dx, (y % 512) + dy))
 
 
 async def fetch_pxlsspace(x, y, dx, dy):
+    board = PxlsBoard()
     fetched = Image.new('RGB', (dx, dy), colors.pxlsspace[1])
-
-    async with aiohttp.ClientSession() as session:
-        # Get board info
-        async with session.get("http://pxls.space/info") as resp:
-            info = json.loads(await resp.read())
-
-        # Get board data
-        async with session.get("http://pxls.space/boarddata?={0:.0f}".format(time.time())) as resp:
-            data = io.BytesIO(await resp.read())
-
-    board = Image.frombuffer("P", (info['width'], info['height']), data.read(), 'raw', 'P', 0, 1)
-    palette_data = [x for sub in colors.pxlsspace for x in sub]
-    board.putpalette(palette_data)
-    fetched.paste(board, (-x, -y, board.width - x, board.height - y))
-
+    await http.fetch_pxlsspace(board)
+    fetched.paste(board.image, (-x, -y, board.width - x, board.height - y))
     return fetched

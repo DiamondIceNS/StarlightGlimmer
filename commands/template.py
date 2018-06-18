@@ -3,18 +3,17 @@ import asyncio
 import datetime
 import discord
 import hashlib
-import math
 import numpy as np
-import io
 import re
 import time
+from typing import List, Set
 from PIL import Image, ImageChops
 from discord.ext import commands
 from discord.ext.commands import BucketType
 
+from objects.chunks import Chunky, BigChunk, ChunkPzi, ChunkPz, PxlsBoard
 from objects.template import Template as Template_
-from objects.coords import Coords
-from utils import canvases, checks, colors, render, sqlite as sql, utils
+from utils import canvases, checks, colors, http, render, sqlite as sql, utils
 from objects.logger import Log
 from objects.config import Config
 
@@ -87,123 +86,34 @@ class Template:
         await self.add_template(ctx, "pxlsspace", name, x, y, url)
 
     @commands.guild_only()
-    #@commands.cooldown(1, 300, BucketType.guild)
+    #@commands.cooldown(1, 300, BucketType.guild)  # TODO: Cooldown
     @template.group(name='check')
     async def template_check(self, ctx):
-        pass
+        pass  # TODO: Check all logic + custom cooldown
 
     @commands.guild_only()
-    #@commands.cooldown(1, 300, BucketType.guild)
+    # @commands.cooldown(1, 300, BucketType.guild)  # TODO: Cooldown
     @template_check.command(name='pixelcanvas', aliases=['pc'])
     async def template_check_pixelcanvas(self, ctx):
-        ts = [x for x in sql.template_get_all_by_guild_id(ctx.guild.id) if x.canvas == "pixelcanvas"]
-        if len(ts) > 0:
-            msg = await ctx.send("Fetching data from Pixelcanvas...")  # TODO: Translate
-            bigchunks_needed = set()
-            for t in ts:
-                x, y = (t.x + 448) // 960, (t.y + 448) // 960
-                dx, dy = (t.x + t.width + 448) // 960, (t.y + t.height + 448) // 960
-                for bc_x in range(x, dx+1):
-                    for bc_y in range(y, dy+1):
-                        bigchunks_needed.add((bc_x, bc_y))
+        await self.check_canvas(ctx, "pixelcanvas", BigChunk, http.fetch_chunks_pixelcanvas)
 
-            class BigChunk:
-                def __init__(self, x, y, data):
-                    self.x = x
-                    self.y = y
-                    self.data = data
-                    self.img = None
+    @commands.guild_only()
+    # @commands.cooldown(1, 300, BucketType.guild)  # TODO: Cooldown
+    @template_check.command(name='pixelzio', aliases=['pzi'])
+    async def template_check_pixelzio(self, ctx):
+        await self.check_canvas(ctx, "pixelzio", ChunkPzi, http.fetch_chunks_pixelzio)
 
-            bigchunks = dict()
-            async with aiohttp.ClientSession() as session:
-                for bc in bigchunks_needed:
-                    url = "http://pixelcanvas.io/api/bigchunk/{0}.{1}.bmp".format(bc[0] * 15, bc[1] * 15)
-                    attempts = 0
-                    bc_data = None
-                    while not bc_data and attempts < 3:
-                        try:
-                            async with session.get(url) as resp:
-                                data = await resp.read()
-                                if len(data) != 460800:
-                                    attempts += 1
-                                    continue
-                                bc_data = BigChunk(*bc, io.BytesIO(data))
-                                bigchunks[bc] = bc_data
-                        except aiohttp.ClientPayloadError:
-                            attempts += 1
-                            bc_data = None
-                    if not bc_data:
-                        raise checks.HttpPayloadError('pixelcanvas')
+    @commands.guild_only()
+    # @commands.cooldown(1, 300, BucketType.guild)  # TODO: Cooldown
+    @template_check.command(name='pixelzone', aliases=['pz'])
+    async def template_check_pixelzone(self, ctx):
+        await self.check_canvas(ctx, "pixelzone", ChunkPz, http.fetch_chunks_pixelzone)
 
-            palette_data = [x for sub in colors.pixelcanvas for x in sub] * 16
-
-            async def decode_bigchunk(bc):
-                bg_chk = Image.new("RGB", (960, 960), colors.pixelcanvas[1])
-                bchk_tlp = Coords(bc.x, bc.y) * 960 - 448
-                for cy in range(0, 960, 64):
-                    await asyncio.sleep(0)
-                    for cx in range(0, 960, 64):
-                        if not -1000000 <= bchk_tlp.x + cx < 1000000 or not -1000000 <= bchk_tlp.y + cy < 1000000:
-                            bc.data.seek(2048, 1)  # Skip out of bounds chunks
-                            continue
-                        img = Image.frombuffer('P', (64, 64), bc.data.read(2048), 'raw', 'P;4')
-                        img.putpalette(palette_data)
-                        bg_chk.paste(img, (cx, cy))
-                return bg_chk
-
-            await msg.edit(content="Calculating...")  # TODO: Translate
-
-            results = []
-            for t in ts:
-                x, y, dx, dy = (t.x + 448) // 960, (t.y + 448) // 960, (t.x + t.width + 448) // 960, (t.y + t.height + 448) // 960
-                tmp = Image.new("RGB", ((dx-x+1)*960, (dy-y+1)*960))
-                for bc_x in range(x, dx + 1):
-                    for bc_y in range(y, dy + 1):
-                        bc = bigchunks[(bc_x, bc_y)]
-                        if not bc.img:
-                            bc.img = await decode_bigchunk(bc)
-                        bbox = ((bc_x - x) * 960, (bc_y - y) * 960)
-                        tmp.paste(bc.img, bbox)
-                x = t.x - (x * 960 - 448)
-                y = t.y - (y * 960 - 448)
-                dx = x + t.width
-                dy = y + t.height
-                tmp = tmp.crop((x, y, dx, dy))
-
-                # Diff
-                template = Image.open(await utils.get_template(t.url)).convert('RGBA')
-                tmp.convert('RGBA')
-                alpha = Image.new('RGBA', template.size, (255, 255, 255, 0))
-                template = Image.composite(template, alpha, template)
-                tmp = Image.composite(tmp, alpha, template)
-                tmp = ImageChops.difference(tmp.convert('RGB'), template.convert('RGB'))
-                err = np.array(tmp).any(axis=-1).sum()
-                results.append((t, err))
-
-            def by_name(tup):
-                return tup[0].name
-
-            results = sorted(results, key=by_name)
-            w1 = max(max(map(lambda tx: len(tx.name), ts)) + 2, len(ctx.get("template.info_name")))
-            w2 = max(max(map(lambda tx: len(str(tx.height * tx.width)), ts)), len("Total"))
-            w3 = max(max(map(lambda tx: len(str(tx[1])), results)), len("Errors"))
-            w4 = max(len("Percent"), 6)
-            out = ["**Template Report**\n```xl",  # TODO: Translate
-                   "{0:<{w1}}  {1:>{w2}}  {2:>{w3}}  {3:>{w4}}".format(ctx.get("template.info_name"),
-                                                            "Total", "Errors", "Percent", w1=w1, w2=w2, w3=w3, w4=w4)  # TODO: Translate
-                   ]
-            for r in results:
-                t = r[0]
-                err = r[1]
-                tot = t.width * t.height
-                name = '"{}"'.format(t.name)
-                perc = "{:>6.2f}%".format(100 * (tot - err) / tot)
-                out.append('{0:<{w1}}  {1:>{w2}}  {2:>{w3}}  {3:>{w4}}'.format(name, tot, err, perc, w1=w1, w2=w2, w3=w3, w4=w4))
-
-            out.append("```")
-            await msg.edit(content='\n'.join(out))
-
-
+    @commands.guild_only()
+    # @commands.cooldown(1, 300, BucketType.guild)  # TODO: Cooldown
+    @template_check.command(name='pxlsspace', aliases=['ps'])
+    async def template_check_pxlsspace(self, ctx):
+        await self.check_canvas(ctx, "pxlsspace", PxlsBoard, http.fetch_pxlsspace)
 
     @commands.guild_only()
     @commands.cooldown(1, 5, BucketType.guild)
@@ -294,6 +204,65 @@ class Template:
             raise checks.UrlError
         except IOError:
             raise checks.PilImageError
+
+    @staticmethod
+    def build_template_report(ctx, ts: List[Template_]):
+        ts = sorted(ts, key=lambda tx: tx.name)
+        w1 = max(max(map(lambda tx: len(tx.name), ts)) + 2, len(ctx.get("template.info_name")))
+        w2 = max(max(map(lambda tx: len(str(tx.height * tx.width)), ts)), len("Total"))
+        w3 = max(max(map(lambda tx: len(str(tx.errors)), ts)), len("Errors"))
+        w4 = max(len("Percent"), 6)
+        out = ["**Template Report**\n```xl",  # TODO: Translate
+               "{0:<{w1}}  {1:>{w2}}  {2:>{w3}}  {3:>{w4}}".format(ctx.get("template.info_name"),
+                                                                   "Total", "Errors", "Percent", w1=w1, w2=w2, w3=w3,
+                                                                   w4=w4)  # TODO: Translate
+               ]
+        for t in ts:
+            tot = t.width * t.height
+            name = '"{}"'.format(t.name)
+            perc = "{:>6.2f}%".format(100 * (tot - t.errors) / tot)
+            out.append(
+                '{0:<{w1}}  {1:>{w2}}  {2:>{w3}}  {3:>{w4}}'.format(name, tot, t.errors, perc, w1=w1, w2=w2, w3=w3, w4=w4))
+
+        out.append("```")
+        return '\n'.join(out)
+
+    @staticmethod
+    async def calculate_errors(ts: List[Template_], chunks: Set[Chunky]):
+        cls = type(next(iter(chunks)))
+        for t in ts:
+            empty_bcs, shape = cls.get_intersecting(t.x, t.y, t.width, t.height)
+            tmp = Image.new("RGBA", tuple([cls.size * x for x in shape]))
+            for i, ch in enumerate(empty_bcs):
+                ch = next((x for x in chunks if x == ch))
+                tmp.paste(ch.image, ((i % shape[0]) * cls.size, (i // shape[0]) * cls.size))
+
+            x, y = t.x - empty_bcs[0].p_x, t.y - empty_bcs[0].p_y
+            tmp = tmp.crop((x, y, x + t.width, y + t.height))
+            template = Image.open(await utils.get_template(t.url)).convert('RGBA')
+            alpha = Image.new('RGBA', template.size, (255, 255, 255, 0))
+            template = Image.composite(template, alpha, template)
+            tmp = Image.composite(tmp, alpha, template)
+            tmp = ImageChops.difference(tmp.convert('RGB'), template.convert('RGB'))
+            t.errors = np.array(tmp).any(axis=-1).sum()
+
+    @staticmethod
+    async def check_canvas(ctx, canvas, chunk_type, fetch):
+        ts = [x for x in sql.template_get_all_by_guild_id(ctx.guild.id) if x.canvas == canvas]
+        if len(ts) > 0:
+            chunks = set()
+            for t in ts:
+                empty_bcs, shape = chunk_type.get_intersecting(t.x, t.y, t.width, t.height)
+                chunks.update(empty_bcs)
+
+            msg = await ctx.send("Fetching data from {}...".format(canvases.pretty_print(canvas)))  # TODO: Translate
+            await fetch(chunks)
+
+            await msg.edit(content="Calculating...")  # TODO: Translate
+            await Template.calculate_errors(ts, chunks)
+
+            await msg.edit(content=Template.build_template_report(ctx, ts))
+        # TODO: No templates
 
     @staticmethod
     async def check_colors(img, palette):
