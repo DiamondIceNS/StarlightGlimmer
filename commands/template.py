@@ -30,8 +30,18 @@ class Template:
     @commands.guild_only()
     @commands.cooldown(1, 5, BucketType.guild)
     @commands.group(name='template', invoke_without_command=True, aliases=['t'])
-    async def template(self, ctx, page: int=1):
-        ts = sql.template_get_all_by_guild_id(ctx.guild.id)
+    async def template(self, ctx, *args):
+        gid = ctx.guild.id
+        iter_args = iter(args)
+        a = next(iter_args, None)
+        if a == "-f":
+            faction = sql.guild_get_by_faction_name_or_alias(next(iter_args, None))
+            if not faction:
+                await ctx.send("That faction could not be found.")  # TODO: Translate
+                return
+            gid = faction['id']
+        ts = sql.template_get_all_by_guild_id(gid)
+        page = next(iter_args, 1)
         if len(ts) > 0:
             pages = 1 + len(ts) // 10
             page = min(max(page, 1), pages)
@@ -250,7 +260,7 @@ class Template:
                 with Image.open(data).convert("RGBA") as tmp:
                     w, h = tmp.size
                     quantized = await Template.check_colors(tmp, colors.by_name[canvas])
-                    size = render.calculate_size(tmp)
+                    size = await render.calculate_size(tmp)
                 if not quantized:
                     if not await utils.yes_no(ctx, ctx.get("template.not_quantized")):
                         return
@@ -258,7 +268,7 @@ class Template:
                     url = new_msg.attachments[0].url
                     with await http.get_template(url) as data2:
                         md5 = hashlib.md5(data2.getvalue()).hexdigest()
-                        size = render.calculate_size(Image.open(data2))
+                        size = await render.calculate_size(Image.open(data2))
                 created = int(time.time())
                 return Template_(ctx.guild.id, name, url, canvas, x, y, w, h, size, created, created, md5, ctx.author.id)
         except aiohttp.client_exceptions.InvalidURL:

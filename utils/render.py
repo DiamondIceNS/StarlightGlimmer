@@ -140,7 +140,8 @@ async def quantize(ctx, data, palette):
             return await ctx.send(ctx.get("render.quantize").format(bad_pixels), file=f)
 
 
-async def gridify(ctx, data, zoom):
+async def gridify(ctx, data, color, zoom):
+    color = (color >> 16 & 255, color >> 8 & 255, color & 255, 255)
     zoom += 1
     with data:
         template = Image.open(data).convert('RGBA')
@@ -149,9 +150,9 @@ async def gridify(ctx, data, zoom):
         template = template.resize((template.width * zoom, template.height * zoom), Image.NEAREST)
         draw = ImageDraw.Draw(template)
         for i in range(1, template.height):
-            draw.line((0, i * zoom, template.width, i * zoom), fill=(128, 128, 128, 255))
+            draw.line((0, i * zoom, template.width, i * zoom), fill=color)
         for i in range(1, template.width):
-            draw.line((i * zoom, 0, i * zoom, template.height), fill=(128, 128, 128, 255))
+            draw.line((i * zoom, 0, i * zoom, template.height), fill=color)
         del draw
 
         with io.BytesIO() as bio:

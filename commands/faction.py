@@ -157,6 +157,7 @@ class Faction:  # TODO: Add brief, help, and signature strings to lang files
         try:
             color = int(color, 0)
         except ValueError:
+            await ctx.send("That is not a valid color.")  # TODO: Translate
             return
         color = abs(color % 16777215)
         sql.guild_faction_set(ctx.guild.id, color=color)

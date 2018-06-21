@@ -162,22 +162,31 @@ class Canvas:
     @commands.cooldown(1, 5, BucketType.guild)
     @commands.command(name="gridify", aliases=["g"])
     async def gridify(self, ctx, *args):
-        if len(args) < 1:
-            return
-        if args[0] == "-f":
-            if len(args) < 3:
-                return
-            f = sql.guild_get_by_faction_name_or_alias(args[1])
-            if not f:
-                await ctx.send("That faction could not be found.")  # TODO: Translate
-                return
-            name = args[2]
-            zoom = args[3] if len(args) >= 4 else "#1"
-            t = sql.template_get_by_name(f['id'], name)
+        faction = None
+        color = 8421504
+        iter_args = iter(args)
+        a = next(iter_args, None)
+        while a in ["-f", "-c"]:
+            if a == "-f":
+                faction = sql.guild_get_by_faction_name_or_alias(next(iter_args, None))
+                if not faction:
+                    await ctx.send("That faction could not be found.")  # TODO: Translate
+                    return
+            if a == "-c":
+                try:
+                    color = abs(int(next(iter_args, None), 16) % 16777215)
+                except ValueError:
+                    await ctx.send("That is not a valid color.")  # TODO: Translate
+                    return
+            a = next(iter_args, None)
+        name = a
+        zoom = next(iter_args, None)
+
+        if faction:
+            t = sql.template_get_by_name(faction['id'], name)
         else:
-            name = args[0]
-            zoom = args[1] if len(args) >= 2 else "#1"
             t = sql.template_get_by_name(ctx.guild.id, name)
+
         if t:
             data = await http.get_template(t.url)
             max_zoom = int(math.sqrt(4000000 // (t.width * t.height)))
@@ -185,7 +194,7 @@ class Canvas:
                 zoom = max(1, min(int(zoom[1:]) if zoom and zoom.startswith("#") else 1, max_zoom))
             except ValueError:
                 zoom = 1
-            await render.gridify(ctx, data, zoom)
+            await render.gridify(ctx, data, color, zoom)
             return
         att = await utils.verify_attachment(ctx)
         if att:
@@ -197,7 +206,7 @@ class Canvas:
                 zoom = max(1, min(int(zoom[1:]) if zoom and zoom.startswith("#") else 1, max_zoom))
             except ValueError:
                 zoom = 1
-            await render.gridify(ctx, data, zoom)
+            await render.gridify(ctx, data, color, zoom)
 
     # ======================
     #       DITHERCHART
