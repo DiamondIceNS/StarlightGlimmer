@@ -4,9 +4,10 @@ from discord import TextChannel
 from discord.ext import commands
 
 from objects.glimcontext import GlimContext
-from utils import canvases, checks, sqlite as sql, utils
+from utils import canvases, render, sqlite as sql, utils
 from objects.channel_logger import ChannelLogger
 from objects.config import Config
+from objects import errors
 from objects.help_formatter import GlimmerHelpFormatter
 from objects.logger import Log
 from utils.version import VERSION
@@ -25,6 +26,7 @@ extensions = [
     "commands.animotes",
     "commands.canvas",
     "commands.configuration",
+    "commands.faction",
     "commands.general",
     "commands.template",
 ]
@@ -38,10 +40,16 @@ async def on_ready():
         sql.version_init(VERSION)
         is_new_version = False
     else:
-        is_new_version = sql.version_get() != VERSION and sql.version_get() is not None
+        old_version = sql.version_get()
+        is_new_version = old_version != VERSION and old_version is not None
         if is_new_version:
             log.info("Database is a previous version. Updating...")
             sql.version_update(VERSION)
+            if old_version < 1.6 <= VERSION:
+                # Fix legacy templates not having a size
+                for t in sql.template_get_all():
+                    t.size = await render.calculate_size(t)
+                    sql.template_update(t)
 
     log.info("Loading extensions...")
     for extension in extensions:
@@ -139,36 +147,36 @@ async def on_command_error(ctx, error):
         return
 
     # Check errors
-    if isinstance(error, checks.IdempotentActionError):
+    if isinstance(error, errors.IdempotentActionError):
         try:
             f = discord.File("assets/y_tho.png", "y_tho.png")
             await ctx.send(ctx.get("bot.why"), file=f)
         except IOError:
             await ctx.send(ctx.get("bot.why"))
         return
-    if isinstance(error, checks.NoJpegsError):
+    if isinstance(error, errors.NoJpegsError):
         try:
             f = discord.File("assets/disdain_for_jpegs.gif", "disdain_for_jpegs.gif")
             await ctx.send(ctx.get("bot.error.jpeg"), file=f)
         except IOError:
             await ctx.send(ctx.get("bot.error.jpeg"))
         return
-    if isinstance(error, checks.NoPermissionError):
+    if isinstance(error, errors.NoPermissionError):
         await ctx.send(ctx.get("bot.error.no_permission"))
         return
-    if isinstance(error, checks.NotPngError):
+    if isinstance(error, errors.NotPngError):
         await ctx.send(ctx.get("bot.error.no_png"))
         return
-    if isinstance(error, checks.PilImageError):
+    if isinstance(error, errors.PilImageError):
         await ctx.send(ctx.get("bot.error.pil_open_exception"))
         return
-    if isinstance(error, checks.TemplateHttpError):
+    if isinstance(error, errors.TemplateHttpError):
         await ctx.send(ctx.get("bot.error.template_http_error"))
         return
-    if isinstance(error, checks.UrlError):
+    if isinstance(error, errors.UrlError):
         await ctx.send(ctx.get("bot.error.url_error"))
         return
-    if isinstance(error, checks.HttpPayloadError):
+    if isinstance(error, errors.HttpPayloadError):
         await ctx.send(ctx.get("bot.error.http_payload_error").format(canvases.pretty_print[error.canvas]))
         return
 

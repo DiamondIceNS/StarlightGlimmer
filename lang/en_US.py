@@ -38,10 +38,12 @@ STRINGS = {
     "template.duplicate_list_close": "```\nCreate a new template anyway?",  
     "template.info_added_by": "Added By",  
     "template.info_date_added": "Date Added",  
-    "template.info_date_modified": "Date Modified",  
+    "template.info_date_modified": "Date Modified",
+    "template.info_dimensions": "Dim",  # TODO: Translate
     "template.info_canvas": "Canvas",  
     "template.info_coords": "Coords",  
-    "template.info_name": "Name",  
+    "template.info_name": "Name",
+    "template.info_visibility": "Visibility",  # TODO: Translate
     "template.info_size": "Size",  
     "template.list_close": "\n// Use '{0}templates <page>' to see that page\n// Use '{0}templates info <name>' to see more info on a template```",  
     "template.list_no_templates": "This guild currently has no templates.",  

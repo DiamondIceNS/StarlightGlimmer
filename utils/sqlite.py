@@ -29,8 +29,26 @@ def _create_tables():
           language            TEXT    DEFAULT 'en-us' NOT NULL,
           template_admin      INTEGER DEFAULT NULL,
           template_adder      INTEGER DEFAULT NULL,
-          bot_admin           INTEGER DEFAULT NULL
+          bot_admin           INTEGER DEFAULT NULL,
+          faction_name        TEXT    DEFAULT NULL,
+          faction_alias       TEXT    DEFAULT NULL,
+          faction_color       INTEGER DEFAULT 13594340 NOT NULL,
+          faction_desc        TEXT    DEFAULT NULL,
+          faction_emblem      TEXT    DEFAULT NULL,
+          faction_invite      TEXT    DEFAULT NULL
         );
+    """)
+    c.execute("""
+      CREATE TABLE IF NOT EXISTS faction_blocks(
+        blocker INTEGER NOT NULL
+            CONSTRAINT faction_blocks_guilds_guild1_fk
+            REFERENCES guilds,
+        blocked INTEGER NOT NULL
+            CONSTRAINT faction_blocks_guilds_guild2_fk
+            REFERENCES guilds,
+        CONSTRAINT faction_blocks_pk
+        PRIMARY KEY (blocker, blocked)
+      );
     """)
     c.execute("""
         CREATE TABLE IF NOT EXISTS menu_locks(
@@ -53,10 +71,12 @@ def _create_tables():
           y             INTEGER NOT NULL,
           w             INTEGER NOT NULL,
           h             INTEGER NOT NULL,
+          size          INTEGER NOT NULL,
           date_added    INTEGER NOT NULL,
           date_modified INTEGER NOT NULL,
           md5           TEXT    NOT NULL,
           owner         INTEGER NOT NULL,
+          private       INTEGER DEFAULT 0 NOT NULL,
           CONSTRAINT templates_pk
           PRIMARY KEY (guild_id, name)
         );
@@ -110,6 +130,49 @@ def _update_tables(v):
                 COMMIT;
                 PRAGMA FOREIGN_KEYS = ON;
             """)
+        if v < 1.6:
+            c.executescript("""
+                BEGIN TRANSACTION;
+                ALTER TABLE guilds ADD faction_name TEXT DEFAULT NULL;
+                ALTER TABLE guilds ADD faction_alias TEXT DEFAULT NULL;
+                ALTER TABLE guilds ADD faction_color INTEGER DEFAULT 13594340 NOT NULL;
+                ALTER TABLE guilds ADD faction_desc TEXT DEFAULT NULL;
+                ALTER TABLE guilds ADD faction_emblem TEXT DEFAULT NULL;
+                ALTER TABLE guilds ADD faction_invite TEXT DEFAULT NULL;
+                ALTER TABLE templates ADD private INTEGER DEFAULT 0 NOT NULL;
+                ALTER TABLE templates ADD size INTEGER DEFAULT 0 NOT NULL;
+                COMMIT;
+                PRAGMA FOREIGN_KEYS = OFF;
+                BEGIN TRANSACTION;
+                ALTER TABLE templates RENAME TO temp_templates;
+                CREATE TABLE templates(
+                  guild_id      INTEGER NOT NULL
+                    CONSTRAINT templates_guilds_id_fk
+                    REFERENCES guilds,
+                  name          TEXT    NOT NULL,
+                  url           TEXT    NOT NULL,
+                  canvas        TEXT    NOT NULL,
+                  x             INTEGER NOT NULL,
+                  y             INTEGER NOT NULL,
+                  w             INTEGER NOT NULL,
+                  h             INTEGER NOT NULL,
+                  size          INTEGER NOT NULL,
+                  date_added    INTEGER NOT NULL,
+                  date_modified INTEGER NOT NULL,
+                  md5           TEXT    NOT NULL,
+                  owner         INTEGER NOT NULL,
+                  private       INTEGER DEFAULT 0 NOT NULL,
+                  CONSTRAINT templates_pk
+                  PRIMARY KEY (guild_id, name)
+                );
+                INSERT INTO templates(guild_id, name, url, canvas, x, y, w, h, size, date_added, date_modified, md5,
+                    owner, private)
+                  SELECT guild_id, name, url, canvas, x, y, w, h, size, date_added, date_modified, md5, owner, private
+                  FROM temp_templates;
+                DROP TABLE temp_templates;
+                COMMIT;
+                PRAGMA FOREIGN_KEYS = ON; 
+            """)
 
 
 # ================================
@@ -129,6 +192,25 @@ def animotes_users_delete(uid):
 def animotes_users_is_registered(uid):
     c.execute("""SELECT * FROM animote_users WHERE id=?""", (uid,))
     return c.fetchone() is not None
+
+
+# ================================
+#      Faction Blocks queries
+# ================================
+
+def faction_block_add(blocker, blocked):
+    c.execute("INSERT INTO faction_blocks(blocker, blocked) VALUES(?, ?)", (blocker, blocked))
+    conn.commit()
+
+
+def faction_block_remove(blocker, blocked):
+    c.execute("DELETE FROM faction_blocks WHERE blocker=? AND blocked=?", (blocker, blocked))
+    conn.commit()
+
+
+def is_blocked(blocker, blocked):
+    c.execute("SELECT * FROM faction_blocks WHERE blocker=? AND blocked=?", (blocker, blocked))
+    return bool(c.fetchone())
 
 
 # ========================
@@ -153,9 +235,65 @@ def guild_delete_role(role_id):
     conn.commit()
 
 
+def guild_faction_clear(gid, alias=False, desc=False, color=False, emblem=False, invite=False):
+    if alias:
+        c.execute('UPDATE guilds SET faction_alias=NULL WHERE id=?', (gid,))
+    if desc:
+        c.execute('UPDATE guilds SET faction_desc=NULL WHERE id=?', (gid,))
+    if color:
+        c.execute('UPDATE guilds SET faction_color=13594340 WHERE id=?', (gid,))
+    if emblem:
+        c.execute('UPDATE guilds SET faction_emblem=NULL WHERE id=?', (gid,))
+    if invite:
+        c.execute('UPDATE guilds SET faction_invite=NULL WHERE id=?', (gid,))
+    conn.commit()
+
+
+def guild_faction_disband(gid):
+    c.execute('DELETE FROM faction_blocks WHERE blocker=?', (gid,))
+    c.execute('UPDATE guilds SET faction_name=NULL, faction_alias=NULL, faction_emblem=NULL, faction_invite=NULL '
+              'WHERE id=?', (gid,))
+
+
+def guild_faction_set(gid, name=None, alias=None, desc=None, color=None, emblem=None, invite=None):
+    if name:
+        c.execute('UPDATE guilds SET faction_name=? WHERE id=?', (name, gid))
+    if alias:
+        c.execute('UPDATE guilds SET faction_alias=? WHERE id=?', (alias, gid))
+    if desc:
+        c.execute('UPDATE guilds SET faction_desc=? WHERE id=?', (desc, gid))
+    if color:
+        c.execute('UPDATE guilds SET faction_color=? WHERE id=?', (color, gid))
+    if emblem:
+        c.execute('UPDATE guilds SET faction_emblem=? WHERE id=?', (emblem, gid))
+    if invite:
+        c.execute('UPDATE guilds SET faction_invite=? WHERE id=?', (invite, gid))
+    conn.commit()
+
+
 def guild_get_all():
     c.execute("SELECT * FROM guilds")
     return c.fetchall()
+
+
+def guild_get_all_factions():
+    c.execute("SELECT * FROM guilds WHERE faction_name IS NOT NULL ORDER BY faction_name")
+    return c.fetchall()
+
+
+def guild_get_by_faction_alias(alias):
+    c.execute("SELECT * FROM guilds WHERE faction_alias=?", (alias,))
+    return c.fetchone()
+
+
+def guild_get_by_faction_name(name):
+    c.execute("SELECT * FROM guilds WHERE faction_name=?", (name,))
+    return c.fetchone()
+
+
+def guild_get_by_faction_name_or_alias(arg):
+    c.execute("SELECT * FROM guilds WHERE faction_name=? OR faction_alias=?", (arg, arg))
+    return c.fetchone()
 
 
 def guild_get_by_id(gid):
@@ -188,6 +326,12 @@ def guild_is_autoscan(gid):
 def guild_is_emojishare(gid):
     c.execute("""SELECT emojishare FROM guilds WHERE id=?""", (gid,))
     return bool(c.fetchone())
+
+
+def guild_is_faction(gid):
+    c.execute("SELECT * FROM guilds WHERE id=?", (gid,))
+    g = c.fetchone()
+    return g and g['faction_name'] is not None
 
 
 def guild_update(gid, name=None, prefix=None, alert_channel=None, emojishare=None, autoscan=None, canvas=None,
@@ -244,8 +388,8 @@ def menu_locks_get_all():
 # ===========================
 
 def template_add(template):
-    c.execute('INSERT INTO templates(guild_id, name, url, canvas, x, y, w, h, date_added, date_modified, md5, owner)'
-              'VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', template.to_tuple())
+    c.execute('INSERT INTO templates(guild_id, name, url, canvas, x, y, w, h, size, date_added, date_modified, md5, owner, private)'
+              'VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', template.to_tuple())
     conn.commit()
 
 
@@ -260,8 +404,37 @@ def template_delete(gid, name):
     conn.commit()
 
 
+def template_get_all():
+    c.execute('SELECT * FROM templates ORDER BY guild_id DESC, canvas ASC, name ASC')
+    templates = []
+    for t in c.fetchall():
+        templates.append(Template(*t))
+    return templates
+
+
+def template_get_all_public():
+    c.execute('SELECT t.guild_id, t.name, t.url, t.canvas, t.x, t.y, t.w, t.h, t.size, t.date_added, t.date_modified,'
+              't.md5, t.owner, t.private, g.name AS gname '
+              'FROM templates AS t '
+              'INNER JOIN guilds as g ON g.id = t.guild_id '
+              'WHERE t.private=0 '
+              'ORDER BY t.guild_id ASC, t.canvas ASC, t.name ASC')
+    templates = []
+    for t in c.fetchall():
+        templates.append(Template(*(t[:-1])))
+    return templates
+
+
 def template_get_all_by_guild_id(gid):
-    c.execute('SELECT * FROM templates WHERE guild_id=? ORDER BY name DESC, canvas DESC', (gid,))
+    c.execute('SELECT * FROM templates WHERE guild_id=? ORDER BY canvas ASC, name ASC', (gid,))
+    templates = []
+    for t in c.fetchall():
+        templates.append(Template(*t))
+    return templates
+
+
+def template_get_all_public_by_guild_id(gid):
+    c.execute('SELECT * FROM templates WHERE guild_id=? AND private=0 ORDER BY canvas ASC, name ASC', (gid,))
     templates = []
     for t in c.fetchall():
         templates.append(Template(*t))
@@ -284,7 +457,7 @@ def template_get_by_name(gid, name):
 
 def template_update(template):
     c.execute('UPDATE templates '
-              'SET url = ?, canvas=?, x=?, y=?, w=?, h=?, date_added=?, date_modified=?, md5=?, owner=?'
+              'SET url = ?, canvas=?, x=?, y=?, w=?, h=?, size=?, date_added=?, date_modified=?, md5=?, owner=?, private=?'
               'WHERE guild_id=? AND name=?', template.to_tuple()[2:] + (template.gid, template.name))
     conn.commit()
 

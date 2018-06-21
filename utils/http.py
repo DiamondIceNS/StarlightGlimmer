@@ -1,13 +1,14 @@
 import aiohttp
 import asyncio
 import cfscrape
+import io
 import json
 import websockets
 from time import time
 from typing import Iterable
 
 from objects.chunks import BigChunk, ChunkPzi, ChunkPz, PxlsBoard
-from utils import checks
+from objects.errors import HttpPayloadError, TemplateHttpError, NoJpegsError, NotPngError
 
 
 async def fetch_chunks_pixelcanvas(bigchunks: Iterable[BigChunk]):
@@ -29,7 +30,7 @@ async def fetch_chunks_pixelcanvas(bigchunks: Iterable[BigChunk]):
                 data = None
                 attempts += 1
             if not data:
-                raise checks.HttpPayloadError('pixelcanvas')
+                raise HttpPayloadError('pixelcanvas')
             bc.load(data)
 
 
@@ -81,3 +82,15 @@ async def fetch_pxlsspace(board: PxlsBoard):
 
         async with session.get("http://pxls.space/boarddata?={0:.0f}".format(time())) as resp:
             board.load(await resp.read())
+
+
+async def get_template(url):
+    async with aiohttp.ClientSession() as sess:
+        async with sess.get(url) as resp:
+            if resp.status != 200:
+                raise TemplateHttpError
+            if resp.content_type == "image/jpg" or resp.content_type == "image/jpeg":
+                raise NoJpegsError
+            if resp.content_type != "image/png":
+                raise NotPngError
+            return io.BytesIO(await resp.read())

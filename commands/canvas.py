@@ -6,8 +6,9 @@ from discord.ext import commands
 from discord.ext.commands import BucketType
 
 from objects.glimcontext import GlimContext
-from utils import canvases, checks, colors, render, sqlite as sql, utils
+from utils import canvases, colors, http, render, sqlite as sql, utils
 from objects.logger import Log
+from objects import errors
 
 log = Log(__name__)
 
@@ -22,12 +23,27 @@ class Canvas:
 
     @commands.cooldown(1, 5, BucketType.guild)
     @commands.group(name="diff", invoke_without_command=True, aliases=["d"])
-    async def diff(self, ctx, a=None, b=None):
-        t = next((x for x in sql.template_get_all_by_guild_id(ctx.guild.id) if x.name == a), None)
+    async def diff(self, ctx, *args):
+        if len(args) < 1:
+            return
+        if args[0] == "-f":
+            if len(args) < 3:
+                return
+            f = sql.guild_get_by_faction_name_or_alias(args[1])
+            if not f:
+                await ctx.send("That faction could not be found.")  # TODO: Translate
+                return
+            name = args[2]
+            zoom = args[3] if len(args) >= 4 else "#1"
+            t = sql.template_get_by_name(f['id'], name)
+        else:
+            name = args[0]
+            zoom = args[1] if len(args) >= 2 else "#1"
+            t = sql.template_get_by_name(ctx.guild.id, name)
         if t:
-            data = await utils.get_template(t.url)
+            data = await http.get_template(t.url)
             try:
-                zoom = int(b[1:]) if b and b.startswith("#") else 1
+                zoom = int(zoom[1:]) if zoom and zoom.startswith("#") else 1
                 zoom = max(1, min(zoom, 400 // t.width, 400 // t.height))
             except ValueError:
                 zoom = 1
@@ -113,29 +129,29 @@ class Canvas:
 
     @commands.cooldown(1, 5, BucketType.guild)
     @quantize.command(name="pixelcanvas", aliases=["pc"])
-    async def quantize_pixelcanvas(self, ctx, a=None):
-        data = await self.parse_quantize(ctx, a, "pixelcanvas")
+    async def quantize_pixelcanvas(self, ctx, *args):
+        data = await self.parse_quantize(ctx, "pixelcanvas", args)
         if data:
             await render.quantize(ctx, data, colors.pixelcanvas)
 
     @commands.cooldown(1, 5, BucketType.guild)
     @quantize.command(name="pixelzio", aliases=["pzi"])
-    async def quantize_pixelzio(self, ctx, a=None):
-        data = await self.parse_quantize(ctx, a, "pixelzio")
+    async def quantize_pixelzio(self, ctx, *args):
+        data = await self.parse_quantize(ctx, "pixelzio", args)
         if data:
             await render.quantize(ctx, data, colors.pixelzio)
 
     @commands.cooldown(1, 5, BucketType.guild)
     @quantize.command(name="pixelzone", aliases=["pz"])
-    async def quantize_pixelzone(self, ctx, a=None):
-        data = await self.parse_quantize(ctx, a, "pixelzone")
+    async def quantize_pixelzone(self, ctx, *args):
+        data = await self.parse_quantize(ctx, "pixelzone", args)
         if data:
             await render.quantize(ctx, data, colors.pixelzone)
 
     @commands.cooldown(1, 5, BucketType.guild)
     @quantize.command(name="pxlsspace", aliases=["ps"])
-    async def quantize_pxlsspace(self, ctx, a=None):
-        data = await self.parse_quantize(ctx, a, "pxlsspace")
+    async def quantize_pxlsspace(self, ctx, *args):
+        data = await self.parse_quantize(ctx, "pxlsspace", args)
         if data:
             await render.quantize(ctx, data, colors.pxlsspace)
 
@@ -145,13 +161,28 @@ class Canvas:
 
     @commands.cooldown(1, 5, BucketType.guild)
     @commands.command(name="gridify", aliases=["g"])
-    async def gridify(self, ctx, a=None, b=None):
-        t = next((x for x in sql.template_get_all_by_guild_id(ctx.guild.id) if x.name == a), None)
+    async def gridify(self, ctx, *args):
+        if len(args) < 1:
+            return
+        if args[0] == "-f":
+            if len(args) < 3:
+                return
+            f = sql.guild_get_by_faction_name_or_alias(args[1])
+            if not f:
+                await ctx.send("That faction could not be found.")  # TODO: Translate
+                return
+            name = args[2]
+            zoom = args[3] if len(args) >= 4 else "#1"
+            t = sql.template_get_by_name(f['id'], name)
+        else:
+            name = args[0]
+            zoom = args[1] if len(args) >= 2 else "#1"
+            t = sql.template_get_by_name(ctx.guild.id, name)
         if t:
-            data = await utils.get_template(t.url)
+            data = await http.get_template(t.url)
             max_zoom = int(math.sqrt(4000000 // (t.width * t.height)))
             try:
-                zoom = max(1, min(int(b[1:]) if b and b.startswith("#") else 1, max_zoom))
+                zoom = max(1, min(int(zoom[1:]) if zoom and zoom.startswith("#") else 1, max_zoom))
             except ValueError:
                 zoom = 1
             await render.gridify(ctx, data, zoom)
@@ -160,9 +191,10 @@ class Canvas:
         if att:
             data = io.BytesIO()
             await att.save(data)
+            zoom = args[0] if len(args) >= 1 else "#1"
             max_zoom = int(math.sqrt(4000000 // (att.width * att.height)))
             try:
-                zoom = max(1, min(int(a[1:]) if a and a.startswith("#") else 1, max_zoom))
+                zoom = max(1, min(int(zoom[1:]) if zoom and zoom.startswith("#") else 1, max_zoom))
             except ValueError:
                 zoom = 1
             await render.gridify(ctx, data, zoom)
@@ -244,12 +276,25 @@ class Canvas:
             return ctx, x, y, zoom
 
     @staticmethod
-    async def parse_quantize(ctx, a, canvas):
-        t = next((x for x in sql.template_get_all_by_guild_id(ctx.guild.id) if x.name == a), None)
+    async def parse_quantize(ctx, canvas, args):
+        if len(args) < 1:
+            return
+        if args[0] == "-f":
+            if len(args) < 3:
+                return
+            f = sql.guild_get_by_faction_name_or_alias(args[1])
+            if not f:
+                await ctx.send("That faction could not be found.")  # TODO: Translate
+                return
+            name = args[2]
+            t = sql.template_get_by_name(f['id'], name)
+        else:
+            name = args[0]
+            t = sql.template_get_by_name(ctx.guild.id, name)
         if t:
             if t.canvas == canvas:
-                raise checks.IdempotentActionError
-            return await utils.get_template(t.url)
+                raise errors.IdempotentActionError
+            return await http.get_template(t.url)
         att = await utils.verify_attachment(ctx)
         if att:
             data = io.BytesIO()

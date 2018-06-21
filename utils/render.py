@@ -1,6 +1,7 @@
 import asyncio
 import discord
 import io
+import numpy as np
 from math import sqrt, pow
 from PIL import Image, ImageDraw
 
@@ -9,9 +10,19 @@ from objects.chunks import BigChunk, ChunkPz, ChunkPzi, PxlsBoard
 from objects.config import Config
 from objects.coords import Coords
 from objects.logger import Log
+from objects.template import Template
 
 cfg = Config()
 log = Log(__name__)
+
+
+async def calculate_size(template):  # TODO: UGLY!!!
+    if type(template) is Template:
+        template = Image.open(await http.get_template(template.url)).convert("RGBA")
+    alpha = Image.new('RGBA', template.size, (0, 0, 0, 0))
+    white = Image.new('RGBA', template.size, (255, 255, 255, 255))
+    white = Image.composite(white, alpha, template)
+    return int(np.array(white).any(axis=-1).sum())
 
 
 async def diff(ctx, x, y, data, zoom, fetch, palette):

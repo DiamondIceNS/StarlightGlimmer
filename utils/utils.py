@@ -1,11 +1,9 @@
-import aiohttp
 import asyncio
 import discord
-import io
 import re
 from discord.utils import get as dget
 
-from utils import checks, sqlite as sql
+from utils import sqlite as sql
 
 
 async def autoscan(ctx):
@@ -32,18 +30,6 @@ async def autoscan(ctx):
             ctx.is_autoscan = True
             await ctx.bot.invoke(ctx)
             return True
-
-
-async def get_template(url):
-    async with aiohttp.ClientSession() as sess:
-        async with sess.get(url) as resp:
-            if resp.status != 200:
-                raise checks.TemplateHttpError
-            if resp.content_type == "image/jpg" or resp.content_type == "image/jpeg":
-                raise checks.NoJpegsError
-            if resp.content_type != "image/png":
-                raise checks.NotPngError
-            return io.BytesIO(await resp.read())
 
 
 def get_botadmin_role(ctx):

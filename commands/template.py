@@ -3,6 +3,7 @@ import asyncio
 import datetime
 import discord
 import hashlib
+import itertools
 import numpy as np
 import re
 import time
@@ -16,6 +17,7 @@ from objects.template import Template as Template_
 from utils import canvases, checks, colors, http, render, sqlite as sql, utils
 from objects.logger import Log
 from objects.config import Config
+from objects import errors
 
 log = Log(__name__)
 cfg = Config()
@@ -45,6 +47,46 @@ class Template:
                 name = '"{}"'.format(t.name)
                 canvas_name = canvases.pretty_print[t.canvas]
                 msg.append("{0:<{w1}}  {1:<14}  {2}\n".format(name, canvas_name, coords, w1=w1))
+            msg.append(ctx.get("template.list_close").format(sql.guild_get_prefix_by_id(ctx.guild.id)))
+            await ctx.send(''.join(msg))
+        else:
+            await ctx.send(ctx.get("template.list_no_templates"))
+
+    @commands.guild_only()
+    @commands.cooldown(1, 5, BucketType.guild)
+    @template.command(name='all')
+    async def template_all(self, ctx, page: int = 1):  # TODO: Add brief, help, and signature strings to lang files
+        ts = sql.template_get_all_public()
+        fs = sql.guild_get_all_factions()
+
+        def by_faction_name(template):
+            for f in fs:
+                if template.gid == f['id']:
+                    return f['faction_name']
+
+        ts = sorted(ts, key=by_faction_name)
+        ts_with_f = []
+        for faction, ts2 in itertools.groupby(ts, key=by_faction_name):
+            for t in ts2:
+                ts_with_f.append((t, faction))
+
+        if len(ts) > 0:
+            pages = 1 + len(ts) // 10
+            page = min(max(page, 1), pages)
+            w1 = max(max(map(lambda tx: len(tx.name), ts)) + 2, len(ctx.get("template.info_name")))
+            msg = [
+                ctx.get("template.list_open").format(page, pages),
+                "{0:<{w1}}  {1:<34}  {2:<14}  {3}\n".format(ctx.get("template.info_name"),
+                                                            "Faction",  # TODO: Translate
+                                                            ctx.get("template.info_canvas"),
+                                                            ctx.get("template.info_coords"), w1=w1)
+            ]
+            for t, f in ts_with_f[(page - 1) * 10:page * 10]:
+                coords = "({}, {})".format(t.x, t.y)
+                faction = '"{}"'.format(f)
+                name = '"{}"'.format(t.name)
+                canvas_name = canvases.pretty_print[t.canvas]
+                msg.append("{0:<{w1}}  {1:<34}  {2:<14}  {3}\n".format(name, faction, canvas_name, coords, w1=w1))
             msg.append(ctx.get("template.list_close").format(sql.guild_get_prefix_by_id(ctx.guild.id)))
             await ctx.send(''.join(msg))
         else:
@@ -118,8 +160,21 @@ class Template:
     @commands.guild_only()
     @commands.cooldown(1, 5, BucketType.guild)
     @template.command(name='info')
-    async def template_info(self, ctx, name):
-        t = sql.template_get_by_name(ctx.guild.id, name)
+    async def template_info(self, ctx, *args):
+        if len(args) < 1:
+            return
+        if args[0] == "-f":
+            if len(args) < 3:
+                return
+            f = sql.guild_get_by_faction_name_or_alias(args[1])
+            if not f:
+                await ctx.send("That faction could not be found.")  # TODO: Translate
+                return
+            name = args[2]
+            t = sql.template_get_by_name(f['id'], name)
+        else:
+            name = args[0]
+            t = sql.template_get_by_name(ctx.guild.id, name)
         if not t:
             await ctx.send(ctx.get("template.name_not_found").format(name))
             return
@@ -127,7 +182,9 @@ class Template:
         canvas_url = canvases.url_templates[t.canvas].format(*t.center())
         canvas_name = canvases.pretty_print[t.canvas]
         coords = "({}, {})".format(t.x, t.y)
-        size = "{} x {}".format(t.width, t.height)
+        dimensions = "{} x {}".format(t.width, t.height)
+        size = t.size
+        visibility = "Private" if bool(t.private) else "Public"
         owner = self.bot.get_user(t.owner_id)
         added_by = owner.name + "#" + owner.discriminator
         date_added = datetime.date.fromtimestamp(t.date_created).strftime("%d %b, %Y")
@@ -137,7 +194,9 @@ class Template:
             .set_image(url=t.url) \
             .add_field(name=ctx.get("template.info_canvas"), value=canvas_name, inline=True) \
             .add_field(name=ctx.get("template.info_coords"), value=coords, inline=True) \
+            .add_field(name=ctx.get("template.info_dimensions"), value=dimensions, inline=True) \
             .add_field(name=ctx.get("template.info_size"), value=size, inline=True) \
+            .add_field(name=ctx.get("template.info_visibility"), value=visibility, inline=True) \
             .add_field(name=ctx.get("template.info_added_by"), value=added_by, inline=True) \
             .add_field(name=ctx.get("template.info_date_added"), value=date_added, inline=True) \
             .add_field(name=ctx.get("template.info_date_modified"), value=date_modified, inline=True)
@@ -186,24 +245,26 @@ class Template:
     @staticmethod
     async def build_template(ctx, name, x, y, url, canvas):
         try:
-            with await utils.get_template(url) as data:
+            with await http.get_template(url) as data:
                 md5 = hashlib.md5(data.getvalue()).hexdigest()
                 with Image.open(data).convert("RGBA") as tmp:
                     w, h = tmp.size
                     quantized = await Template.check_colors(tmp, colors.by_name[canvas])
+                    size = render.calculate_size(tmp)
                 if not quantized:
                     if not await utils.yes_no(ctx, ctx.get("template.not_quantized")):
                         return
                     new_msg = await render.quantize(ctx, data, colors.by_name[canvas])
                     url = new_msg.attachments[0].url
-                    with await utils.get_template(url) as data2:
+                    with await http.get_template(url) as data2:
                         md5 = hashlib.md5(data2.getvalue()).hexdigest()
+                        size = render.calculate_size(Image.open(data2))
                 created = int(time.time())
-                return Template_(ctx.guild.id, name, url, canvas, x, y, w, h, created, created, md5, ctx.author.id)
+                return Template_(ctx.guild.id, name, url, canvas, x, y, w, h, size, created, created, md5, ctx.author.id)
         except aiohttp.client_exceptions.InvalidURL:
-            raise checks.UrlError
+            raise errors.UrlError
         except IOError:
-            raise checks.PilImageError
+            raise errors.PilImageError
 
     @staticmethod
     def build_template_report(ctx, ts: List[Template_]):
@@ -218,7 +279,7 @@ class Template:
                                                                    w4=w4)  # TODO: Translate
                ]
         for t in ts:
-            tot = t.width * t.height
+            tot = t.size
             name = '"{}"'.format(t.name)
             perc = "{:>6.2f}%".format(100 * (tot - t.errors) / tot)
             out.append(
@@ -239,7 +300,7 @@ class Template:
 
             x, y = t.x - empty_bcs[0].p_x, t.y - empty_bcs[0].p_y
             tmp = tmp.crop((x, y, x + t.width, y + t.height))
-            template = Image.open(await utils.get_template(t.url)).convert('RGBA')
+            template = Image.open(await http.get_template(t.url)).convert('RGBA')
             alpha = Image.new('RGBA', template.size, (255, 255, 255, 0))
             template = Image.composite(template, alpha, template)
             tmp = Image.composite(tmp, alpha, template)
@@ -255,7 +316,7 @@ class Template:
                 empty_bcs, shape = chunk_type.get_intersecting(t.x, t.y, t.width, t.height)
                 chunks.update(empty_bcs)
 
-            msg = await ctx.send("Fetching data from {}...".format(canvases.pretty_print(canvas)))  # TODO: Translate
+            msg = await ctx.send("Fetching data from {}...".format(canvases.pretty_print[canvas]))  # TODO: Translate
             await fetch(chunks)
 
             await msg.edit(content="Calculating...")  # TODO: Translate
@@ -308,7 +369,7 @@ class Template:
         if input_url:
             if re.search('^(?:https?://)cdn\.discordapp\.com/', input_url):
                 return input_url
-            raise checks.UrlError
+            raise errors.UrlError
         if len(ctx.message.attachments) > 0:
             return ctx.message.attachments[0].url
 
