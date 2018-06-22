@@ -3,7 +3,7 @@ import discord
 import io
 import numpy as np
 from math import sqrt, pow
-from PIL import Image, ImageDraw
+from PIL import Image, ImageChops, ImageDraw
 
 from utils import colors, http
 from objects.chunks import BigChunk, ChunkPz, ChunkPzi, PxlsBoard
@@ -26,6 +26,23 @@ async def calculate_size(template):  # TODO: UGLY!!!
 
 
 async def diff(ctx, x, y, data, zoom, fetch, palette):
+    def get_mask(t: Image) -> Image:
+        with Image.new('1', t.size, 0) as black:
+            with Image.new('1', t.size, 1) as white:
+                return Image.composite(white, black, t)
+
+    def get_errors(t: Image, f: Image, mask: Image) -> Image:
+        with ImageChops.difference(t, f) as diff:
+            with diff.point(lambda x: 255 if x > 0 else 0).convert('L').point(
+                    lambda x: 255 if x > 0 else 0).convert('1') as diff:
+                with Image.new('1', t.size, 0) as black:
+                    return Image.composite(diff, black, mask)
+
+    def get_bad_color(t: Image, mask: Image) -> Image:
+        with get_errors(t, _quantize(t, palette), mask) as diff:
+            with Image.new('1', t.size, 0) as black:
+                return Image.composite(diff, black, mask)
+
     async with ctx.typing():
         with data:
             template = Image.open(data).convert('RGBA')
@@ -34,36 +51,18 @@ async def diff(ctx, x, y, data, zoom, fetch, palette):
             with template:
                 log.debug("(X:{0} | Y:{1} | Dim:{2}x{3} | Z:{4})".format(x, y, template.width, template.height, zoom))
 
-                if template.width * template.height > 600000:
-                    await ctx.send(ctx.get("render.large_template"))
+                mask = get_mask(template)
+                template = template.convert('RGB')
 
-                tot = 0  # Total non-transparent pixels in template
-                err = 0  # Number of errors
-                bad = 0  # Number of pixels in the template that are not in the color palette
+                tot = np.array(mask).sum()
+                e = get_errors(template, diff_img, mask)
+                err = np.array(e).sum()
+                b = get_bad_color(template, mask)
+                bad = np.array(b).sum()
 
-                for py in range(template.height):
-                    await asyncio.sleep(0)
-                    for px in range(template.width):
-                        tp = template.getpixel((px, py))
-                        dp = diff_img.getpixel((px, py))
-                        if tp[3] is not 0:
-                            # All non-transparent pixels count to the total
-                            tot += 1
-                        if 0 < tp[3] < 255 or (tp[3] is 255 and tp[:3] not in palette):
-                            # All non-opaque and non-transparent pixels, and opaque pixels of bad colors, are bad
-                            pixel = (0, 0, 255, 255)
-                            err += 1
-                            bad += 1
-                        elif tp[3] is 255 and (tp[0] is not dp[0] or tp[1] is not dp[1] or tp[2] is not dp[2]):
-                            # All pixels that are valid and opaque but do not match the canvas are wrong
-                            pixel = (255, 0, 0, 255)
-                            err += 1
-                        else:
-                            # Render all correct/irrelevant pixels in greyscale
-                            avg = round(dp[0] * 0.3 + dp[1] * 0.52 + dp[2] * 0.18)
-                            pixel = (avg, avg, avg, 255)
-
-                        diff_img.putpixel((px, py), pixel)
+                diff_img = diff_img.convert('L').convert('RGB')
+                diff_img = Image.composite(Image.new('RGB', template.size, (255, 0, 0)), diff_img, e)
+                diff_img = Image.composite(Image.new('RGB', template.size, (0, 0, 255)), diff_img, b)
 
             if zoom > 1:
                 diff_img = diff_img.resize(tuple(zoom * x for x in diff_img.size), Image.NEAREST)
@@ -205,3 +204,12 @@ async def fetch_pxlsspace(x, y, dx, dy):
     await http.fetch_pxlsspace(board)
     fetched.paste(board.image, (-x, -y, board.width - x, board.height - y))
     return fetched
+
+
+def _quantize(t: Image, palette) -> Image:
+    with Image.new('P', (1, 1)) as palette_img:
+        p = [x for sub in palette for x in sub] * (768 // (3 * len(palette)))
+        palette_img.putpalette(p)
+        palette_img.load()
+        im = t.im.convert('P', 0, palette_img.im)
+        return t._new(im).convert('RGB')

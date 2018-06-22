@@ -43,8 +43,9 @@ class Canvas:
         if t:
             data = await http.get_template(t.url)
             try:
+                max_zoom = int(math.sqrt(4000000 // (t.width * t.height)))
                 zoom = int(zoom[1:]) if zoom and zoom.startswith("#") else 1
-                zoom = max(1, min(zoom, 400 // t.width, 400 // t.height))
+                zoom = max(1, min(zoom, max_zoom))
             except ValueError:
                 zoom = 1
             await render.diff(ctx, t.x, t.y, data, zoom, canvases.fetchers[t.canvas], colors.by_name[t.canvas])
@@ -266,7 +267,8 @@ class Canvas:
             y = int(m.group(2))
             data = io.BytesIO()
             await att.save(data)
-            zoom = max(1, min(int(m.group(3)) if m.group(3) else 1, 400 // att.width, 400 // att.height))
+            max_zoom = int(math.sqrt(4000000 // (att.width * att.height)))
+            zoom = max(1, min(int(m.group(3)) if m.group(3) else 1, max_zoom))
             return ctx, x, y, data, zoom
 
     @staticmethod
