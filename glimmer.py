@@ -14,7 +14,7 @@ from utils.version import VERSION
 
 
 def get_prefix(bot, msg):
-    return sql.guild_get_prefix_by_id(msg.guild.id)
+    return [sql.guild_get_prefix_by_id(msg.guild.id), bot.user.mention + " "]
 
 
 cfg = Config()
