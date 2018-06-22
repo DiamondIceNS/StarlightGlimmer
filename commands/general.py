@@ -1,6 +1,7 @@
+from time import time
+
 from discord.ext import commands
 from discord.ext.commands import BucketType
-from time import time
 
 from objects.channel_logger import ChannelLogger
 from objects.config import Config

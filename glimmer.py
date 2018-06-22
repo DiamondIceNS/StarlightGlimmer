@@ -1,15 +1,16 @@
-import discord
 import traceback
+
+import discord
 from discord import TextChannel
 from discord.ext import commands
 
-from objects.glimcontext import GlimContext
-from utils import canvases, render, sqlite as sql, utils
+from objects import errors
 from objects.channel_logger import ChannelLogger
 from objects.config import Config
-from objects import errors
+from objects.glimcontext import GlimContext
 from objects.help_formatter import GlimmerHelpFormatter
 from objects.logger import Log
+from utils import canvases, render, sqlite as sql, utils
 from utils.version import VERSION
 
 

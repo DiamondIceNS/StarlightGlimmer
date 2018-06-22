@@ -1,4 +1,5 @@
 import logging
+
 from objects.config import Config
 
 cfg = Config()

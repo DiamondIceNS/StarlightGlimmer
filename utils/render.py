@@ -1,14 +1,15 @@
-import discord
 import io
+
+import discord
 import numpy as np
 from PIL import Image, ImageChops, ImageDraw
 
-from utils import colors, http
 from objects.chunks import BigChunk, ChunkPz, ChunkPzi, PxlsBoard
 from objects.config import Config
 from objects.coords import Coords
 from objects.logger import Log
 from objects.template import Template
+from utils import colors, http
 
 cfg = Config()
 log = Log(__name__)

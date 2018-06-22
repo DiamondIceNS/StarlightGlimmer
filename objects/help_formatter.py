@@ -1,7 +1,8 @@
 import itertools
 import inspect
+
 from discord.ext.commands import Command
-from discord.ext.commands.formatter import HelpFormatter, Paginator
+from discord.ext.commands.formatter import HelpFormatter
 
 from objects.config import Config
 

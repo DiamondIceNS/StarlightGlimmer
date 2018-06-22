@@ -1,12 +1,13 @@
-import discord
 import io
 import math
 import re
+
+import discord
 from discord.ext import commands
 from discord.ext.commands import BucketType
 
 from objects.glimcontext import GlimContext
-from utils import canvases, colors, http, render, sqlite as sql, utils
+from utils import colors, http, render, sqlite as sql, utils
 from objects.logger import Log
 from objects import errors
 
@@ -48,7 +49,15 @@ class Canvas:
                 zoom = max(1, min(zoom, max_zoom))
             except ValueError:
                 zoom = 1
-            await render.diff(ctx, t.x, t.y, data, zoom, canvases.fetchers[t.canvas], colors.by_name[t.canvas])
+
+            fetchers = {
+                'pixelcanvas': render.fetch_pixelcanvas,
+                'pixelzio': render.fetch_pixelzio,
+                'pixelzone': render.fetch_pixelzone,
+                'pxlsspace': render.fetch_pxlsspace
+            }
+
+            await render.diff(ctx, t.x, t.y, data, zoom, fetchers[t.canvas], colors.by_name[t.canvas])
             return
         await ctx.invoke_default("diff")
 

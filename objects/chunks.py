@@ -1,7 +1,8 @@
 import abc
+import io
 import json
-from io import BytesIO
-from lz4 import frame
+
+import lz4.frame
 from PIL import Image
 
 from utils import colors
@@ -71,7 +72,7 @@ class BigChunk(Chunky):
         return -1043 <= self.x < 1043 and -1043 <= self.y < 1043
 
     def load(self, data):
-        with BytesIO(data) as bio:
+        with io.BytesIO(data) as bio:
             self._image = Image.new("RGB", (960, 960), colors.pixelcanvas[1])
             bio.seek(0)
             for cy in range(0, 960, 64):
@@ -115,7 +116,7 @@ class ChunkPzi(Chunky):
         return -1200 <= self.x < 1200 and -1200 <= self.y < 1200
 
     def load(self, data):
-        with BytesIO(data) as bio:
+        with io.BytesIO(data) as bio:
             self._image = Image.open(bio).convert('RGB')
 
     @staticmethod
@@ -153,7 +154,7 @@ class ChunkPz(Chunky):
     def load(self, data):
         tmp = LZString().decompressFromBase64(data)
         tmp = json.loads("[" + tmp + "]")
-        tmp = frame.decompress(bytes(tmp))
+        tmp = lz4.frame.decompress(bytes(tmp))
         self._image = Image.frombytes('P', (512, 512), tmp, 'raw', 'P;4')
         self._image.putpalette(self.palette)
 

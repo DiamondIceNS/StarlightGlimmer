@@ -1,5 +1,3 @@
-from utils import render
-
 pretty_print = {
     'pixelcanvas': "Pixelcanvas.io",
     'pc': "Pixelcanvas.io",
@@ -16,11 +14,4 @@ url_templates = {
     'pixelzio': "https://pixelz.io/@{0},{1}",
     'pixelzone': "http://pixelzone.io/?p={0},{1}",
     'pxlsspace': "https://pxls.space/#x={0}&y={1}"
-}
-
-fetchers = {
-    'pixelcanvas': render.fetch_pixelcanvas,
-    'pixelzio': render.fetch_pixelzio,
-    'pixelzone': render.fetch_pixelzone,
-    'pxlsspace': render.fetch_pxlsspace
 }

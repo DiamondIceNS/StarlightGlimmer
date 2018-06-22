@@ -1,10 +1,11 @@
-import aiohttp
 import asyncio
-import cfscrape
 import io
 import json
-import websockets
 from time import time
+
+import aiohttp
+import cfscrape
+import websockets
 from typing import Iterable
 
 from objects.chunks import BigChunk, ChunkPzi, ChunkPz, PxlsBoard

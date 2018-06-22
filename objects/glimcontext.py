@@ -1,7 +1,8 @@
 from discord.ext import commands
 from discord.utils import get as dget
-from utils import canvases, sqlite as sql
+
 from lang import en_US, pt_BR
+from utils import canvases, sqlite as sql
 
 
 class GlimContext(commands.Context):

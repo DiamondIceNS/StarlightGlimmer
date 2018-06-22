@@ -1,23 +1,24 @@
-import aiohttp
 import asyncio
 import datetime
-import discord
 import hashlib
 import itertools
-import numpy as np
 import re
 import time
 from typing import List, Set
-from PIL import Image, ImageChops
+
+import aiohttp
+import discord
+import numpy as np
 from discord.ext import commands
 from discord.ext.commands import BucketType
+from PIL import Image, ImageChops
 
+from objects import errors
 from objects.chunks import Chunky, BigChunk, ChunkPzi, ChunkPz, PxlsBoard
+from objects.config import Config
+from objects.logger import Log
 from objects.template import Template as Template_
 from utils import canvases, checks, colors, http, render, sqlite as sql, utils
-from objects.logger import Log
-from objects.config import Config
-from objects import errors
 
 log = Log(__name__)
 cfg = Config()
