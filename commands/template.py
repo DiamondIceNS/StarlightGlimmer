@@ -1,6 +1,7 @@
 import asyncio
 import datetime
 import hashlib
+import io
 import itertools
 import re
 import time
@@ -273,7 +274,14 @@ class Template:
                 if not quantized:
                     if not await utils.yes_no(ctx, ctx.get("template.not_quantized")):
                         return
-                    new_msg = await render.quantize(ctx, data, colors.by_name[canvas])
+
+                    template, bad_pixels = await render.quantize(data, colors.by_name[canvas])
+                    with io.BytesIO() as bio:
+                        template.save(bio, format="PNG")
+                        bio.seek(0)
+                        f = discord.File(bio, "template.png")
+                        new_msg = await ctx.send(ctx.get("render.quantize").format(bad_pixels), file=f)
+
                     url = new_msg.attachments[0].url
                     with await http.get_template(url) as data2:
                         md5 = hashlib.md5(data2.getvalue()).hexdigest()
