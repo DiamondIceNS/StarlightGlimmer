@@ -57,37 +57,41 @@ class Canvas:
                 'pxlsspace': render.fetch_pxlsspace
             }
 
-            await render.diff(ctx, t.x, t.y, data, zoom, fetchers[t.canvas], colors.by_name[t.canvas])
+            diff_img, tot, err, bad \
+                = await render.diff(t.x, t.y, data, zoom, fetchers[t.canvas], colors.by_name[t.canvas])
+
+            if bad > 0:
+                content = ctx.get("render.diff_bad_color").format(tot - err, tot, err, bad, 100 * (tot - err) / tot)
+            else:
+                content = ctx.get("render.diff").format(tot - err, tot, err, 100 * (tot - err) / tot)
+
+            with io.BytesIO() as bio:
+                diff_img.save(bio, format="PNG")
+                bio.seek(0)
+                f = discord.File(bio, "diff.png")
+                await ctx.send(content=content, file=f)
             return
         await ctx.invoke_default("diff")
 
     @commands.cooldown(1, 5, BucketType.guild)
     @diff.command(name="pixelcanvas", aliases=["pc"])
     async def diff_pixelcanvas(self, ctx, *, raw_arg: str):
-        args = await Canvas.parse_diff(ctx, raw_arg)
-        if args:
-            await render.diff(*args, render.fetch_pixelcanvas, colors.pixelcanvas)
+        await _diff(ctx, raw_arg, render.fetch_pixelcanvas)
 
     @commands.cooldown(1, 5, BucketType.guild)
     @diff.command(name="pixelzio", aliases=["pzi"])
     async def diff_pixelzio(self, ctx, *, raw_arg: str):
-        args = await Canvas.parse_diff(ctx, raw_arg)
-        if args:
-            await render.diff(*args, render.fetch_pixelzio, colors.pixelzio)
+        await _diff(ctx, raw_arg, render.fetch_pixelzio)
 
     @commands.cooldown(1, 5, BucketType.guild)
     @diff.command(name="pixelzone", aliases=["pz"])
     async def diff_pixelzone(self, ctx, *, raw_arg: str):
-        args = await Canvas.parse_diff(ctx, raw_arg)
-        if args:
-            await render.diff(*args, render.fetch_pixelzone, colors.pixelzone)
+        await _diff(ctx, raw_arg, render.fetch_pixelzone)
 
     @commands.cooldown(1, 5, BucketType.guild)
     @diff.command(name="pxlsspace", aliases=["ps"])
     async def diff_pxlsspace(self, ctx, *, raw_arg: str):
-        args = await Canvas.parse_diff(ctx, raw_arg)
-        if args:
-            await render.diff(*args, render.fetch_pxlsspace, colors.pxlsspace)
+        await _diff(ctx, raw_arg, render.fetch_pxlsspace)
 
     # =======================
     #        PREVIEW
@@ -101,32 +105,22 @@ class Canvas:
     @commands.cooldown(1, 5, BucketType.guild)
     @preview.command(name="pixelcanvas", aliases=["pc"])
     async def preview_pixelcanvas(self, ctx, *, coordinates: str):
-        args = await Canvas.parse_preview(ctx, coordinates)
-        if args:
-            await render.preview(*args, render.fetch_pixelcanvas)
+        await _preview(ctx, coordinates, render.fetch_pixelcanvas)
 
     @commands.cooldown(1, 5, BucketType.guild)
     @preview.command(name="pixelzio", aliases=["pzi"])
     async def preview_pixelzio(self, ctx, *, coordinates: str):
-        args = await Canvas.parse_preview(ctx, coordinates)
-        if args:
-            await render.preview(*args, render.fetch_pixelzio)
+        await _preview(ctx, coordinates, render.fetch_pixelzio)
 
     @commands.cooldown(1, 5, BucketType.guild)
     @preview.command(name="pixelzone", aliases=["pz"])
     async def preview_pixelzone(self, ctx, *, coordinates: str):
-        args = await Canvas.parse_preview(ctx, coordinates)
-        if args:
-            await render.preview(*args, render.fetch_pixelzone)
+        await _preview(ctx, coordinates, render.fetch_pixelzone)
 
     @commands.cooldown(1, 5, BucketType.guild)
     @preview.command(name="pxlsspace", aliases=["ps"])
     async def preview_pxlsspace(self, ctx, *, coordinates: str):
-        args = await Canvas.parse_preview(ctx, coordinates)
-        if args:
-            x = max(0, min(1279, args[1]))
-            y = max(0, min(719, args[2]))
-            await render.preview(ctx, x, y, args[3], render.fetch_pxlsspace)
+        await _preview(ctx, coordinates, render.fetch_pxlsspace)
 
     # =======================
     #        QUANTIZE
@@ -140,30 +134,22 @@ class Canvas:
     @commands.cooldown(1, 5, BucketType.guild)
     @quantize.command(name="pixelcanvas", aliases=["pc"])
     async def quantize_pixelcanvas(self, ctx, *args):
-        data = await self.parse_quantize(ctx, "pixelcanvas", args)
-        if data:
-            await render.quantize(ctx, data, colors.pixelcanvas)
+        await _quantize(ctx, args, "pixelcanvas", colors.pixelcanvas)
 
     @commands.cooldown(1, 5, BucketType.guild)
     @quantize.command(name="pixelzio", aliases=["pzi"])
     async def quantize_pixelzio(self, ctx, *args):
-        data = await self.parse_quantize(ctx, "pixelzio", args)
-        if data:
-            await render.quantize(ctx, data, colors.pixelzio)
+        await _quantize(ctx, args, "pixelzio", colors.pixelzio)
 
     @commands.cooldown(1, 5, BucketType.guild)
     @quantize.command(name="pixelzone", aliases=["pz"])
     async def quantize_pixelzone(self, ctx, *args):
-        data = await self.parse_quantize(ctx, "pixelzone", args)
-        if data:
-            await render.quantize(ctx, data, colors.pixelzone)
+        await _quantize(ctx, args, "pixelzone", colors.pixelzone)
 
     @commands.cooldown(1, 5, BucketType.guild)
     @quantize.command(name="pxlsspace", aliases=["ps"])
     async def quantize_pxlsspace(self, ctx, *args):
-        data = await self.parse_quantize(ctx, "pxlsspace", args)
-        if data:
-            await render.quantize(ctx, data, colors.pxlsspace)
+        await _quantize(ctx, args, "pxlsspace", colors.pxlsspace)
 
     # =======================
     #         GRIDIFY
@@ -197,6 +183,7 @@ class Canvas:
         else:
             t = sql.template_get_by_name(ctx.guild.id, name)
 
+        template = None
         if t:
             data = await http.get_template(t.url)
             max_zoom = int(math.sqrt(4000000 // (t.width * t.height)))
@@ -204,19 +191,26 @@ class Canvas:
                 zoom = max(1, min(int(zoom[1:]) if zoom and zoom.startswith("#") else 1, max_zoom))
             except ValueError:
                 zoom = 1
-            await render.gridify(ctx, data, color, zoom)
-            return
-        att = await utils.verify_attachment(ctx)
-        if att:
-            data = io.BytesIO()
-            await att.save(data)
-            zoom = args[0] if len(args) >= 1 else "#1"
-            max_zoom = int(math.sqrt(4000000 // (att.width * att.height)))
-            try:
-                zoom = max(1, min(int(zoom[1:]) if zoom and zoom.startswith("#") else 1, max_zoom))
-            except ValueError:
-                zoom = 1
-            await render.gridify(ctx, data, color, zoom)
+            template = await render.gridify(data, color, zoom)
+        else:
+            att = await utils.verify_attachment(ctx)
+            if att:
+                data = io.BytesIO()
+                await att.save(data)
+                zoom = args[0] if len(args) >= 1 else "#1"
+                max_zoom = int(math.sqrt(4000000 // (att.width * att.height)))
+                try:
+                    zoom = max(1, min(int(zoom[1:]) if zoom and zoom.startswith("#") else 1, max_zoom))
+                except ValueError:
+                    zoom = 1
+                template = await render.gridify(data, color, zoom)
+
+        if template:
+            with io.BytesIO() as bio:
+                template.save(bio, format="PNG")
+                bio.seek(0)
+                f = discord.File(bio, "gridded.png")
+                await ctx.send(file=f)
 
     # ======================
     #       DITHERCHART
@@ -262,10 +256,9 @@ class Canvas:
                 return
         await ctx.send(ctx.get("canvas.repeat_not_found"))
 
-    # ======================
 
-    @staticmethod
-    async def parse_diff(ctx, raw_arg):
+async def _diff(ctx, raw_arg, fetch):
+    async with ctx.typing():
         m = re.search('(-?\d+)(?:,| |, )(-?\d+)(?: #?(\d+))?', raw_arg)
         if not m:
             await ctx.send(ctx.get("canvas.invalid_input"))
@@ -278,10 +271,22 @@ class Canvas:
             await att.save(data)
             max_zoom = int(math.sqrt(4000000 // (att.width * att.height)))
             zoom = max(1, min(int(m.group(3)) if m.group(3) else 1, max_zoom))
-            return ctx, x, y, data, zoom
+            diff_img, tot, err, bad = await render.diff(x, y, data, zoom, fetch, colors.pixelcanvas)
 
-    @staticmethod
-    async def parse_preview(ctx, coords):
+            if bad > 0:
+                content = ctx.get("render.diff_bad_color").format(tot - err, tot, err, bad, 100 * (tot - err) / tot)
+            else:
+                content = ctx.get("render.diff").format(tot - err, tot, err, 100 * (tot - err) / tot)
+
+            with io.BytesIO() as bio:
+                diff_img.save(bio, format="PNG")
+                bio.seek(0)
+                f = discord.File(bio, "diff.png")
+                await ctx.send(content=content, file=f)
+
+
+async def _preview(ctx, coords, fetch):
+    async with ctx.typing():
         m = re.search('(-?\d+)(?:,|&y=) ?(-?\d+)(?:(?:,|&scale=)(\d+))?/?\s?#?(-?\d+)?', coords)
         if m is not None:
             x = int(m.group(1))
@@ -293,33 +298,51 @@ class Canvas:
             else:
                 zoom = 1
             zoom = max(min(zoom, 16), -8)
-            return ctx, x, y, zoom
 
-    @staticmethod
-    async def parse_quantize(ctx, canvas, args):
-        if len(args) < 1:
+            preview_img = await render.preview(x, y, zoom, fetch)
+
+            with io.BytesIO() as bio:
+                preview_img.save(bio, format="PNG")
+                bio.seek(0)
+                f = discord.File(bio, "preview.png")
+                await ctx.send(file=f)
+
+
+async def _quantize(ctx, args, canvas, palette):
+    if len(args) < 1:
+        return
+    if args[0] == "-f":
+        if len(args) < 3:
             return
-        if args[0] == "-f":
-            if len(args) < 3:
-                return
-            f = sql.guild_get_by_faction_name_or_alias(args[1])
-            if not f:
-                await ctx.send(ctx.get("faction.not_found"))
-                return
-            name = args[2]
-            t = sql.template_get_by_name(f['id'], name)
-        else:
-            name = args[0]
-            t = sql.template_get_by_name(ctx.guild.id, name)
-        if t:
-            if t.canvas == canvas:
-                raise errors.IdempotentActionError
-            return await http.get_template(t.url)
+        f = sql.guild_get_by_faction_name_or_alias(args[1])
+        if not f:
+            await ctx.send(ctx.get("faction.not_found"))
+            return
+        name = args[2]
+        t = sql.template_get_by_name(f['id'], name)
+    else:
+        name = args[0]
+        t = sql.template_get_by_name(ctx.guild.id, name)
+
+    data = None
+    if t:
+        if t.canvas == canvas:
+            raise errors.IdempotentActionError
+        data = await http.get_template(t.url)
+    else:
         att = await utils.verify_attachment(ctx)
         if att:
             data = io.BytesIO()
             await att.save(data)
-            return data
+
+    if data:
+        template, bad_pixels = await render.quantize(data, palette)
+
+        with io.BytesIO() as bio:
+            template.save(bio, format="PNG")
+            bio.seek(0)
+            f = discord.File(bio, "template.png")
+            return await ctx.send(ctx.get("render.quantize").format(bad_pixels), file=f)
 
 
 def setup(bot):
