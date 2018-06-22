@@ -1,8 +1,6 @@
-import asyncio
 import discord
 import io
 import numpy as np
-from math import sqrt, pow
 from PIL import Image, ImageChops, ImageDraw
 
 from utils import colors, http
@@ -26,23 +24,6 @@ async def calculate_size(template):  # TODO: UGLY!!!
 
 
 async def diff(ctx, x, y, data, zoom, fetch, palette):
-    def get_mask(t: Image) -> Image:
-        with Image.new('1', t.size, 0) as black:
-            with Image.new('1', t.size, 1) as white:
-                return Image.composite(white, black, t)
-
-    def get_errors(t: Image, f: Image, mask: Image) -> Image:
-        with ImageChops.difference(t, f) as diff:
-            with diff.point(lambda x: 255 if x > 0 else 0).convert('L').point(
-                    lambda x: 255 if x > 0 else 0).convert('1') as diff:
-                with Image.new('1', t.size, 0) as black:
-                    return Image.composite(diff, black, mask)
-
-    def get_bad_color(t: Image, mask: Image) -> Image:
-        with get_errors(t, _quantize(t, palette), mask) as diff:
-            with Image.new('1', t.size, 0) as black:
-                return Image.composite(diff, black, mask)
-
     async with ctx.typing():
         with data:
             template = Image.open(data).convert('RGBA')
@@ -51,18 +32,29 @@ async def diff(ctx, x, y, data, zoom, fetch, palette):
             with template:
                 log.debug("(X:{0} | Y:{1} | Dim:{2}x{3} | Z:{4})".format(x, y, template.width, template.height, zoom))
 
-                mask = get_mask(template)
+                black = Image.new('1', template.size, 0)
+                white = Image.new('1', template.size, 1)
+                mask = Image.composite(white, black, template)
                 template = template.convert('RGB')
 
+                def lut(i):
+                    return 255 if i > 0 else 0
+
+                with ImageChops.difference(template, diff_img) as error_mask:
+                    error_mask = error_mask.point(lut).convert('L').point(lut).convert('1')
+                    error_mask = Image.composite(error_mask, black, mask)
+
+                with ImageChops.difference(template, _quantize(template, palette)) as bad_mask:
+                    bad_mask = bad_mask.point(lut).convert('L').point(lut).convert('1')
+                    bad_mask = Image.composite(bad_mask, black, mask)
+
                 tot = np.array(mask).sum()
-                e = get_errors(template, diff_img, mask)
-                err = np.array(e).sum()
-                b = get_bad_color(template, mask)
-                bad = np.array(b).sum()
+                err = np.array(error_mask).sum()
+                bad = np.array(bad_mask).sum()
 
                 diff_img = diff_img.convert('L').convert('RGB')
-                diff_img = Image.composite(Image.new('RGB', template.size, (255, 0, 0)), diff_img, e)
-                diff_img = Image.composite(Image.new('RGB', template.size, (0, 0, 255)), diff_img, b)
+                diff_img = Image.composite(Image.new('RGB', template.size, (255, 0, 0)), diff_img, error_mask)
+                diff_img = Image.composite(Image.new('RGB', template.size, (0, 0, 255)), diff_img, bad_mask)
 
             if zoom > 1:
                 diff_img = diff_img.resize(tuple(zoom * x for x in diff_img.size), Image.NEAREST)
@@ -105,32 +97,20 @@ async def quantize(ctx, data, palette):
 
     with template:
         log.debug("(Dim:{0}x{1})".format(template.width, template.height))
-        bad_pixels = template.height * template.width
-        for py in range(template.height):
-            await asyncio.sleep(0)
-            for px in range(template.width):
-                pix = template.getpixel((px, py))
 
-                if pix[3] == 0:  # Ignore fully transparent pixels
-                    bad_pixels -= 1
-                    continue
-                if pix[3] < 30:  # Make barely visible pixels transparent
-                    template.putpixel((px, py), (0, 0, 0, 0))
-                    continue
+        black = Image.new('1', template.size, 0)
+        white = Image.new('1', template.size, 1)
+        mask = Image.composite(white, black, template)
+        template = template.convert('RGB')
+        q = _quantize(template, palette)
 
-                dist = 450
-                best_fit = (0, 0, 0)
-                for c in palette:
-                    if pix[:3] == c:  # If pixel matches exactly, break
-                        best_fit = c
-                        if pix[3] == 255:  # Pixel is only not bad if it's fully opaque
-                            bad_pixels -= 1
-                        break
-                    tmp = sqrt(pow(pix[0]-c[0], 2) + pow(pix[1]-c[1], 2) + pow(pix[2]-c[2], 2))
-                    if tmp < dist:
-                        dist = tmp
-                        best_fit = c
-                template.putpixel((px, py), best_fit + (255,))
+        def lut(i):
+            return 255 if i > 0 else 0
+
+        with ImageChops.difference(template, q) as d:
+            d = d.point(lut).convert('L').point(lut).convert('1')
+            d = Image.composite(d, black, mask)
+            bad_pixels = np.array(d).sum()
 
         with io.BytesIO() as bio:
             template.save(bio, format="PNG")
