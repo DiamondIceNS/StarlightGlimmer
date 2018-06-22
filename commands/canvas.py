@@ -32,7 +32,7 @@ class Canvas:
                 return
             f = sql.guild_get_by_faction_name_or_alias(args[1])
             if not f:
-                await ctx.send("That faction could not be found.")  # TODO: Translate
+                await ctx.send(ctx.get("faction.not_found"))
                 return
             name = args[2]
             zoom = args[3] if len(args) >= 4 else "#1"
@@ -180,13 +180,13 @@ class Canvas:
             if a == "-f":
                 faction = sql.guild_get_by_faction_name_or_alias(next(iter_args, None))
                 if not faction:
-                    await ctx.send("That faction could not be found.")  # TODO: Translate
+                    await ctx.send(ctx.get("faction.not_found"))
                     return
             if a == "-c":
                 try:
                     color = abs(int(next(iter_args, None), 16) % 16777215)
                 except ValueError:
-                    await ctx.send("That is not a valid color.")  # TODO: Translate
+                    await ctx.send(ctx.get("bot.error.invalid_color"))
                     return
             a = next(iter_args, None)
         name = a
@@ -304,7 +304,7 @@ class Canvas:
                 return
             f = sql.guild_get_by_faction_name_or_alias(args[1])
             if not f:
-                await ctx.send("That faction could not be found.")  # TODO: Translate
+                await ctx.send(ctx.get("faction.not_found"))
                 return
             name = args[2]
             t = sql.template_get_by_name(f['id'], name)

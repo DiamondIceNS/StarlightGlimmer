@@ -33,12 +33,13 @@ class Template:
     @commands.group(name='template', invoke_without_command=True, aliases=['t'])
     async def template(self, ctx, *args):
         gid = ctx.guild.id
+        guild = sql.guild_get_prefix_by_id(gid)
         iter_args = iter(args)
         a = next(iter_args, None)
         if a == "-f":
             faction = sql.guild_get_by_faction_name_or_alias(next(iter_args, None))
             if not faction:
-                await ctx.send("That faction could not be found.")  # TODO: Translate
+                await ctx.send(ctx.get("faction.not_found"))
                 return
             gid = faction['id']
         ts = sql.template_get_all_by_guild_id(gid)
@@ -48,7 +49,8 @@ class Template:
             page = min(max(page, 1), pages)
             w1 = max(max(map(lambda tx: len(tx.name), ts)) + 2, len(ctx.get("template.info_name")))
             msg = [
-                ctx.get("template.list_open").format(page, pages),
+                "**{}** {} {}/{}".format(ctx.get("template.list_header"), ctx.get("bot.page"), page, pages),
+                "```xl"
                 "{0:<{w1}}  {1:<14}  {2}\n".format(ctx.get("template.info_name"),
                                                    ctx.get("template.info_canvas"),
                                                    ctx.get("template.info_coords"), w1=w1)
@@ -58,7 +60,9 @@ class Template:
                 name = '"{}"'.format(t.name)
                 canvas_name = canvases.pretty_print[t.canvas]
                 msg.append("{0:<{w1}}  {1:<14}  {2}\n".format(name, canvas_name, coords, w1=w1))
-            msg.append(ctx.get("template.list_close").format(sql.guild_get_prefix_by_id(ctx.guild.id)))
+            msg.append(ctx.get("template.list_footer_1").format(guild))
+            msg.append(ctx.get("template.list_footer_2").format(guild))
+            msg.append("```")
             await ctx.send(''.join(msg))
         else:
             await ctx.send(ctx.get("template.list_no_templates"))
@@ -69,6 +73,7 @@ class Template:
     async def template_all(self, ctx, page: int = 1):  # TODO: Add brief, help, and signature strings to lang files
         ts = sql.template_get_all_public()
         fs = sql.guild_get_all_factions()
+        guild = sql.guild_get_prefix_by_id(ctx.guild.id)
 
         def by_faction_name(template):
             for f in fs:
@@ -86,9 +91,10 @@ class Template:
             page = min(max(page, 1), pages)
             w1 = max(max(map(lambda tx: len(tx.name), ts)) + 2, len(ctx.get("template.info_name")))
             msg = [
-                ctx.get("template.list_open").format(page, pages),
+                "**{}** {} {}/{}".format(ctx.get("template.list_header"), ctx.get("bot.page"), page, pages),
+                "```xl"
                 "{0:<{w1}}  {1:<34}  {2:<14}  {3}\n".format(ctx.get("template.info_name"),
-                                                            "Faction",  # TODO: Translate
+                                                            ctx.get("template.info_faction"),
                                                             ctx.get("template.info_canvas"),
                                                             ctx.get("template.info_coords"), w1=w1)
             ]
@@ -98,7 +104,9 @@ class Template:
                 name = '"{}"'.format(t.name)
                 canvas_name = canvases.pretty_print[t.canvas]
                 msg.append("{0:<{w1}}  {1:<34}  {2:<14}  {3}\n".format(name, faction, canvas_name, coords, w1=w1))
-            msg.append(ctx.get("template.list_close").format(sql.guild_get_prefix_by_id(ctx.guild.id)))
+            msg.append(ctx.get("template.list_footer_1").format(guild))
+            msg.append(ctx.get("template.list_footer_2").format(guild))
+            msg.append("```")
             await ctx.send(''.join(msg))
         else:
             await ctx.send(ctx.get("template.list_no_templates"))
@@ -179,7 +187,7 @@ class Template:
                 return
             f = sql.guild_get_by_faction_name_or_alias(args[1])
             if not f:
-                await ctx.send("That faction could not be found.")  # TODO: Translate
+                await ctx.send(ctx.get("faction.not_found"))
                 return
             name = args[2]
             t = sql.template_get_by_name(f['id'], name)
@@ -279,23 +287,28 @@ class Template:
 
     @staticmethod
     def build_template_report(ctx, ts: List[Template_]):
+        name = ctx.get("template.info_name")
+        tot = ctx.get("template.info_total")
+        err = ctx.get("template.info_errors")
+        perc = ctx.get("template.info_percent")
+
         ts = sorted(ts, key=lambda tx: tx.name)
-        w1 = max(max(map(lambda tx: len(tx.name), ts)) + 2, len(ctx.get("template.info_name")))
-        w2 = max(max(map(lambda tx: len(str(tx.height * tx.width)), ts)), len("Total"))
-        w3 = max(max(map(lambda tx: len(str(tx.errors)), ts)), len("Errors"))
-        w4 = max(len("Percent"), 6)
-        out = ["**Template Report**\n```xl",  # TODO: Translate
-               "{0:<{w1}}  {1:>{w2}}  {2:>{w3}}  {3:>{w4}}".format(ctx.get("template.info_name"),
-                                                                   "Total", "Errors", "Percent", w1=w1, w2=w2, w3=w3,
-                                                                   w4=w4)  # TODO: Translate
-               ]
+        w1 = max(max(map(lambda tx: len(tx.name), ts)) + 2, len(name))
+        w2 = max(max(map(lambda tx: len(str(tx.height * tx.width)), ts)), len(tot))
+        w3 = max(max(map(lambda tx: len(str(tx.errors)), ts)), len(err))
+        w4 = max(len(perc), 6)
+
+        out = [
+            "**{}**".format(ctx.get("template.template_report_header")),
+            "```xl",
+            "{0:<{w1}}  {1:>{w2}}  {2:>{w3}}  {3:>{w4}}".format(name, tot, err, perc, w1=w1, w2=w2, w3=w3, w4=w4)
+        ]
         for t in ts:
             tot = t.size
             name = '"{}"'.format(t.name)
             perc = "{:>6.2f}%".format(100 * (tot - t.errors) / tot)
-            out.append(
-                '{0:<{w1}}  {1:>{w2}}  {2:>{w3}}  {3:>{w4}}'.format(name, tot, t.errors, perc, w1=w1, w2=w2, w3=w3, w4=w4))
-
+            out.append('{0:<{w1}}  {1:>{w2}}  {2:>{w3}}  {3:>{w4}}'
+                       .format(name, tot, t.errors, perc, w1=w1, w2=w2, w3=w3, w4=w4))
         out.append("```")
         return '\n'.join(out)
 
@@ -327,10 +340,10 @@ class Template:
                 empty_bcs, shape = chunk_type.get_intersecting(t.x, t.y, t.width, t.height)
                 chunks.update(empty_bcs)
 
-            msg = await ctx.send("Fetching data from {}...".format(canvases.pretty_print[canvas]))  # TODO: Translate
+            msg = await ctx.send(ctx.get("template.fetching_data").format(canvases.pretty_print[canvas]))
             await fetch(chunks)
 
-            await msg.edit(content="Calculating...")  # TODO: Translate
+            await msg.edit(content=ctx.get("template.calculating"))
             await Template.calculate_errors(ts, chunks)
 
             await msg.edit(content=Template.build_template_report(ctx, ts))

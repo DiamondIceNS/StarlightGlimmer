@@ -22,22 +22,28 @@ class Faction:  # TODO: Add brief, help, and signature strings to lang files
         if len(fs) > 0:
             pages = 1 + len(fs) // 10
             page = min(max(page, 1), pages)
+            g = sql.guild_get_prefix_by_id(ctx.guild.id)
+
             msg = [
-                "**Faction List** - Page {0}/{1}\n```xl\n".format(page, pages),  # TODO: Translate
-                "{0:<34}  {1:<5}\n".format("Name", "Alias")  # TODO: Translate
+                "**{}** - {} {}/{}".format(ctx.get("faction.list_header"), ctx.get("bot.page"), page, pages),
+                "```xl",
+                "{0:<34}  {1:<5}".format(ctx.get("faction.info_name"), ctx.get("faction.info_alias"))
             ]
             for f in fs[(page - 1) * 10:page * 10]:
-                msg.append("{0:<34}  {1:<5}\n".format('"{}"'.format(f['faction_name']), f['faction_alias']))
-            msg.append("\n// Use '{0}faction <page>' to see that page\n// Use '{0}faction info <name>' to see more info on a faction```".format(sql.guild_get_prefix_by_id(ctx.guild.id)))  # TODO: Translate
-            await ctx.send(''.join(msg))
+                msg.append("{0:<34}  {1:<5}".format('"{}"'.format(f['faction_name']), f['faction_alias']))
+            msg.append("")
+            msg.append(ctx.get("faction.faction_list_footer_1").format(g))
+            msg.append(ctx.get("faction.faction_list_footer_2").format(g))
+            msg.append("```")
+            await ctx.send('\n'.join(msg))
         else:
-            await ctx.send("There doesn't seem to be any guilds yet...")  # TODO: Translate
+            await ctx.send(ctx.get("faction.no_factions"))
 
     @checks.admin_only()
     @faction.command(name="create")
     async def faction_create(self, ctx, name, alias=None):
         if sql.guild_is_faction(ctx.guild.id):
-            await ctx.send("This guild is already a faction.")  # TODO: Translate
+            await ctx.send(ctx.get("faction.already_faction"))
             return
         name = re.sub("[^\S ]+", "", name)
         if not (6 <= len(name) <= 32):
@@ -47,25 +53,25 @@ class Faction:  # TODO: Add brief, help, and signature strings to lang files
             raise commands.BadArgument  # TODO: Tell out of range
 
         sql.guild_faction_set(ctx.guild.id, name=name, alias=alias)
-        await ctx.send("Faction `{}` created.".format(name))  # TODO: Translate
+        await ctx.send(ctx.get("faction.created").format(name))
 
     @checks.admin_only()
     @faction.command(name="disband")
     async def faction_disband(self, ctx):
         if not sql.guild_is_faction(ctx.guild.id):
-            await ctx.send("This guild needs to become a faction to use that command.")  # TODO: Translate
+            await ctx.send(ctx.get("faction.must_be_a_faction"))
             return
         sql.guild_faction_set(ctx.guild.id, name=None, alias=None, emblem=None, invite=None)
-        await ctx.send("Faction `{}` successfully disbanded.")  # TODO: Translate
+        await ctx.send(ctx.get("faction.disbanded"))
 
     @faction.command(name="info")
     async def faction_info(self, ctx, other=None):
         faction = sql.guild_get_by_faction_name_or_alias(other) if other else sql.guild_get_by_id(ctx.guild.id)
         if not faction:
-            await ctx.send("That faction could not be found.")  # TODO: Translate
+            await ctx.send(ctx.get("faction.not_found"))
             return
         if not faction['faction_name']:
-            await ctx.send("This guild has not created a faction yet.")  # TODO: Translate
+            await ctx.send(ctx.get("faction.not_a_faction_yet"))
             return
 
         templates = sql.template_get_all_public_by_guild_id(faction['id'])
@@ -79,7 +85,7 @@ class Faction:  # TODO: Add brief, help, and signature strings to lang files
         canvases_pretty.sort()
 
         e = discord.Embed(color=faction['faction_color']) \
-            .add_field(name="Canvases", value='\n'.join(canvases_pretty))  # TODO: Translate
+            .add_field(name=ctx.get("faction.info_canvases"), value='\n'.join(canvases_pretty))
         if faction['faction_invite']:
             icon_url = self.bot.get_guild(faction['id']).icon_url
             e.set_author(name=faction['faction_name'], url=faction['faction_invite'], icon_url=icon_url)
@@ -88,7 +94,7 @@ class Faction:  # TODO: Add brief, help, and signature strings to lang files
         if faction['faction_desc']:
             e.description = faction['faction_desc']
         if faction['faction_alias']:
-            e.description += "\n**Alias:** {}".format(faction['faction_alias'])  # TODO: Tranlsate
+            e.description += "\n**{}:** {}".format(ctx.get("faction.info_alias"), faction['faction_alias'])
         if faction['faction_emblem']:
             e.set_thumbnail(url=faction['faction_emblem'])
 
@@ -98,39 +104,39 @@ class Faction:  # TODO: Add brief, help, and signature strings to lang files
     @faction.command(name="block")
     async def faction_block(self, ctx, other):
         if not sql.guild_is_faction(ctx.guild.id):
-            await ctx.send("This guild needs to become a faction to use that command.")  # TODO: Translate
+            await ctx.send(ctx.get("faction.must_be_a_faction"))
             return
         other_fac = sql.guild_get_by_faction_name_or_alias(other)
         if not other_fac:
-            await ctx.send("That faction could not be found.")  # TODO: Translate
+            await ctx.send(ctx.get("faction.not_found"))
             return
         if sql.is_blocked(ctx.guild.id, other_fac['id']):
-            await ctx.send("That faction is already blocked.")
+            await ctx.send(ctx.get("faction.already_blocked"))
             return
         sql.faction_block_add(ctx.guild.id, other_fac['id'])
-        await ctx.send("Blocked faction `{}`.".format(other_fac['faction_name']))  # TODO: Translate
+        await ctx.send(ctx.get("faction.set_block").format(other_fac['faction_name']))
 
     @checks.admin_only()
     @faction.command(name="unblock")
     async def faction_unblock(self, ctx, other):
         if not sql.guild_is_faction(ctx.guild.id):
-            await ctx.send("This guild needs to become a faction to use that command.")  # TODO: Translate
+            await ctx.send(ctx.get("faction.must_be_a_faction"))
             return
         other_fac = sql.guild_get_by_faction_name_or_alias(other)
         if not other_fac:
-            await ctx.send("That faction could not be found.")  # TODO: Translate
+            await ctx.send(ctx.get("faction.not_found"))
             return
         if not sql.is_blocked(ctx.guild.id, other_fac['id']):
             await ctx.send("That faction has not been blocked.")
             return
         sql.faction_block_remove(ctx.guild.id, other_fac['id'])
-        await ctx.send("Unblocked faction `{}`.".format(other_fac['faction_name']))  # TODO: Translate
+        await ctx.send(ctx.get("faction.clear_block").format(other_fac['faction_name']))
 
     @checks.admin_only()
     @faction.group(name="set")
     async def faction_set(self, ctx):
         if not sql.guild_is_faction(ctx.guild.id):
-            await ctx.send("This guild needs to become a faction to use that command.")  # TODO: Translate
+            await ctx.send(ctx.get("faction.must_be_a_faction"))
             return
 
     @faction_set.command(name="name")
@@ -139,10 +145,10 @@ class Faction:  # TODO: Add brief, help, and signature strings to lang files
         if not (6 <= len(new_name) <= 32):
             raise commands.BadArgument  # TODO: Tell to long
         if sql.guild_get_by_faction_name(new_name):
-            await ctx.send("A faction with that name already exists.")  # TODO: Translate
+            await ctx.send(ctx.get("faction.name_already_exists"))
             return
         sql.guild_faction_set(ctx.guild.id, name=new_name)
-        await ctx.send("Faction renamed to `{}`.".format(new_name))  # TODO: Translate
+        await ctx.send(ctx.get("faction.set_name").format(new_name))
 
     @faction_set.command(name="desc")
     async def faction_set_desc(self, ctx, *, description):
@@ -150,18 +156,18 @@ class Faction:  # TODO: Add brief, help, and signature strings to lang files
         if not (len(description) <= 240):
             raise commands.BadArgument  # TODO: Tell to long
         sql.guild_faction_set(ctx.guild.id, desc=description)
-        await ctx.send("Faction description set.")  # TODO: Translate
+        await ctx.send(ctx.get("faction.set_description"))
 
     @faction_set.command(name="color", aliases=['colour'])
     async def faction_set_color(self, ctx, color: str):
         try:
             color = int(color, 0)
         except ValueError:
-            await ctx.send("That is not a valid color.")  # TODO: Translate
+            await ctx.send(ctx.get("bot.error.invalid_color"))
             return
         color = abs(color % 16777215)
         sql.guild_faction_set(ctx.guild.id, color=color)
-        await ctx.send("Faction color set.")  # TODO: Translate
+        await ctx.send(ctx.get("faction.set_color"))
 
     @faction_set.command(name="alias")
     async def faction_set_alias(self, ctx, new_alias):
@@ -169,10 +175,10 @@ class Faction:  # TODO: Add brief, help, and signature strings to lang files
         if not (1 <= len(new_alias) <= 5):
             raise commands.BadArgument  # TODO: Tell too long
         if sql.guild_get_by_faction_alias(new_alias):
-            await ctx.send("A faction with that alias already exists.")  # TODO: Translate
+            await ctx.send(ctx.get("faction.alias_already_exists"))
             return
         sql.guild_faction_set(ctx.guild.id, alias=new_alias)
-        await ctx.send("Faction alias set to `{}`.".format(new_alias))  # TODO: Translate
+        await ctx.send(ctx.get("faction.set_alias").format(new_alias))
 
     @faction_set.command(name="emblem")
     async def faction_set_emblem(self, ctx, emblem_url=None):
@@ -186,7 +192,7 @@ class Faction:  # TODO: Add brief, help, and signature strings to lang files
             return
 
         sql.guild_faction_set(ctx.guild.id, emblem=emblem_url)
-        await ctx.send("Faction emblem set.")  # TODO: Translate
+        await ctx.send(ctx.get("faction.set_emblem"))
 
     @faction_set.command(name="invite")
     async def faction_set_invite(self, ctx):
@@ -194,34 +200,34 @@ class Faction:  # TODO: Add brief, help, and signature strings to lang files
             raise Exception  # TODO: I do not have permission to do that
         invite = await ctx.channel.create_invite(reason="Invite for faction info page")
         sql.guild_faction_set(ctx.guild.id, invite=invite.url)
-        await ctx.send("Faction invite set.")  # TODO: Translate
+        await ctx.send(ctx.get("faction.set_invite"))
 
     @checks.admin_only()
     @faction.group(name="clear")
     async def faction_clear(self, ctx):
         if not sql.guild_is_faction(ctx.guild.id):
-            await ctx.send("This guild needs to become a faction to use that command.")  # TODO: Translate
+            await ctx.send(ctx.get("faction.must_be_a_faction"))
             return
 
     @faction_clear.command(name="alias")
     async def faction_clear_alias(self, ctx):
         sql.guild_faction_clear(ctx.guild.id, alias=True)
-        await ctx.send("Faction alias cleared.")  # TODO: Translate
+        await ctx.send(ctx.get("faction.clear_alias"))
 
     @faction_clear.command(name="desc")
     async def faction_clear_desc(self, ctx):
         sql.guild_faction_clear(ctx.guild.id, desc=True)
-        await ctx.send("Faction description cleared.")  # TODO: Translate
+        await ctx.send(ctx.get("faction.clear_description"))
 
     @faction_clear.command(name="color", aliases=['colour'])
     async def faction_clear_color(self, ctx):
         sql.guild_faction_clear(ctx.guild.id, color=True)
-        await ctx.send("Faction color cleared.")  # TODO: Translate
+        await ctx.send(ctx.get("faction.clear_color"))
 
     @faction_clear.command(name="emblem")
     async def faction_clear_emblem(self, ctx):
         sql.guild_faction_clear(ctx.guild.id, emblem=True)
-        await ctx.send("Faction emblem cleared.")  # TODO: Translate
+        await ctx.send(ctx.get("faction.clear_emblem"))
 
     @faction_clear.command(name="invite")
     async def faction_clear_invite(self, ctx):
@@ -230,11 +236,11 @@ class Faction:  # TODO: Add brief, help, and signature strings to lang files
 
         try:
             await self.bot.delete_invite(url)
-            await ctx.send("Faction invite cleared.")  # TODO: Translate
+            await ctx.send(ctx.get("faction.clear_invite"))
         except discord.Forbidden:
-            await ctx.send("Faction invite cleared, but I don't have permission to completely delete it.")  # TODO: Translate
+            await ctx.send(ctx.get("faction.clear_invite_cannot_delete"))
         except discord.NotFound:
-            await ctx.send("Faction invite cleared.")  # TODO: Translate
+            await ctx.send(ctx.get("faction.clear_invite"))
 
 
 def setup(bot):

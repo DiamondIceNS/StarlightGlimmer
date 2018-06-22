@@ -7,6 +7,7 @@ STRINGS = {
         Let's get pixel painting!""",
     "bot.discord_urls_only": "I can only accept Discord attachment URLs.",  
     "bot.help_ending_note": "Type '{0}{1} <command>' for more info on a command.",
+    "bot.page": "Page",  # TODO: Translate
     "bot.ping": "Pinging...",
     "bot.pong": "Pong! | **{0}ms**",
     "bot.suggest": "Your suggestion has been sent. Thank you for your input!",
@@ -23,42 +24,8 @@ STRINGS = {
     "animotes.member_opt_out": "You have successfully **opted-out** of emoji conversion.",
 
     # Canvas messages
-    "canvas.invalid_input": "Invalid input: does not match any template name or supported coordinates format.",  
+    "canvas.invalid_input": "Invalid input: does not match any template name or supported coordinates format.",
     "canvas.repeat_not_found": "Could not find a valid command to repeat.",
-
-    # Render messages
-    "render.diff": "{0}/{1} | {2} errors | {3:.2f}% complete",
-    "render.diff_bad_color": "{0}/{1} | {2} errors | {3} bad color | {4:.2f}% complete",
-    "render.large_template": "(Processing large template, this might take a few seconds...)",
-    "render.quantize": "Fixed {0} pixels.",
-
-    # Template messages
-    "template.added": "Template '{0}' added!",  
-    "template.duplicate_list_open": "The following templates already match this image:\n```xl\n",  
-    "template.duplicate_list_close": "```\nCreate a new template anyway?",  
-    "template.info_added_by": "Added By",  
-    "template.info_date_added": "Date Added",  
-    "template.info_date_modified": "Date Modified",
-    "template.info_dimensions": "Dim",  # TODO: Translate
-    "template.info_canvas": "Canvas",  
-    "template.info_coords": "Coords",  
-    "template.info_name": "Name",
-    "template.info_visibility": "Visibility",  # TODO: Translate
-    "template.info_size": "Size",  
-    "template.list_close": "\n// Use '{0}templates <page>' to see that page\n// Use '{0}templates info <name>' to see more info on a template```",  
-    "template.list_no_templates": "This guild currently has no templates.",  
-    "template.list_open": "**Template List** - Page {0}/{1}\n```xl\n",  
-    "template.max_templates": "This guild already has the maximum number of templates. Please remove a template before adding another.",  
-    "template.name_exists_ask_replace": "A template with the name '{0}' already exists for {1} at ({2}, {3}). Replace it?",  
-    "template.name_exists_no_permission": "A template with that name already exists. Please choose a different name.",  
-    "template.name_not_found": "Could not find template with name `{0}`.",  
-    "template.name_too_long": "That name is too long. Please use a name under {0} characters.",  
-    "template.no_template_named": "There is no template named '{0}'.",  
-    "template.not_owner": "You do not have permission to modify that template.",  
-    "template.not_quantized": "This image contains colors that are not part of this canvas's palette. Would you like to quantize it?",  
-    "template.remove": "Successfully removed '{0}'.",  
-    "template.updated": "Template '{0}' updated!",  
-
 
     # Configuration messages
     "configuration.alert_channel_cleared": "Alert channel has been cleared.",
@@ -77,25 +44,99 @@ STRINGS = {
                                "'botadmin'      - Can do anything an Administrator can do\n"
                                "'templateadder' - Can add templates, and remove templates they added themself\n"
                                "'templateadmin' - Can add and remove any template\n"
-                               "\n// Use '{0}role <type>' to view the current linked role.\n```",  
-    "configuration.role_not_found": "That role could not be found.",  
-    "configuration.role_bot_admin_check": "Bot admin privileges are currently assigned to `@{0}`.",  
-    "configuration.role_bot_admin_cleared": "Bot admin privileges successfully cleared.",  
-    "configuration.role_bot_admin_not_set": "Bot admin privileges have not been assigned to a role.",  
-    "configuration.role_bot_admin_set": "Bot admin privileges assigned to role `@{0}`.",  
-    "configuration.role_template_adder_check": "Template adder privileges are currently assigned to `@{0}`.",  
-    "configuration.role_template_adder_cleared": "Template adder privileges successfully cleared.",  
-    "configuration.role_template_adder_not_set": "Template adder privileges have not been assigned to a role.",  
-    "configuration.role_template_adder_set": "Template adder privileges assigned to role `@{0}`.",  
-    "configuration.role_template_admin_check": "Template admin privileges are currently assigned to `@{0}`.",  
-    "configuration.role_template_admin_cleared": "Template admin privileges successfully cleared.",  
-    "configuration.role_template_admin_not_set": "Template admin privileges have not been assigned to a role.",  
-    "configuration.role_template_admin_set": "Template admin privileges assigned to role `@{0}`.",  
+                               "\n// Use '{0}role <type>' to view the current linked role.\n```",
+    "configuration.role_not_found": "That role could not be found.",
+    "configuration.role_bot_admin_check": "Bot admin privileges are currently assigned to `@{0}`.",
+    "configuration.role_bot_admin_cleared": "Bot admin privileges successfully cleared.",
+    "configuration.role_bot_admin_not_set": "Bot admin privileges have not been assigned to a role.",
+    "configuration.role_bot_admin_set": "Bot admin privileges assigned to role `@{0}`.",
+    "configuration.role_template_adder_check": "Template adder privileges are currently assigned to `@{0}`.",
+    "configuration.role_template_adder_cleared": "Template adder privileges successfully cleared.",
+    "configuration.role_template_adder_not_set": "Template adder privileges have not been assigned to a role.",
+    "configuration.role_template_adder_set": "Template adder privileges assigned to role `@{0}`.",
+    "configuration.role_template_admin_check": "Template admin privileges are currently assigned to `@{0}`.",
+    "configuration.role_template_admin_cleared": "Template admin privileges successfully cleared.",
+    "configuration.role_template_admin_not_set": "Template admin privileges have not been assigned to a role.",
+    "configuration.role_template_admin_set": "Template admin privileges assigned to role `@{0}`.",
+
+    # Faction messages
+    "faction.alias_already_exists": "A faction with that alias already exists.",  # TODO: Translate
+    "faction.already_blocked": "That faction is already blocked.",  # TODO: Translate
+    "faction.already_faction": "This guild is already a faction.",  # TODO: Translate
+    "faction.clear_alias": "Faction alias cleared.",  # TODO: Translate
+    "faction.clear_block": "Unblocked faction `{}`.",  # TODO: Translate
+    "faction.clear_color": "Faction color cleared.",  # TODO: Translate
+    "faction.clear_description": "Faction description cleared.",  # TODO: Translate
+    "faction.clear_emblem": "Faction emblem cleared.",  # TODO: Translate
+    "faction.clear_invite": "Faction invite cleared.",  # TODO: Translate
+    "faction.clear_invite_cannot_delete": "Faction invite cleared, but I don't have permission to completely delete it.",  # TODO: Translate
+    "faction.created": "Faction `{}` created.",  # TODO: Translate
+    "faction.disbanded": "Faction successfully disbanded.",  # TODO: Translate
+    "faction.faction_list_footer_1": "// Use '{0}faction <page>' to see that page",  # TODO: Translate
+    "faction.faction_list_footer_2": "// Use '{0}faction info <name>' to see more info on a faction",  # TODO: Translate
+    "faction.list_header": "Faction List",  # TODO: Translate
+    "faction.info_alias": "Alias",  # TODO: Translate
+    "faction.info_canvases": "Canvases",  # TODO: Translate
+    "faction.info_name": "Name",  # TODO: Translate
+    "faction.must_be_a_faction": "This guild needs to become a faction to use that command.",  # TODO: Translate
+    "faction.name_already_exists": "A faction with that name already exists.",  # TODO: Translate
+    "faction.no_factions": "There doesn't seem to be any guilds yet...",  # TODO: Translate
+    "faction.not_a_faction_yet": "This guild has not created a faction yet.",  # TODO: Translate
+    "faction.not_found": "That faction could not be found.",  # TODO: Translate
+    "faction.set_alias": "Faction alias set to `{}`.",  # TODO: Translate
+    "faction.set_block": "Blocked faction `{}`.",  # TODO: Translate
+    "faction.set_color": "Faction color set.",  # TODO: Translate
+    "faction.set_description": "Faction description set.",  # TODO: Translate
+    "faction.set_emblem": "Faction emblem set.",  # TODO: Translate
+    "faction.set_invite": "Faction invite set.",  # TODO: Translate
+    "faction.set_name": "Faction renamed to `{}`.",  # TODO: Translate
+
+    # Render messages
+    "render.diff": "{0}/{1} | {2} errors | {3:.2f}% complete",
+    "render.diff_bad_color": "{0}/{1} | {2} errors | {3} bad color | {4:.2f}% complete",
+    "render.large_template": "(Processing large template, this might take a few seconds...)",
+    "render.quantize": "Fixed {0} pixels.",
+
+    # Template messages
+    "template.added": "Template '{0}' added!",
+    "template.calculating": "Calculating...",  # TODO: Translate
+    "template.duplicate_list_open": "The following templates already match this image:\n```xl\n",  
+    "template.duplicate_list_close": "```\nCreate a new template anyway?",
+    "template.fetching_data": "Fetching data from {}...",  # TODO: Translate
+    "template.info_added_by": "Added By",  
+    "template.info_date_added": "Date Added",  
+    "template.info_date_modified": "Date Modified",
+    "template.info_dimensions": "Dim",  # TODO: Translate
+    "template.info_canvas": "Canvas",  
+    "template.info_coords": "Coords",
+    "template.info_errors": "Errors",  # TODO: Translate
+    "template.info_faction": "Faction",  # TODO: Translate
+    "template.info_name": "Name",
+    "template.info_percent": "Percent",  # TODO: Translate
+    "template.info_size": "Size",
+    "template.info_total": "Total",  # TODO: Translate
+    "template.info_visibility": "Visibility",  # TODO: Translate
+    "template.list_header": "Template List",  # TODO: Translate
+    "template.list_footer_1": "// Use '{0}templates <page>' to see that page",  # TODO: Translate
+    "template.list_footer_2": "// Use '{0}templates info <name>' to see more info on a template",  # TODO: Translate
+    "template.list_no_templates": "This guild currently has no templates.",
+    "template.max_templates": "This guild already has the maximum number of templates. Please remove a template before adding another.",  
+    "template.name_exists_ask_replace": "A template with the name '{0}' already exists for {1} at ({2}, {3}). Replace it?",  
+    "template.name_exists_no_permission": "A template with that name already exists. Please choose a different name.",  
+    "template.name_not_found": "Could not find template with name `{0}`.",  
+    "template.name_too_long": "That name is too long. Please use a name under {0} characters.",  
+    "template.no_template_named": "There is no template named '{0}'.",  
+    "template.not_owner": "You do not have permission to modify that template.",  
+    "template.not_quantized": "This image contains colors that are not part of this canvas's palette. Would you like to quantize it?",  
+    "template.remove": "Successfully removed '{0}'.",
+    "template.template_report_header": "Template Report",  # TODO: Translate
+    "template.updated": "Template '{0}' updated!",
 
     # Error messages
     "bot.error.bad_png": "This image seems to be corrupted. Try re-saving it with an image editor or using `{0}quantize`.",
     "bot.error.command_on_cooldown": "That command is on cooldown. Try again in {0:.01f}s.",
     "bot.error.http_payload_error": "{0} seems to be having connection issues. Try again later.",
+    "bot.error.invalid_color": "That is not a valid color.",  # TODO: Translate
     "bot.error.jpeg": "Seriously? A JPEG? Gross! Please create a PNG template instead.",
     "bot.error.missing_attachment": "That command requires an attachment.",
     "bot.error.no_permission": "You do not have permission to use that command.",
