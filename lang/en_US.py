@@ -18,8 +18,6 @@ STRINGS = {
     "bot.yes_no_timed_out": "Command timed out.",  
 
     # Animotes messages
-    "animotes.guild_opt_in": "Emoji sharing has been **enabled** for this guild.",
-    "animotes.guild_opt_out": "Emoji sharing has been **disabled** for this guild.",
     "animotes.member_opt_in": "You have successfully **opted-in** to emoji conversion.",
     "animotes.member_opt_out": "You have successfully **opted-out** of emoji conversion.",
 
@@ -173,7 +171,6 @@ STRINGS = {
     "brief.help": "Displays this message.",
     "brief.invite": "Gets my invite link.",
     "brief.language": "Sets my language.",
-    "brief.listemotes": "Lists all the animated emoji that I know about.",
     "brief.ping": "Pong!",
     "brief.prefix": "Sets my command prefix for this guild.",
     "brief.preview": "Previews the canvas at a given coordinate.",
@@ -187,7 +184,6 @@ STRINGS = {
     "brief.quantize.pixelzone": "Quantizes colors using the palette of Pixelzone.io.",
     "brief.quantize.pxlsspace": "Quantizes colors using the palette of Pxls.space.",
     "brief.register": "Opt-in to animated emoji replacement.",
-    "brief.registerguild": "Opt-in to emoji sharing for this guild.",
     "brief.repeat": "Repeats the last used canvas command.",
     "brief.role": "Assign bot privileges to a role.",
     "brief.role.botadmin": "Configure Bot Admin privileges.",
@@ -209,7 +205,6 @@ STRINGS = {
     "brief.template.info": "Displays info about a template.",
     "brief.template.remove": "Removes a template.",
     "brief.unregister": "Opt-out of animated emoji replacement.",
-    "brief.unregisterguild": "Opt-out of emoji sharing for this guild.",
     "brief.version": "Gets my version number.",
 
     # Command long help
@@ -257,7 +252,6 @@ STRINGS = {
     "help.help": None,
     "help.invite": None,
     "help.language": """Use this command with no arguments to see the current and available languages.""",
-    "help.listemotes": """See 'registerserver' for more information about emoji sharing.""",
     "help.ping": None,
     "help.prefix":
         """Max length is 5 characters. You really shouldn't need more than 2.
@@ -290,12 +284,6 @@ STRINGS = {
         I can't use animated emoji from guilds I am not in, so I cannot use animated emoji from other guilds posted by Discord Nitro users or from Twitch-integrated guilds.
         
         This feature requires that I have the Manage Messages permission.""",
-    "help.registerguild":
-        """If opted-in, members of this guild will be able to use animated emoji from any other guild that has also opted-in. In return, animated emoji from this guild can also be used by any of those guilds. This is not required to use animated emoji from this guild.
-        
-        NOTE: Opting-in to emoji sharing will let other guilds see this guild's name and ID. If your guild is not a public guild, enabling this feature is not recommended.
-        
-        This command can only be used by members with the Manage Emojis permission.""",
     "help.repeat": "This command only applies to 'preview', 'diff', and their autoscan invocations. Only 50 messages back will be searched.",
     "help.role":
         """Admins can use this command to create roles in their guilds that grant users special privileges when using my commands.
@@ -333,10 +321,6 @@ STRINGS = {
     "help.template.info": None,
     "help.template.remove": "This command can only be used if the template being removed was added by you, unless you are a Template Admin, Bot Admin, or have the Administrator permission (see 'role').",  
     "help.unregister": "See 'register'.",
-    "help.unregisterguild":
-        """See 'registerguild'.
-        
-        This command can only be used by members with the Manage Emojis permission.""",
     "help.version": None,
 
     # Command signatures
@@ -365,7 +349,6 @@ STRINGS = {
     "signature.help": None,
     "signature.invite": None,
     "signature.language": "(code)",
-    "signature.listemotes": None,
     "signature.ping": None,
     "signature.prefix": "<prefix>",
     "signature.preview": "(subcommand) <coordinates> #(zoom)",
@@ -379,7 +362,6 @@ STRINGS = {
     "signature.quantize.pixelzone": ["", "<template>"],
     "signature.quantize.pxlsspace": ["", "<template>"],
     "signature.register": None,
-    "signature.registerguild": None,
     "signature.repeat": None,
     "signature.role": "(role)",
     "signature.role.botadmin": "(subcommand)",
@@ -401,7 +383,6 @@ STRINGS = {
     "signature.template.info": None,
     "signature.template.remove": "<template>",
     "signature.unregister": None,
-    "signature.unregisterguild": None,
     "signature.version": None,
 
     # Examples

@@ -133,12 +133,6 @@ def _update_tables(v):
         if v < 1.6:
             c.executescript("""
                 BEGIN TRANSACTION;
-                ALTER TABLE guilds ADD faction_name TEXT DEFAULT NULL;
-                ALTER TABLE guilds ADD faction_alias TEXT DEFAULT NULL;
-                ALTER TABLE guilds ADD faction_color INTEGER DEFAULT 13594340 NOT NULL;
-                ALTER TABLE guilds ADD faction_desc TEXT DEFAULT NULL;
-                ALTER TABLE guilds ADD faction_emblem TEXT DEFAULT NULL;
-                ALTER TABLE guilds ADD faction_invite TEXT DEFAULT NULL;
                 ALTER TABLE templates ADD private INTEGER DEFAULT 0 NOT NULL;
                 ALTER TABLE templates ADD size INTEGER DEFAULT 0 NOT NULL;
                 COMMIT;
@@ -170,6 +164,31 @@ def _update_tables(v):
                   SELECT guild_id, name, url, canvas, x, y, w, h, size, date_added, date_modified, md5, owner, private
                   FROM temp_templates;
                 DROP TABLE temp_templates;
+                ALTER TABLE guilds RENAME TO temp_guilds;
+                CREATE TABLE guilds(
+                  id                  INTEGER
+                    PRIMARY KEY,
+                  name                TEXT    NOT NULL,
+                  join_date           INTEGER NOT NULL,
+                  prefix              TEXT    DEFAULT NULL,
+                  alert_channel       INTEGER DEFAULT NULL,
+                  autoscan            INTEGER DEFAULT 1 NOT NULL,
+                  canvas              TEXT    DEFAULT 'pixelcanvas' NOT NULL,
+                  language            TEXT    DEFAULT 'en-us' NOT NULL,
+                  template_admin      INTEGER DEFAULT NULL,
+                  template_adder      INTEGER DEFAULT NULL,
+                  bot_admin           INTEGER DEFAULT NULL,
+                  faction_name        TEXT    DEFAULT NULL,
+                  faction_alias       TEXT    DEFAULT NULL,
+                  faction_color       INTEGER DEFAULT 13594340 NOT NULL,
+                  faction_desc        TEXT    DEFAULT NULL,
+                  faction_emblem      TEXT    DEFAULT NULL,
+                  faction_invite      TEXT    DEFAULT NULL
+                );
+                INSERT INTO guilds(id, name, join_date, prefix, alert_channel, autoscan, canvas, language)
+                  SELECT id, name, join_date, prefix, alert_channel, autoscan, canvas, language
+                  FROM temp_guilds;
+                DROP TABLE temp_guilds;
                 COMMIT;
                 PRAGMA FOREIGN_KEYS = ON; 
             """)
@@ -320,11 +339,6 @@ def guild_get_prefix_by_id(gid):
 
 def guild_is_autoscan(gid):
     c.execute("SELECT autoscan FROM guilds WHERE id=?", (gid,))
-    return bool(c.fetchone())
-
-
-def guild_is_emojishare(gid):
-    c.execute("""SELECT emojishare FROM guilds WHERE id=?""", (gid,))
     return bool(c.fetchone())
 
 
