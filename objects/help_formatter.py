@@ -52,8 +52,9 @@ class GlimmerHelpFormatter(HelpFormatter):
                     'General': '1. General',
                     'Canvas': '2. Canvas',
                     'Template': '3. Template',
-                    'Animotes': '4. Animotes',
-                    'Configuration': '5. Configuration',
+                    'Faction': '4. Faction',
+                    'Animotes': '5. Animotes',
+                    'Configuration': '6. Configuration',
                 }[tup[1].cog_name]
 
             filtered = await self.filter_command_list()
