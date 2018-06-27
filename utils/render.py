@@ -48,6 +48,20 @@ async def diff(x, y, data, zoom, fetch, palette):
         tot = np.array(mask).sum()
         err = np.array(error_mask).sum()
         bad = np.array(bad_mask).sum()
+        top15 = np.argwhere(np.array(error_mask))[:15].tolist()
+
+        error_list = []
+        for p in top15:
+            p.reverse()  # NumPy is backwards
+            try:
+                t_color = palette.index(template.getpixel(tuple(p)))
+            except ValueError:
+                t_color = -1
+            try:
+                f_color = palette.index(diff_img.getpixel(tuple(p)))
+            except ValueError:
+                f_color = -1
+            error_list.append((*p, t_color, f_color))
 
         diff_img = diff_img.convert('L').convert('RGB')
         diff_img = Image.composite(Image.new('RGB', template.size, (255, 0, 0)), diff_img, error_mask)
@@ -56,7 +70,7 @@ async def diff(x, y, data, zoom, fetch, palette):
     if zoom > 1:
         diff_img = diff_img.resize(tuple(zoom * x for x in diff_img.size), Image.NEAREST)
 
-    return diff_img, tot, err, bad
+    return diff_img, tot, err, bad, error_list
 
 
 async def preview(x, y, zoom, fetch):

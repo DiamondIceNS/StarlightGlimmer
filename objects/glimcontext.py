@@ -49,10 +49,10 @@ class GlimContext(commands.Context):
         default_canvas = self.canvas
         cmds = cmd.split('.')
         self.command = dget(self.bot.commands, name=cmds[0])
+        self.view.index = 0
+        self.view.preview = 0
+        self.view.get_word()
         if len(cmds) > 1:
-            self.view.index = 0
-            self.view.preview = 0
-            self.view.get_word()
             for c in cmds[1:]:
                 self.command = dget(self.command.commands, name=c)
                 self.view.skip_ws()

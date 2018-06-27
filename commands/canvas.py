@@ -27,28 +27,37 @@ class Canvas:
     async def diff(self, ctx, *args):
         if len(args) < 1:
             return
-        if args[0] == "-f":
-            if len(args) < 3:
-                return
-            f = sql.guild_get_by_faction_name_or_alias(args[1])
+        list_pixels = False
+        iter_args = iter(args)
+        a = next(iter_args, None)
+        if a == "-l":
+            list_pixels = True
+            a = next(iter_args, None)
+        if a == "-f":
+            f = sql.guild_get_by_faction_name_or_alias(next(iter_args, None))
             if not f:
                 await ctx.send(ctx.s("faction.not_found"))
                 return
-            name = args[2]
-            zoom = args[3] if len(args) >= 4 else "#1"
+            name = next(iter_args, None)
+            zoom = next(iter_args, 1)
             t = sql.template_get_by_name(f['id'], name)
         else:
-            name = args[0]
-            zoom = args[1] if len(args) >= 2 else "#1"
+            name = a
+            zoom = next(iter_args, 1)
             t = sql.template_get_by_name(ctx.guild.id, name)
+
+        try:
+            if type(zoom) is not int:
+                if zoom.startswith("#"):
+                    zoom = zoom[1:]
+                zoom = int(zoom)
+        except ValueError:
+            zoom = 1
+
         if t:
             data = await http.get_template(t.url)
-            try:
-                max_zoom = int(math.sqrt(4000000 // (t.width * t.height)))
-                zoom = int(zoom[1:]) if zoom and zoom.startswith("#") else 1
-                zoom = max(1, min(zoom, max_zoom))
-            except ValueError:
-                zoom = 1
+            max_zoom = int(math.sqrt(4000000 // (t.width * t.height)))
+            zoom = max(1, min(zoom, max_zoom))
 
             fetchers = {
                 'pixelcanvas': render.fetch_pixelcanvas,
@@ -57,7 +66,7 @@ class Canvas:
                 'pxlsspace': render.fetch_pxlsspace
             }
 
-            diff_img, tot, err, bad \
+            diff_img, tot, err, bad, err_list \
                 = await render.diff(t.x, t.y, data, zoom, fetchers[t.canvas], colors.by_name[t.canvas])
 
             done = tot - err
@@ -76,28 +85,41 @@ class Canvas:
                 bio.seek(0)
                 f = discord.File(bio, "diff.png")
                 await ctx.send(content=out, file=f)
+
+            if list_pixels and len(err_list) > 0:
+                out = ["```xl"]
+                for p in err_list:
+                    x, y, current, target = p
+                    current = ctx.s("color.{}.{}".format(t.canvas, current))
+                    target = ctx.s("color.{}.{}".format(t.canvas, target))
+                    out.append("({}, {}) is {}, should be {}".format(x + t.x, y + t.y, current, target))
+                if err > 15:
+                    out.append("...")
+                out.append("```")
+                await ctx.send('\n'.join(out))
+
             return
         await ctx.invoke_default("diff")
 
     @commands.cooldown(1, 5, BucketType.guild)
     @diff.command(name="pixelcanvas", aliases=["pc"])
-    async def diff_pixelcanvas(self, ctx, *, raw_arg: str):
-        await _diff(ctx, raw_arg, render.fetch_pixelcanvas)
+    async def diff_pixelcanvas(self, ctx, *args):
+        await _diff(ctx, args, "pixelcanvas", render.fetch_pixelcanvas, colors.pixelcanvas)
 
     @commands.cooldown(1, 5, BucketType.guild)
     @diff.command(name="pixelzio", aliases=["pzi"])
-    async def diff_pixelzio(self, ctx, *, raw_arg: str):
-        await _diff(ctx, raw_arg, render.fetch_pixelzio)
+    async def diff_pixelzio(self, ctx, *args):
+        await _diff(ctx, args, "pixelzio", render.fetch_pixelzio, colors.pixelzio)
 
     @commands.cooldown(1, 5, BucketType.guild)
     @diff.command(name="pixelzone", aliases=["pz"])
-    async def diff_pixelzone(self, ctx, *, raw_arg: str):
-        await _diff(ctx, raw_arg, render.fetch_pixelzone)
+    async def diff_pixelzone(self, ctx, *args):
+        await _diff(ctx, args, "pixelzone", render.fetch_pixelzone, colors.pixelzone)
 
     @commands.cooldown(1, 5, BucketType.guild)
     @diff.command(name="pxlsspace", aliases=["ps"])
-    async def diff_pxlsspace(self, ctx, *, raw_arg: str):
-        await _diff(ctx, raw_arg, render.fetch_pxlsspace)
+    async def diff_pxlsspace(self, ctx, *args):
+        await _diff(ctx, args, "pxlsspace", render.fetch_pxlsspace, colors.pxlsspace)
 
     # =======================
     #        PREVIEW
@@ -263,32 +285,72 @@ class Canvas:
         await ctx.send(ctx.s("canvas.repeat_not_found"))
 
 
-async def _diff(ctx, raw_arg, fetch):
+async def _diff(ctx, args, canvas, fetch, palette):
     async with ctx.typing():
-        m = re.search('(-?\d+)(?:,| |, )(-?\d+)(?: #?(\d+))?', raw_arg)
-        if not m:
-            await ctx.send(ctx.s("canvas.invalid_input"))
-            return
         att = await utils.verify_attachment(ctx)
         if att:
-            x = int(m.group(1))
-            y = int(m.group(2))
+            list_pixels = False
+            iter_args = iter(args)
+            a = next(iter_args, None)
+            if a == "-l":
+                list_pixels = True
+                a = next(iter_args, None)
+            if a and ',' in a:
+                x, y = a.split(',')
+            else:
+                x = a
+                y = next(iter_args, None)
+
+            try:
+                x = int(x)
+                y = int(y)
+            except (ValueError, TypeError):
+                await ctx.send(ctx.s("canvas.invalid_input"))
+                return
+
+            zoom = next(iter_args, 1)
+            try:
+                if type(zoom) is not int:
+                    if zoom.startswith("#"):
+                        zoom = zoom[1:]
+                    zoom = int(zoom)
+            except ValueError:
+                zoom = 1
+
             data = io.BytesIO()
             await att.save(data)
             max_zoom = int(math.sqrt(4000000 // (att.width * att.height)))
-            zoom = max(1, min(int(m.group(3)) if m.group(3) else 1, max_zoom))
-            diff_img, tot, err, bad = await render.diff(x, y, data, zoom, fetch, colors.pixelcanvas)
+            zoom = max(1, min(zoom, max_zoom))
+            diff_img, tot, err, bad, err_list = await render.diff(x, y, data, zoom, fetch, palette)
 
-            if bad > 0:
-                content = ctx.s("canvas.diff_bad_color").format(tot - err, tot, err, bad, 100 * (tot - err) / tot)
+            done = tot - err
+            perc = int(10000 * (tot - err) / tot)
+            if perc == 0 and done > 0:
+                perc = ">0.00%"
+            elif perc == 100 and err > 0:
+                perc = "<100.00%"
             else:
-                content = ctx.s("canvas.diff").format(tot - err, tot, err, 100 * (tot - err) / tot)
+                perc = "{:.2f}%".format(perc / 100)
+            out = ctx.s("canvas.diff") if bad == 0 else ctx.s("canvas.diff_bad_color")
+            out = out.format(done, tot, err, perc, bad=bad)
 
             with io.BytesIO() as bio:
                 diff_img.save(bio, format="PNG")
                 bio.seek(0)
                 f = discord.File(bio, "diff.png")
-                await ctx.send(content=content, file=f)
+                await ctx.send(content=out, file=f)
+
+            if list_pixels and len(err_list) > 0:
+                out = ["```xl"]
+                for p in err_list:
+                    err_x, err_y, current, target = p
+                    current = ctx.s("color.{}.{}".format(canvas, current))
+                    target = ctx.s("color.{}.{}".format(canvas, target))
+                    out.append("({}, {}) is {}, should be {}".format(err_x + x, err_y + y, current, target))
+                if err > 15:
+                    out.append("...")
+                out.append("```")
+                await ctx.send('\n'.join(out))
 
 
 async def _preview(ctx, coords, fetch):
