@@ -49,9 +49,15 @@ class Faction:  # TODO: Add brief, help, and signature strings to lang files
         name = re.sub("[^\S ]+", "", name)
         if not (6 <= len(name) <= 32):
             raise commands.BadArgument  # TODO: Tell out of range
-        alias = re.sub("[^A-Za-z]+", "", alias)
+        if sql.guild_get_by_faction_name(name):
+            await ctx.send(ctx.s("faction.name_already_exists"))
+            return
+        alias = re.sub("[^A-Za-z]+", "", alias).lower()
         if alias and not (1 <= len(alias) <= 5):
             raise commands.BadArgument  # TODO: Tell out of range
+        if sql.guild_get_by_faction_alias(alias):
+            await ctx.send(ctx.s("faction.alias_already_exists"))
+            return
 
         sql.guild_faction_set(ctx.guild.id, name=name, alias=alias)
         await ctx.send(ctx.s("faction.created").format(name))
@@ -172,7 +178,7 @@ class Faction:  # TODO: Add brief, help, and signature strings to lang files
 
     @faction_set.command(name="alias")
     async def faction_set_alias(self, ctx, new_alias):
-        new_alias = re.sub("[^A-Za-z]+", "", new_alias)
+        new_alias = re.sub("[^A-Za-z]+", "", new_alias).lower()
         if not (1 <= len(new_alias) <= 5):
             raise commands.BadArgument  # TODO: Tell too long
         if sql.guild_get_by_faction_alias(new_alias):

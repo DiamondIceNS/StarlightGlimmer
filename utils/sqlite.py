@@ -311,8 +311,8 @@ def guild_get_by_faction_name(name):
 
 
 def guild_get_by_faction_name_or_alias(arg):
-    c.execute("SELECT * FROM guilds WHERE faction_name=? OR faction_alias=?", (arg, arg))
-    return c.fetchone()
+    row = guild_get_by_faction_name(arg)
+    return row if row else guild_get_by_faction_alias(arg.lower())
 
 
 def guild_get_by_id(gid):
