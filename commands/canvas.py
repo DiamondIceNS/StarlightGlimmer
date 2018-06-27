@@ -60,16 +60,22 @@ class Canvas:
             diff_img, tot, err, bad \
                 = await render.diff(t.x, t.y, data, zoom, fetchers[t.canvas], colors.by_name[t.canvas])
 
-            if bad > 0:
-                content = ctx.s("canvas.diff_bad_color").format(tot - err, tot, err, bad, 100 * (tot - err) / tot)
+            done = tot - err
+            perc = int(10000 * (tot - err) / tot)
+            if perc == 0 and done > 0:
+                perc = ">0.00%"
+            elif perc == 100 and err > 0:
+                perc = "<100.00%"
             else:
-                content = ctx.s("canvas.diff").format(tot - err, tot, err, 100 * (tot - err) / tot)
+                perc = "{:.2f}%".format(perc / 100)
+            out = ctx.s("canvas.diff") if bad == 0 else ctx.s("canvas.diff_bad_color")
+            out = out.format(done, tot, err, perc, bad=bad)
 
             with io.BytesIO() as bio:
                 diff_img.save(bio, format="PNG")
                 bio.seek(0)
                 f = discord.File(bio, "diff.png")
-                await ctx.send(content=content, file=f)
+                await ctx.send(content=out, file=f)
             return
         await ctx.invoke_default("diff")
 

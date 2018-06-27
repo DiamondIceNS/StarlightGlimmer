@@ -42,8 +42,8 @@ STRINGS = {
     "animotes.opt_out": "You have successfully **opted-out** of emoji conversion.",
 
     # Canvas command messages
-    "canvas.diff": "{0}/{1} | {2} errors | {3:.2f}% complete",
-    "canvas.diff_bad_color": "{0}/{1} | {2} errors | {3} bad color | {4:.2f}% complete",
+    "canvas.diff": "{0}/{1} | {2} errors | {3} complete",
+    "canvas.diff_bad_color": "{0}/{1} | {2} errors | {bad} bad color | {3} complete",
     "canvas.invalid_input": "Invalid input: does not match any template name or supported coordinates format.",
     "canvas.large_template": "(Processing large template, this might take a few seconds...)",
     "canvas.quantize": "Fixed {0} pixels.",
