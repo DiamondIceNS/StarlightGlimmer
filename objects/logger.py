@@ -21,8 +21,12 @@ class Log:
             invocation_type += "T"
         if ctx.is_repeat:
             invocation_type += "R"
-        self.debug("[{0}] {1.name}#{1.discriminator} used '{2}' in {3.name} (UID:{1.id} GID:{3.id})"
-                   .format(invocation_type, ctx.author, ctx.command.qualified_name, ctx.guild))
+        if ctx.guild:
+            self.debug("[{0}] {1.name}#{1.discriminator} used '{2}' in {3.name} (UID:{1.id} GID:{3.id})"
+                       .format(invocation_type, ctx.author, ctx.command.qualified_name, ctx.guild))
+        else:
+            self.debug("[{0}] {1.name}#{1.discriminator} used '{2}' in DM (UID:{1.id})"
+                       .format(invocation_type, ctx.author, ctx.command.qualified_name, ctx.guild))
 
     def debug(self, msg):
         if cfg.debug:

@@ -38,9 +38,8 @@ class GlimContext(commands.Context):
         if language == "pt-br":
             return en_US.STRINGS.get(str_id, None)
 
-    def get(self, str_id):
+    def s(self, str_id):
         language = sql.guild_get_language_by_id(self.guild.id).lower()
-
         if language == "en-us":
             return en_US.STRINGS.get(str_id, None)
         if language == "pt-br":

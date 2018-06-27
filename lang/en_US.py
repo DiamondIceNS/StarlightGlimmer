@@ -1,31 +1,55 @@
 STRINGS = {
-    # General messages
-    "bot.alert_update": "I have updated to version **{0}**! Check out the command help page for new commands with `{1}help`, or visit https://github.com/DiamondIceNS/StarlightGlimmer/releases for the full changelog.",
-    "bot.description":
-        """Hi! I'm {0}! I'm here to help coordinate pixel art on pixel-placing websites.
-        I've got features like canvas preview and template checking that are sure to be useful.
-        Let's get pixel painting!""",
-    "bot.discord_urls_only": "I can only accept Discord attachment URLs.",  
-    "bot.help_ending_note": "Type '{0}{1} <command>' for more info on a command.",
+    # Global messages
+    "bot.added_by": "Added By",
+    "bot.alias": "Alias",  # TODO: Translate
+    "bot.canvas": "Canvas",
+    "bot.canvases": "Canvases",  # TODO: Translate
+    "bot.coordinates": "Coordinates",
+    "bot.date_added": "Date Added",
+    "bot.date_modified": "Date Modified",
+    "bot.dimensions": "Dimensions",  # TODO: Translate
+    "bot.errors": "Errors",  # TODO: Translate
+    "bot.faction": "Faction",  # TODO: Translate
+    "bot.name": "Name",
+    "bot.no": "No",
     "bot.page": "Page",  # TODO: Translate
-    "bot.ping": "Pinging...",
-    "bot.pong": "Pong! | **{0}ms**",
-    "bot.suggest": "Your suggestion has been sent. Thank you for your input!",
-    "bot.version": "My version number is **{0}**",
-    "bot.why": "But... why?",  
-    "bot.yes_no": "\n  `0` - No\n  `1` - Yes",  
-    "bot.yes_no_invalid": "That is not a valid option. Please try again.",  
-    "bot.yes_no_timed_out": "Command timed out.",  
+    "bot.percent": "Percent",  # TODO: Translate
+    "bot.size": "Size",
+    "bot.total": "Total",  # TODO: Translate
+    "bot.visibility": "Visibility",  # TODO: Translate
+    "bot.yes": "Yes",
 
-    # Animotes messages
-    "animotes.member_opt_in": "You have successfully **opted-in** to emoji conversion.",
-    "animotes.member_opt_out": "You have successfully **opted-out** of emoji conversion.",
+    # Error messages
+    "error.bad_png": "This image seems to be corrupted. Try re-saving it with an image editor or using `{0}quantize`.",
+    "error.cooldown": "That command is on cooldown. Try again in {0:.01f}s.",
+    "error.non_discord_url": "I can only accept Discord attachment URLs.",
+    "error.http": "{0} seems to be having connection issues. Try again later.",
+    "error.why": "But... why?",
+    "error.invalid_color": "That is not a valid color.",  # TODO: Translate
+    "error.jpeg": "Seriously? A JPEG? Gross! Please create a PNG template instead.",
+    "error.no_attachment": "That command requires an attachment.",
+    "error.no_permission": "You do not have permission to use that command.",
+    "error.not_png": "That command requires a PNG image.",
+    "error.no_dm": "That command only works in guilds.",
+    "error.bad_image": "An error occurred while attempting to open an image. Ensure that the supplied image is not corrupted.",
+    "error.cannot_fetch_template": "Could not access template URL. (Was the original attachment deleted?)",
+    "error.unknown": "An unknown error occurred. The dev has been notified.",
+    "error.invalid_option": "That is not a valid option. Please try again.",
+    "error.timed_out": "Command timed out.",
 
-    # Canvas messages
+    # Animotes command messages
+    "animotes.opt_in": "You have successfully **opted-in** to emoji conversion.",
+    "animotes.opt_out": "You have successfully **opted-out** of emoji conversion.",
+
+    # Canvas command messages
+    "canvas.diff": "{0}/{1} | {2} errors | {3:.2f}% complete",
+    "canvas.diff_bad_color": "{0}/{1} | {2} errors | {3} bad color | {4:.2f}% complete",
     "canvas.invalid_input": "Invalid input: does not match any template name or supported coordinates format.",
+    "canvas.large_template": "(Processing large template, this might take a few seconds...)",
+    "canvas.quantize": "Fixed {0} pixels.",
     "canvas.repeat_not_found": "Could not find a valid command to repeat.",
 
-    # Configuration messages
+    # Configuration command messages
     "configuration.alert_channel_cleared": "Alert channel has been cleared.",
     "configuration.alert_channel_set": "Alert channel has been set to {0}.",
     "configuration.autoscan_disabled": "Autoscan has been disabled.",
@@ -56,13 +80,14 @@ STRINGS = {
     "configuration.role_template_admin_cleared": "Template admin privileges successfully cleared.",
     "configuration.role_template_admin_not_set": "Template admin privileges have not been assigned to a role.",
     "configuration.role_template_admin_set": "Template admin privileges assigned to role `@{0}`.",
+    "bot.update": "I have updated to version **{0}**! Visit https://github.com/DiamondIceNS/StarlightGlimmer/releases for the full changelog.",
 
-    # Faction messages
+    # Faction command messages
     "faction.alias_already_exists": "A faction with that alias already exists.",  # TODO: Translate
-    "faction.already_blocked": "That faction is already blocked.",  # TODO: Translate
+    "faction.already_hidden": "That faction is already hidden.",  # TODO: Translate
     "faction.already_faction": "This guild is already a faction.",  # TODO: Translate
     "faction.clear_alias": "Faction alias cleared.",  # TODO: Translate
-    "faction.clear_block": "Unblocked faction `{}`.",  # TODO: Translate
+    "faction.clear_hide": "Unhid faction `{}`.",  # TODO: Translate
     "faction.clear_color": "Faction color cleared.",  # TODO: Translate
     "faction.clear_description": "Faction description cleared.",  # TODO: Translate
     "faction.clear_emblem": "Faction emblem cleared.",  # TODO: Translate
@@ -73,47 +98,32 @@ STRINGS = {
     "faction.faction_list_footer_1": "// Use '{0}faction <page>' to see that page",  # TODO: Translate
     "faction.faction_list_footer_2": "// Use '{0}faction info <name>' to see more info on a faction",  # TODO: Translate
     "faction.list_header": "Faction List",  # TODO: Translate
-    "faction.info_alias": "Alias",  # TODO: Translate
-    "faction.info_canvases": "Canvases",  # TODO: Translate
-    "faction.info_name": "Name",  # TODO: Translate
     "faction.must_be_a_faction": "This guild needs to become a faction to use that command.",  # TODO: Translate
     "faction.name_already_exists": "A faction with that name already exists.",  # TODO: Translate
     "faction.no_factions": "There doesn't seem to be any guilds yet...",  # TODO: Translate
     "faction.not_a_faction_yet": "This guild has not created a faction yet.",  # TODO: Translate
     "faction.not_found": "That faction could not be found.",  # TODO: Translate
     "faction.set_alias": "Faction alias set to `{}`.",  # TODO: Translate
-    "faction.set_block": "Blocked faction `{}`.",  # TODO: Translate
+    "faction.set_hide": "Hid faction `{}`.",  # TODO: Translate
     "faction.set_color": "Faction color set.",  # TODO: Translate
     "faction.set_description": "Faction description set.",  # TODO: Translate
     "faction.set_emblem": "Faction emblem set.",  # TODO: Translate
     "faction.set_invite": "Faction invite set.",  # TODO: Translate
     "faction.set_name": "Faction renamed to `{}`.",  # TODO: Translate
 
-    # Render messages
-    "render.diff": "{0}/{1} | {2} errors | {3:.2f}% complete",
-    "render.diff_bad_color": "{0}/{1} | {2} errors | {3} bad color | {4:.2f}% complete",
-    "render.large_template": "(Processing large template, this might take a few seconds...)",
-    "render.quantize": "Fixed {0} pixels.",
+    # General command messages
+    "bot.help_ending_note": "Type '{0}{1} <command>' for more info on a command.",
+    "bot.ping": "Pinging...",
+    "bot.pong": "Pong! | **{0}ms**",
+    "bot.suggest": "Your suggestion has been sent. Thank you for your input!",
+    "bot.version": "My version number is **{0}**",
 
-    # Template messages
+    # Template command messages
     "template.added": "Template '{0}' added!",
     "template.calculating": "Calculating...",  # TODO: Translate
     "template.duplicate_list_open": "The following templates already match this image:\n```xl\n",  
     "template.duplicate_list_close": "```\nCreate a new template anyway?",
     "template.fetching_data": "Fetching data from {}...",  # TODO: Translate
-    "template.info_added_by": "Added By",  
-    "template.info_date_added": "Date Added",  
-    "template.info_date_modified": "Date Modified",
-    "template.info_dimensions": "Dim",  # TODO: Translate
-    "template.info_canvas": "Canvas",  
-    "template.info_coords": "Coords",
-    "template.info_errors": "Errors",  # TODO: Translate
-    "template.info_faction": "Faction",  # TODO: Translate
-    "template.info_name": "Name",
-    "template.info_percent": "Percent",  # TODO: Translate
-    "template.info_size": "Size",
-    "template.info_total": "Total",  # TODO: Translate
-    "template.info_visibility": "Visibility",  # TODO: Translate
     "template.list_header": "Template List",  # TODO: Translate
     "template.list_footer_1": "// Use '{0}templates <page>' to see that page",  # TODO: Translate
     "template.list_footer_2": "// Use '{0}templates info <name>' to see more info on a template",  # TODO: Translate
@@ -129,21 +139,6 @@ STRINGS = {
     "template.remove": "Successfully removed '{0}'.",
     "template.template_report_header": "Template Report",  # TODO: Translate
     "template.updated": "Template '{0}' updated!",
-
-    # Error messages
-    "bot.error.bad_png": "This image seems to be corrupted. Try re-saving it with an image editor or using `{0}quantize`.",
-    "bot.error.command_on_cooldown": "That command is on cooldown. Try again in {0:.01f}s.",
-    "bot.error.http_payload_error": "{0} seems to be having connection issues. Try again later.",
-    "bot.error.invalid_color": "That is not a valid color.",  # TODO: Translate
-    "bot.error.jpeg": "Seriously? A JPEG? Gross! Please create a PNG template instead.",
-    "bot.error.missing_attachment": "That command requires an attachment.",
-    "bot.error.no_permission": "You do not have permission to use that command.",
-    "bot.error.no_png": "That command requires a PNG image.",
-    "bot.error.no_private_message": "That command only works in guilds.",
-    "bot.error.pil_image_open_exception": "An error occurred while attempting to open an image. Ensure that the supplied image is not corrupted.",  
-    "bot.error.template.http_error": "Could not access template URL. (Was the original attachment deleted?)",  
-    "bot.error.unhandled_command_error": "An unknown error occurred. The dev has been notified.",
-    "bot.error.url_error": "That URL is invalid. I can only accept Discord attachment URLs.",
 
     # Command brief help
     "brief.alertchannel": "Set or clear the channel used for update alerts.",
@@ -166,6 +161,25 @@ STRINGS = {
     "brief.ditherchart.pixelzio": "Gets a dither chart of Pixelz.io colors.",
     "brief.ditherchart.pixelzone": "Gets a dither chart of Pixelzone.io colors.",
     "brief.ditherchart.pxlsspace": "Gets a dither chart of Pxls.space colors.",
+    "brief.faction": "Manages factions.",
+    "brief.faction.create": "Create a faction for this guild.",
+    "brief.faction.disband": "Disband this guild's faction.",
+    "brief.faction.info": "Get info about a faction.",
+    "brief.faction.hide": "Hide a faction from public lists.",
+    "brief.faction.unhide": "Unhide a faction from public lists.",
+    "brief.faction.set": "Set a property of this guild's faction.",
+    "brief.faction.set.name": "Set the name of this guild's faction.",
+    "brief.faction.set.alias": "Set the alias of this guild's faction.",
+    "brief.faction.set.invite": "Set the invite link of this guild's faction.",
+    "brief.faction.set.desc": "Set the description of this guild's faction.",
+    "brief.faction.set.emblem": "Set the emblem of this guild's faction",
+    "brief.faction.set.color": "Set the color of this guild's faction.",
+    "brief.faction.clear": "Clear a property of this guild's faction.",
+    "brief.faction.clear.alias": "Clear the alias of this guild's faction.",
+    "brief.faction.clear.invite": "Clear the invite of this guild's faction.",
+    "brief.faction.clear.desc": "Clear the description of this guild's faction.",
+    "brief.faction.clear.emblem": "Clear the emblem of this guild's faction.",
+    "brief.faction.clear.color": "Clear the color of this guild's faction.",
     "brief.github": "Gets a link to my GitHub repository.",
     "brief.gridify": "Adds a grid to a template.",
     "brief.help": "Displays this message.",
@@ -202,154 +216,84 @@ STRINGS = {
     "brief.template.add.pixelzio": "Adds a template for Pixelz.io.",
     "brief.template.add.pixelzone": "Adds a template for Pixelzone.io.",
     "brief.template.add.pxlsspace": "Adds a template for Pxls.space.",
+    "brief.template.all": "List all templates for all factions.",
+    "brief.template.check": "Check the completion status of all templates.",
+    "brief.template.check.pixelcanvas": "Check the completion status of all Pixelcanvas.io templates.",
+    "brief.template.check.pixelzio": "Check the completion status of all Pixelz.io templates.",
+    "brief.template.check.pixelzone": "Check the completion status of all Pixelzone.io templates.",
+    "brief.template.check.pxlsspace": "Check the completion status of all Pxls.space templates.",
     "brief.template.info": "Displays info about a template.",
     "brief.template.remove": "Removes a template.",
     "brief.unregister": "Opt-out of animated emoji replacement.",
     "brief.version": "Gets my version number.",
 
     # Command long help
-    "help.alertchannel": """If an alert channel is set, I will post a message in that channel any time my version number changes to alert you to updates.""",
-    "help.alertchannel.clear": """This effectively disables update alerts until a new channel is set.""",
-    "help.alertchannel.set":
-        """Use the #channel mention syntax with this command to ensure the correct channel is set.
-    
-        This command can only be used by members with the Administrator permission.""",
+    "help.alertchannel.set": "Use the #channel mention syntax with this command to ensure the correct channel is set.",
     "help.autoscan":
         """If enabled, I will watch all messages for coordinates and automatically create previews and diffs according to these rules:
-        - Any message with coordinates in the form "@0, 0" will trigger a preview for the default canvas.
+        - Any message with coordinates in the form "@0, 0" will trigger a preview for the default canvas (see `{p}help canvas`)
         - Any message with a link to a supported canvas will trigger a preview for that canvas.
         - Any message with coordinates in the form "0, 0" with a PNG attached will trigger a diff for the default canvas.
-        - Previews take precedence over diffs
-        
-        See 'setdefaultcanvas' for more information about the default canvas.
-        
-        Only users with the Administrator role can use this command.""",
-    "help.canvas":
-        """The default canvas is the canvas that will be used for automatic previews or diffs triggered by autoscan. (See 'autoscan')
-        
-        Defaults to Pixelcanvas.io.
-        
-        This command can only be used by members with the Administrator permission.""",
-    "help.canvas.pixelcanvas": """This command can only be used by members with the Administrator permission.""",
-    "help.canvas.pixelzio": """This command can only be used by members with the Administrator permission.""",
-    "help.canvas.pixelzone": """This command can only be used by members with the Administrator permission.""",
-    "help.canvas.pxlsspace": """This command can only be used by members with the Administrator permission.""",
-    "help.changelog": None,
+        - Previews take precedence over diffs""",
+    "help.canvas": "Defaults to Pixelcanvas.io.",
     "help.diff":
-        """This command can accept either an uploaded attachment or a registered template (see `{p}help template`). Image must be in PNG format.
-        Error pixels will be marked in red. Pixels that do not match the canvas palette ('bad color') will be marked in blue (see `{p}help quantize`).""",
-    "help.diff.pixelcanvas": None,
-    "help.diff.pixelzio": None,
-    "help.diff.pixelzone": None,
-    "help.diff.pxlsspace": None,
-    "help.ditherchart": None,
-    "help.ditherchart.pixelcanvas": None,
-    "help.ditherchart.pixelzio": None,
-    "help.ditherchart.pixelzone": None,
-    "help.ditherchart.pxlsspace": None,
-    "help.github": None,
-    "help.gridify": "Takes either a template or an image attachment and creates a gridded version for an easier reference. Use the 'size' parameter to set how large the individual pixels should be. (Default 1) You cannot zoom an image to contain more than 4 million pixels.",
-    "help.help": None,
-    "help.invite": None,
-    "help.language": """Use this command with no arguments to see the current and available languages.""",
-    "help.ping": None,
-    "help.prefix":
-        """Max length is 5 characters. You really shouldn't need more than 2.
-        
-        This command can only be used by members with the Administrator permission.""",
-    "help.preview":
-        """Given a coordinate pair or a URL, renders a live view of a canvas at those coordinates.
-        
-        You can create a zoomed-in preview by adding a zoom factor. (i.e. "0, 0 #4") Maximum zoom is 16. You can also create a zoomed-out preview by using a negative zoom. (i.e. "0,0 #-4) Minimum zoom is -8.
-        
-        If you do not specify a canvas to use, the default canvas will be used.
-        
-        If autoscan is enabled, this happens automatically using the default canvas. (See 'autoscan' and 'setdefaultcanvas')""",
-    "help.preview.pixelcanvas": None,
-    "help.preview.pixelzio": None,
-    "help.preview.pixelzone": None,
-    "help.preview.pxlsspace": None,
+        """Images must be in PNG format.
+        Error pixels will be marked in red. Pixels that do not match the canvas palette ('bad color') will be marked in blue (see `{p}help quantize`).
+        You cannot zoom an image to contain more than 4 million pixels.""",
+    "help.faction.create":
+        """Factions must have unique names (6 to 32 chars, case sensitive) and, if at all, unique aliases (1 to 5 chars, case insensitive).
+        A guild can only have one faction at any given time.""",
+    "help.faction.hide": "You can still view info about hidden factions if you explicitly use their name or alias in commands with the `-f` paramater.",
+    "help.faction.set.name": "Faction names must be unique. Min 6 chars, max 32 chars. Case sensitive.",
+    "help.faction.set.alias": "Faction aliases must be unique. Min 1 char, max 32 chars. Case insensitive.",
+    "help.faction.set.desc": "Max 240 characters.",
+    "help.faction.set.emblem": "URLs must be Discord URLs.",
+    "help.faction.set.color": "Color must be a valid hexidecimal number. Default 0xCF6EE4.",
+    "help.gridify": "You cannot zoom an image to contain more than 4 million pixels.",
+    "help.prefix": "Max length is 5 characters. You really shouldn't need more than 2.",
+    "help.preview": "Maximum zoom is 16. Minimum zoom is -8.",
     "help.quantize":
-        """If used without a subcommand, this command requires an uploaded attachment.
-        This should primarily be used if `{p}diff` is telling you your image has 'bad color' in it. Using this command to create templates from raw images is not suggested.""",
-    "help.quantize.pixelcanvas": None,
-    "help.quantize.pixelzio": None,
-    "help.quantize.pixelzone": None,
-    "help.quantize.pxlsspace": None,
+        """This should primarily be used if `{p}diff` is telling you your image has 'bad color' in it.
+        Using this command to create templates from raw images is not suggested.""",
     "help.register":
-        """If you opt-in with this command, I will watch for any time you try to use an animated emoji and replace your message with another that has the emoji in it. You only need to opt-in once for this to apply to all guilds. Use this command again to opt-out.
-        
-        If your guild has opted-in to emoji sharing, you can use emoji from any other guild that has also opted-in. (See 'registerguild')
-        
-        I can't use animated emoji from guilds I am not in, so I cannot use animated emoji from other guilds posted by Discord Nitro users or from Twitch-integrated guilds.
-        
+        """You only need to register once for this to apply to all guilds.
         This feature requires that I have the Manage Messages permission.""",
     "help.repeat": "This command only applies to 'preview', 'diff', and their autoscan invocations. Only 50 messages back will be searched.",
-    "help.role":
-        """Admins can use this command to create roles in their guilds that grant users special privileges when using my commands.
-        
-        Use this command with no arguments to see which privilege settings are available.
-        
-        See the help page for any of the following subcommands for more info on what each privilege grants.
-        """,
-    "help.role.botadmin": "If a user has a role with this privilege bound to it, that user can use any command with no restrictions. They will have the same permissions as guild Administrators.",
-    "help.role.botadmin.clear": None,
-    "help.role.botadmin.set": None,
-    "help.role.templateadder":
-        """If a user has a role with this privilege bound to it, that user can add templates using the 'templates' command. They can also remove templates, but only if that user was the one who originally added it.
-        
-        NOTE: If this privilege is set to any role, all other members will lose the ability to add templates. If you want to allow any user to add templates, do not set this.""",
-    "help.role.templateadder.clear": None,
-    "help.role.templateadder.set": None,
-    "help.role.templateadmin": "If a user has a role with this privilege bound to it, that user can add and remove any template using the 'templates' command, regardless of ownership. This is useful if you want to grant members full control over templates, but not all bot functions.",
-    "help.role.templateadmin.clear": None,
-    "help.role.templateadmin.set": None,
-    "help.suggest": None,
-    "help.template": "Use this command with no arguments to view a list of all added templates.",  
+    "help.role.botadmin": "If a user has a role with this privilege bound to it, that user can use any of my commands with no restrictions. They will have the same permissions as guild Administrators.",
+    "help.role.templateadder": "If this privilege is bound to a role, all regular members will lose the ability to modify templates unless they have that role.",
+    "help.role.templateadmin": "If a user has a role with this privilege bound to it, that user can add and remove any template using the 'templates' command, regardless of ownership.",
     "help.template.add":
-        """This command can accept either a direct file attachment or a Discord attachment URL. Template must be in PNG format and must already be quantized to the palette of the canvas it belongs to. If the image is not quantized, the command will offer to quantize it for you. A guild can have up to 25 templates at any time.
-        
-        Only one template can be added with any given name (max 32 chars). If you add a second template with the same name, it will overwrite the first template. You can only overwrite your own templates, unless you are a Template Admin, Bot Admin, or have the Administrator permission (see 'role').
-        
-        By default, everyone can use this command. If the Template Adder privilege is bound to any role, only users who are Template Adders and above can use this command (see 'role').
-        
-        A template is stored as the URL of an attachment. If the message that uploaded that attachment is deleted, the template that references it will break. It is recommended that you save backup copies of templates to your computer just in case.""",  
-    "help.template.add.pixelcanvas": None,
-    "help.template.add.pixelzio": None,
-    "help.template.add.pixelzone": None,
-    "help.template.add.pxlsspace": None,
-    "help.template.info": None,
+        """Image must be in PNG format. If the image is not quantized to the target canvas's palette, I will offer to quantize it for you.
+        A guild can have up to 25 templates at any time.
+        Templates must have unique names (max 32 chars, case sensitive). If you attempt to add a new template with the same name as an existing one, it will be replaced if you have permission to remove the old one (see `{p}help remove`).
+        I only store URLs to templates. If the message that originally uploaded a template is deleted, its URL will break and the template will be lost. Save backups to your computer just in case.""",
     "help.template.remove": "This command can only be used if the template being removed was added by you, unless you are a Template Admin, Bot Admin, or have the Administrator permission (see 'role').",  
-    "help.unregister": "See 'register'.",
-    "help.version": None,
+    "help.unregister": "You only need to unregister once for this to apply to all guilds.",
 
     # Command signatures
     "signature.alertchannel": "(subcommand)",
-    "signature.alertchannel.clear": None,
     "signature.alertchannel.set": "<channel>",
-    "signature.autoscan": None,
     "signature.canvas": "(subcommand)",
-    "signature.canvas.pixelcanvas": None,
-    "signature.canvas.pixelzio": None,
-    "signature.canvas.pixelzone": None,
-    "signature.canvas.pxlsspace": None,
-    "signature.changelog": None,
-    "signature.diff": ["(subcommand) <coordinates> (zoom)", "<template> (zoom)"],
+    "signature.diff": ["(subcommand) <coordinates> (zoom)", "(-f faction) <template> (zoom)"],
     "signature.diff.pixelcanvas": "<coordinates> (zoom)",
     "signature.diff.pixelzio": "<coordinates> (zoom)",
     "signature.diff.pixelzone": "<coordinates> (zoom)",
     "signature.diff.pxlsspace": "<coordinates> (zoom)",
     "signature.ditherchart": "(subcommand)",
-    "signature.ditherchart.pixelcanvas": None,
-    "signature.ditherchart.pixelzio": None,
-    "signature.ditherchart.pixelzone": None,
-    "signature.ditherchart.pxlsspace": None,
-    "signature.github": None,
+    "signature.faction": "(subcommand)",
+    "signature.faction.create": "<name> (alias)",
+    "signature.faction.info": "<faction>",
+    "signature.faction.hide": "<faction>",
+    "signature.faction.unhide": "<faction>",
+    "signature.faction.set": "<subcommand>",
+    "signature.faction.set.name": "<name>",
+    "signature.faction.set.alias": "<alias>",
+    "signature.faction.set.desc": "<description>",
+    "signature.faction.set.emblem": ["", "<url>"],
+    "signature.faction.set.color": "<color>",
+    "signature.faction.clear": "<subcommand>",
     "signature.gridify": ["#(size)", "<template> #(size)"],
-    "signature.help": None,
-    "signature.invite": None,
     "signature.language": "(code)",
-    "signature.ping": None,
     "signature.prefix": "<prefix>",
     "signature.preview": "(subcommand) <coordinates> #(zoom)",
     "signature.preview.pixelcanvas": "<coordinates> #(zoom)",
@@ -361,17 +305,12 @@ STRINGS = {
     "signature.quantize.pixelzio": ["", "<template>"],
     "signature.quantize.pixelzone": ["", "<template>"],
     "signature.quantize.pxlsspace": ["", "<template>"],
-    "signature.register": None,
-    "signature.repeat": None,
     "signature.role": "(role)",
     "signature.role.botadmin": "(subcommand)",
-    "signature.role.botadmin.clear": None,
     "signature.role.botadmin.set": "<role>",
     "signature.role.templateadder": "(subcommand)",
-    "signature.role.templateadder.clear": None,
     "signature.role.templateadder.set": "<role>",
     "signature.role.templateadmin": "(subcommand)",
-    "signature.role.templateadmin.clear": None,
     "signature.role.templateadmin.set": "<role>",
     "signature.suggest": "<suggestion>",
     "signature.template": "(subcommand)",
@@ -380,13 +319,122 @@ STRINGS = {
     "signature.template.add.pixelzio": "<name> <x> <y> (url)",
     "signature.template.add.pixelzone": "<name> <x> <y> (url)",
     "signature.template.add.pxlsspace": "<name> <x> <y> (url)",
-    "signature.template.info": None,
+    "signature.template.check": "(subcommand)",
+    "signature.template.info": "(-f faction) <template>",
     "signature.template.remove": "<template>",
-    "signature.unregister": None,
-    "signature.version": None,
 
     # Examples
-    "example.diff": [("pc 100 100", "Check an uploaded attachment against Pixelcanvas at (100, 100)"),
-                     ("520 -94 7", "Check an uploaded attachment against the default canvas at (520, -94) and zoom the result seven times"),
-                     ("MyTemplate", "Check a template named 'MyTemplate'")],
+    "example.alertchannel": [("clear", "Clear the alert channel if there is one"),
+                             ("set #bot-spam", "Set the alert channel to a channel named 'bot-spam")],
+    "example.alertchannel.set": [("#bot-spam", "Set the alert channel to a channel named 'bot-spam'")],
+    "example.canvas": [("", "Show the currently set default canvas"),
+                       ("pc", "Set the default canvas to Pixelcanvas.io")],
+    "example.diff": [("pc 100 100", "(with an attachment) Check an image against Pixelcanvas.io at (100, 100)"),
+                     ("520 -94 7", "(with an attachment) Check an image against the default canvas at (520, -94) and magnify the result 7 times"),
+                     ("\"My Template\"", "Check a template named 'My Template'"),
+                     ("-f CoolFaction CoolTemplate", "Check a template named 'CoolTemplate' belonging to the faction 'CoolFaction'")],
+    "example.diff.pixelcanvas": [("100 100", "(with an attachment) Check an image against Pixelcanvas.io at (100, 100)"),
+                                 ("100 100 7", "(with an attachment) Check an image against Pixelcanvas.io at (100, 100) and magnify the result 7 times.")],
+    "example.diff.pixelzio": [("100 100", "(with an attachment) Check an image against Pixelz.io at (100, 100)"),
+                              ("100 100 7", "(with an attachment) Check an image against Pixelz.io at (100, 100) and magnify the result 7 times.")],
+    "example.diff.pixelzone": [("100 100", "(with an attachment) Check an image against Pixelzone.io at (100, 100)"),
+                               ("100 100 7", "(with an attachment) Check an image against Pixelzone.io at (100, 100) and magnify the result 7 times.")],
+    "example.diff.pxlsspace": [("100 100", "(with an attachment) Check an image against Pxls.space at (100, 100)"),
+                               ("100 100 7", "(with an attachment) Check an image against Pxls.space at (100, 100) and magnify the result 7 times.")],
+    "example.ditherchart": [("pc", "Get the ditherchart for Pixelcanvas.io")],
+    "example.faction": [("", "List all factions"),
+                        ("create \"My Cool Faction\"", "Create a new faction called 'My Cool Faction'"),
+                        ("disband", "Disband your faction"),
+                        ("info OtherFaction", "Get info about a faction named 'OtherFaction'")],
+    "example.faction.create": [("MyCoolFaction", "Create a new faction called 'MyCoolFaction'"),
+                               ("\"My Cool Faction\" mcf", "Create a new faction called 'My Cool Faction' with alias 'mcf'")],
+    "example.faction.info": [("OtherFaction", "Get info about a faction named 'OtherFaction'"),
+                             ("of", "Get info about a faction with the alias 'of'")],
+    "example.faction.hide": [("OtherFaction", "Hide a faction named 'OtherFaction'"),
+                              ("of", "Hide a faction with the alias 'of'")],
+    "example.faction.unhide": [("OtherFaction", "Unhide a faction named 'OtherFaction'"),
+                                ("of", "Unhide a faction with the alias 'of'")],
+    "example.faction.set": [("name MyFac", "Rename your faction to 'MyFac'"),
+                            ("alias aaaa", "Set your faction alias to 'aaaa'"),
+                            ("desc We make cool pixel art!", "Set your faction description to 'We make cool pixel art!'")],
+    "example.faction.set.name": [("name MyFac", "Rename your faction to 'MyFac'")],
+    "example.faction.set.alias": [("alias aaaa", "Set your faction alias to 'aaaa'")],
+    "example.faction.set.desc": [("desc We make cool pixel art!", "Set your faction description to 'We make cool pixel art!'")],
+    "example.faction.set.emblem": [("", "(with an attachment) Set your faction emblem to the attached image"),
+                                   ("https://cdn.discordapp.com/.../avatar.jpg", "Set your faction emblem to the image at the URL")],
+    "example.faction.set.color": [("F38C91", "Set your faction color to hex 0xF38C91")],
+    "example.faction.clear": [("alias", "Clear your faction's alias"),
+                              ("invite", "Delete your faction's invite link"),
+                              ("desc", "Clear your faction's description")],
+    "example.gridify": [("#8", "(with an attachment) Gridify an image magnified 8 times"),
+                        ("MyTemplate #16", "Gridify a template named 'MyTemplate' magnified 8 times"),
+                        ("-c 080808 MyTemplate #10", "Gridify a template named 'MyTemplate' magnified 8 times using hex 0x080808 as the grid color")],
+    "example.language": [("", "View my current language and available language options"),
+                         ("en-us", "Set my language to English (US)")],
+    "example.prefix": [("", "View my current prefix"),
+                       ("#", "Set my command prefix to '#'")],
+    "example.preview": [("pc 900 900", "Preview Pixelcanvas.io centered on (900, 900)"),
+                        ("900 900 7", "Preview the default canvas centered on (900, 900) magnified 7 times"),
+                        ("900 900 -7", "Preview the default canvas centered on (900, 900) zoomed out 7 times")],
+    "example.preview.pixelcanvas": [("900 900", "Preview Pixelcanvas.io centered on (900, 900)"),
+                                    ("900 900 7", "Preview Pixelcanvas.io centered on (900, 900) magnified 7 times"),
+                                    ("900 900 -7", "Preview Pixelcanvas.io centered on (900, 900) zoomed out 7 times")],
+    "example.preview.pixelzio": [("900 900", "Preview Pixelz.io centered on (900, 900)"),
+                                 ("900 900 7", "Preview Pixelz.io centered on (900, 900) magnified 7 times"),
+                                 ("900 900 -7", "Preview Pixelz.io centered on (900, 900) zoomed out 7 times")],
+    "example.preview.pixelzone": [("900 900", "Preview Pixelzone.io centered on (900, 900)"),
+                                  ("900 900 7", "Preview Pixelzone.io centered on (900, 900) magnified 7 times"),
+                                  ("900 900 -7", "Preview Pixelzone.io centered on (900, 900) zoomed out 7 times")],
+    "example.preview.pxlsspace": [("900 900", "Preview Pxls.space centered on (900, 900)"),
+                                  ("900 900 7", "Preview Pxls.space centered on (900, 900) magnified 7 times"),
+                                  ("900 900 -7", "Preview Pxls.space centered on (900, 900) zoomed out 7 times")],
+    "example.quantize": [("", "(with an attachment) Quantize an attachment to the palette of the default canvas"),
+                         ("pc", "(with an attachment) Quantize an attachment to the palette of Pixelcanvas.io"),
+                         ("pc MyTemplate", "Quantize a template named 'MyTemplate' to the palette of Pixelcanvas.io")],
+    "example.quantize.pixelcanvas": [("", "(with an attachment) Quantize an attachment to the palette of the default canvas"),
+                                     ("pc", "(with an attachment) Quantize an attachment to the palette of Pixelcanvas.io"),
+                                     ("pc MyTemplate", "Quantize a template named 'MyTemplate' to the palette of Pixelcanvas.io")],
+    "example.quantize.pixelzio": [("", "(with an attachment) Quantize an attachment to the palette of Pixelz.io"),
+                                  ("MyTemplate", "Quantize a template named 'MyTemplate' to the palette of Pixelz.io")],
+    "example.quantize.pixelzone": [("", "(with an attachment) Quantize an attachment to the palette of Pixelzone.io"),
+                                   ("MyTemplate", "Quantize a template named 'MyTemplate' to the palette of Pixelzone.io")],
+    "example.quantize.pxlsspace": [("", "(with an attachment) Quantize an attachment to the palette of Pxls.space"),
+                                   ("pc MyTemplate", "Quantize a template named 'MyTemplate' to the palette of Pxls.space")],
+    "example.role": [("", "Show the available permissions"),
+                     ("botadmin", "Show the role tied to the botadmin permission"),
+                     ("botadmin set admin-role", "Set the botadmin permission to a role called 'admin-role'")],
+    "example.role.botadmin": [("", "Show the role tied to the botadmin permission"),
+                              ("set admin-role", "Set the botadmin permission to a role called 'admin-role'"),
+                              ("clear", "Clear the botadmin permission")],
+    "example.role.botadmin.set": [("admin-role", "Set the botadmin permission to a role called 'admin-role'")],
+    "example.role.templateadder": [("", "Show the role tied to the templateadder permission"),
+                                   ("set adder-role", "Set the templateadder permission to a role called 'adder-role'"),
+                                   ("clear", "Clear the templateadder permission")],
+    "example.role.templateadder.set": [("adder-role", "Set the templateadder permission to a role called 'adder-role'")],
+    "example.role.templateadmin": [("", "Show the role tied to the templateadmin permission"),
+                                   ("set t-admin-role", "Set the templateadmin permission to a role called 't-admin-role'"),
+                                   ("clear", "Clear the templateadmin permission")],
+    "example.role.templateadmin.set": [("t-admin-role", "Set the templateadmin permission to a role called 't-admin-role'")],
+    "example.suggest": [("you're mom gay lol", "Send 'you're mom gay lol' to the dev as a suggestion")],
+    "example.template": [("", "List all templates for this guild"),
+                         ("all", "List all public templates for all factions"),
+                         ("add pc MyTemplate 100 100", "(with an attachment) Create a template named 'MyTemplate' for Pixelcanvas.io at (100, 100)"),
+                         ("-f OtherFaction", "List all public templates for a faction named 'OtherFaction'")],
+    "example.template.add": [("MyTemplate 100 100", "(with an attachment) Create a template named 'MyTemplate' for the default canvas at (100, 100)"),
+                             ("pc MyTemplate 100 100", "(with an attachment) Create a template named 'MyTemplate' for Pixelcanvas.io at (100, 100)"),
+                             ("pc MyTemplate 100 100 https://cdn.discordapp.com/.../avatar.jpg", "Create a template named 'MyTemplate' for Pixelcanvas.io at (100, 100) using the image at the URL")],
+    "example.template.add.pixelcanvas": [("MyTemplate 100 100", "(with an attachment) Create a template named 'MyTemplate' for Pixelcanvas.io at (100, 100)"),
+                                         ("MyTemplate 100 100 https://cdn.discordapp.com/.../avatar.jpg", "Create a template named 'MyTemplate' for Pixelcanvas.io at (100, 100) using the image at the URL")],
+    "example.template.add.pixelzio": [("MyTemplate 100 100", "(with an attachment) Create a template named 'MyTemplate' for Pixelz.io at (100, 100)"),
+                                      ("MyTemplate 100 100 https://cdn.discordapp.com/.../avatar.jpg", "Create a template named 'MyTemplate' for Pixelz.io at (100, 100) using the image at the URL")],
+    "example.template.add.pixelzone": [("MyTemplate 100 100", "(with an attachment) Create a template named 'MyTemplate' for Pixelzone.io at (100, 100)"),
+                                       ("MyTemplate 100 100 https://cdn.discordapp.com/.../avatar.jpg", "Create a template named 'MyTemplate' for Pixelzone.io at (100, 100) using the image at the URL")],
+    "example.template.add.pxlsspace": [("MyTemplate 100 100", "(with an attachment) Create a template named 'MyTemplate' for Pxls.space at (100, 100)"),
+                                       ("MyTemplate 100 100 https://cdn.discordapp.com/.../avatar.jpg", "Create a template named 'MyTemplate' for Pxls.space at (100, 100) using the image at the URL")],
+    "example.template.check": [("", "Check completion status of all this guild's templates"),
+                               ("pc", "Check completion status of all this guild's Pixelcanvas.io templates")],
+    "example.template.info": [("MyTemplate", "Get info on a template named 'MyTemplate'"),
+                              ("-f CoolFaction CoolTemplate", "Get info on a template named 'CoolTemplate' belonging to a faction named 'CoolFaction'")],
+    "example.template.remove": [("MyTemplate", "Remove a template named 'MyTemplate'")],
+
 }

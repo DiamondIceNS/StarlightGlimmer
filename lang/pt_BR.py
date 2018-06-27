@@ -1,48 +1,48 @@
 STRINGS = {
     # General messages
-    "bot.alert_update": "Eu atualizei para a versão **{0}**! Confira a página de ajuda de comandos para os novos comandos digite `{1}help`, ou visite https://github.com/DiamondIceNS/StarlightGlimmer/releases para o changelog completo.",
+    "bot.update": "Eu atualizei para a versão **{0}**! Confira a página de ajuda de comandos para os novos comandos digite `{1}help`, ou visite https://github.com/DiamondIceNS/StarlightGlimmer/releases para o changelog completo.",
     "bot.description":
         """Oi! Eu sou a {0}! Estou aqui para ajudar a coordenar pixel art em sites de colocação de pixels.
         Eu tenho recursos como visualização de tela e verificação de templates que certamente serão úteis.
         Vamos começar a pintar pixels!""",
-    "bot.discord_urls_only": "Eu só posso aceitar anexos de URLs do Discord.",
+    "error.non_discord_url": "Eu só posso aceitar anexos de URLs do Discord.",
     "bot.help_ending_note": "Digite '{0}{1} <command>' para mais informações do comando.",
     "bot.ping": "Pinging...",
     "bot.pong": "Pong! | **{0}ms**",
     "bot.suggest": "Sua sugestão foi enviada. Obrigado por sua contribuição!",
     "bot.version": "O numero da minha versão é **{0}**",
-    "bot.why": "Mas... por que?",
+    "error.why": "Mas... por que?",
     "bot.yes_no": "\n  `0` - Não\n  `1` - Sim",
-    "bot.yes_no_invalid": "Essa não é uma opção válida. Por favor, tente novamente.",
-    "bot.yes_no_timed_out": "excedido o tempo.",
+    "error.invalid_option": "Essa não é uma opção válida. Por favor, tente novamente.",
+    "error.timed_out": "excedido o tempo.",
 
     # Animotes messages
     "animotes.guild_opt_in": "O compartilhamento de emojis foi **ativado** para essa guild.",
     "animotes.guild_opt_out": "O compartilhamento de emojis foi **desativado** para esta guild.",
-    "animotes.member_opt_in": "Você optou com sucesso em **aceitar** a conversão de emojis.",
-    "animotes.member_opt_out": "Você cancelou ** com êxito ** a conversão de emojis.",
+    "animotes.opt_in": "Você optou com sucesso em **aceitar** a conversão de emojis.",
+    "animotes.opt_out": "Você cancelou ** com êxito ** a conversão de emojis.",
 
     # Canvas messages
     "canvas.invalid_input": "Entrada inválida: não corresponde a nenhum nome de template ou formato de coordenadas suportadas.",
     "canvas.repeat_not_found": "Não foi possível encontrar um comando válido para repetir.",
 
     # Render messages
-    "render.diff": "{0}/{1} | {2} erros | {3:.2f}% completo",
-    "render.diff_bad_color": "{0}/{1} | {2} erros | {3} cores erradas | {4:.2f}% completo",
-    "render.large_template": "(Processando template grande, isso pode levar alguns segundos ...)",
-    "render.quantize": "Convertidos {0} pixels.",
+    "canvas.diff": "{0}/{1} | {2} erros | {3:.2f}% completo",
+    "canvas.diff_bad_color": "{0}/{1} | {2} erros | {3} cores erradas | {4:.2f}% completo",
+    "canvas.large_template": "(Processando template grande, isso pode levar alguns segundos ...)",
+    "canvas.quantize": "Convertidos {0} pixels.",
 
     # Template messages
     "template.added": "Template '{0}' adicionado!",
     "template.duplicate_list_open": "Os seguintes templates já correspondem a esta imagem:\n```xl\n",
     "template.duplicate_list_close": "```\nCriar um novo template mesmo assim?",
-    "template.info_added_by": "Adicionado por",
-    "template.info_date_added": "Data adicionada",
-    "template.info_date_modified": "Data aodificada",
-    "template.info_canvas": "Canvas",
-    "template.info_coords": "Coordenadas",
-    "template.info_name": "Nome",
-    "template.info_size": "Tamanho",
+    "bot.added_by": "Adicionado por",
+    "bot.date_added": "Data adicionada",
+    "bot.date_modified": "Data aodificada",
+    "bot.canvas": "Canvas",
+    "bot.coordinates": "Coordenadas",
+    "bot.name": "Nome",
+    "bot.size": "Tamanho",
     "template.list_close": "\n// Use '{0}templates <pagina>' para ver essa página\n// Use '{0}templates info <nome>' para ver mais informações do template```",
     "template.list_no_templates": "Esta guild atualmente não possui templates.",
     "template.list_header": "**Lista de templates** - Pagina {0}/{1}\n```xl\n",
@@ -90,19 +90,19 @@ STRINGS = {
     "configuration.role_template_admin_set": "Template admin privilégios atribuídos ao cargo `@{0}`.",
 
     # Error messages
-    "bot.error.bad_png": "Esta imagem parece estar corrompida. Tente salvá-la novamente com um editor de imagens ou usando `{0}{1}`.",
-    "bot.error.command_on_cooldown": "Esse comando está em cooldown. Tente novamente em {0:.01f}s.",
-    "bot.error.http_payload_error": "{0} parece estar tendo problemas de conexão. Tente mais tarde.",
-    "bot.error.jpeg": "Sério? Um JPEG? que nojo! Por favor, crie um modelo PNG.",
-    "bot.error.missing_attachment": "Esse comando requer um anexo.",
+    "error.bad_png": "Esta imagem parece estar corrompida. Tente salvá-la novamente com um editor de imagens ou usando `{0}{1}`.",
+    "error.cooldown": "Esse comando está em cooldown. Tente novamente em {0:.01f}s.",
+    "error.http": "{0} parece estar tendo problemas de conexão. Tente mais tarde.",
+    "error.jpeg": "Sério? Um JPEG? que nojo! Por favor, crie um modelo PNG.",
+    "error.no_attachment": "Esse comando requer um anexo.",
     "bot.error.no_canvas": "Esse comando requer um subcomando.",
-    "bot.error.no_permission": "Você não tem permissão para usar esse comando.",
-    "bot.error.no_png": "Esse comando requer uma imagem PNG.",
+    "error.no_permission": "Você não tem permissão para usar esse comando.",
+    "error.not_png": "Esse comando requer uma imagem PNG.",
     "bot.error.no_subcommand": "Esse comando precisa de um subcomando. Veja a help deste comando para uma lista de subcomandos.",
-    "bot.error.no_private_message": "Esse comando só funciona na guild.",
-    "bot.error.pil_image_open_exception": "Ocorreu um erro ao tentar abrir uma imagem. Assegure-se de que a imagem fornecida não esteja corrompida.",
-    "bot.error.template.http_error": "Não foi possível acessar o URL do template. (O anexo original foi excluído?)",
-    "bot.error.unhandled_command_error": "Ocorreu um erro com esse comando. O desenvolvedor foi notificado.",
+    "error.no_dm": "Esse comando só funciona na guild.",
+    "error.bad_image": "Ocorreu um erro ao tentar abrir uma imagem. Assegure-se de que a imagem fornecida não esteja corrompida.",
+    "error.cannot_fetch_template": "Não foi possível acessar o URL do template. (O anexo original foi excluído?)",
+    "error.unknown": "Ocorreu um erro com esse comando. O desenvolvedor foi notificado.",
     "bot.error.url_error": "Esse URL é inválido. Eu só posso aceitar URLs de anexos do Discord.",
 
     # Command brief help

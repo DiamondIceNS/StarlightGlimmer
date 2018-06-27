@@ -29,7 +29,7 @@ class GlimmerHelpFormatter(HelpFormatter):
             subcommands = sorted(subcommands, key=is_alias)
             entry = ' OR '.join(["'{}'".format(x[0]) for x in subcommands])
             cmd = subcommands[0][1]
-            short_doc = self.context.get("brief." + cmd.qualified_name.replace(' ', '.'))
+            short_doc = self.context.s("brief." + cmd.qualified_name.replace(' ', '.'))
             entries.append((entry, short_doc))
 
         width = max(map(lambda en: len(en[0]), entries))
@@ -72,10 +72,10 @@ class GlimmerHelpFormatter(HelpFormatter):
 
         if isinstance(self.command, Command):
             dot_name = self.command.qualified_name.replace(' ', '.')
-            out = ["**`{}`** {}".format(self.command.qualified_name, self.context.get("brief." + dot_name))]
+            out = ["**`{}`** {}".format(self.command.qualified_name, self.context.s("brief." + dot_name))]
 
             usage = "**Usage:** "
-            sig = self.context.get("signature." + dot_name)
+            sig = self.context.s("signature." + dot_name)
             if isinstance(sig, list):
                 usage += ' OR '.join(["`{}{} {}`".format(self.clean_prefix, self.command.qualified_name, x) for x in sig])
             elif sig is not None:
@@ -90,22 +90,20 @@ class GlimmerHelpFormatter(HelpFormatter):
                 out.append(aliases)
 
             # <long doc> section
-            long_doc = self.context.get("help." + dot_name)
+            long_doc = self.context.s("help." + dot_name)
             if long_doc:
                 out.append("\n{}".format(inspect.cleandoc(long_doc)).format(p=self.clean_prefix))
 
-            if not self.has_subcommands():
-                return out
+            if self.has_subcommands():
+                filtered = await self.filter_command_list()
+                if filtered:
+                    out.append("\n**Subcommands:**")
+                    out += await self.add_localized_subcommands_to_page()
 
-            filtered = await self.filter_command_list()
-            if filtered:
-                out.append("\n**Subcommands:**")
-                out += await self.add_localized_subcommands_to_page()
-
-            examples = self.context.get("example." + dot_name)
+            examples = self.context.s("example." + dot_name)
             if examples:
                 out.append("\n**Examples:**")
-                for ex in self.context.get("example." + dot_name):
+                for ex in self.context.s("example." + dot_name):
                     out.append("`{}{} {}` {}".format(self.clean_prefix, self.command.qualified_name, *ex))
 
             return out

@@ -24,7 +24,7 @@ class General:
     async def github(self, ctx):
         await ctx.send("https://github.com/DiamondIceNS/StarlightGlimmer")
 
-    @commands.command()
+    @commands.command(aliases=['h', 'commands'])
     async def help(self, ctx, *commands: str):
         """Shows this message."""
         bot = ctx.bot
@@ -76,10 +76,10 @@ class General:
     @commands.command()
     async def ping(self, ctx):
         ping_start = time()
-        ping_msg = await ctx.send(ctx.get("bot.ping"))
+        ping_msg = await ctx.send(ctx.s("bot.ping"))
         ping_time = time() - ping_start
         self.log.debug("(Ping:{0}ms)".format(int(ping_time * 1000)))
-        await ping_msg.edit(content=ctx.get("bot.pong").format(int(ping_time * 1000)))
+        await ping_msg.edit(content=ctx.s("bot.pong").format(int(ping_time * 1000)))
 
     @commands.cooldown(1, 5, BucketType.guild)
     @commands.command()
@@ -88,11 +88,11 @@ class General:
         await self.ch_log.log("New suggestion from **{0.name}#{0.discriminator}** (ID: `{0.id}`) in guild "
                               "**{1.name}** (ID: `{1.id}`):".format(ctx.author, ctx.guild))
         await self.ch_log.log("> `{}`".format(suggestion))
-        await ctx.send(ctx.get(ctx.guild.id, "bot.suggest"))
+        await ctx.send(ctx.s(ctx.guild.id, "bot.suggest"))
 
     @commands.command()
     async def version(self, ctx):
-        await ctx.send(ctx.get("bot.version").format(VERSION))
+        await ctx.send(ctx.s("bot.version").format(VERSION))
 
 
 def setup(bot):

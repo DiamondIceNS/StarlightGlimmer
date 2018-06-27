@@ -8,29 +8,31 @@ from utils import sqlite as sql
 
 
 async def autoscan(ctx):
-    if sql.guild_is_autoscan(ctx.guild.id):
-        canvas = sql.guild_get_canvas_by_id(ctx.guild.id)
+    if ctx.guild and not sql.guild_is_autoscan(ctx.guild.id):
+        return
 
-        cmd = None
-        if re.search('pixelcanvas\.io/@-?\d+,-?\d+', ctx.message.content) is not None:
-            cmd = dget(dget(ctx.bot.commands, name='preview').commands, name='pixelcanvas')
-        elif re.search('pixelz\.io/@-?\d+,-?\d+', ctx.message.content) is not None:
-            cmd = dget(dget(ctx.bot.commands, name='preview').commands, name='pixelzio')
-        elif re.search('pixelzone\.io/\?p=-?\d+,-?\d+', ctx.message.content) is not None:
-            cmd = dget(dget(ctx.bot.commands, name='preview').commands, name='pixelzone')
-        elif re.search('pxls\.space/#x=\d+&y=\d+', ctx.message.content) is not None:
-            cmd = dget(dget(ctx.bot.commands, name='preview').commands, name='pxlsspace')
-        elif re.search('@\(?-?\d+, ?-?\d+\)?', ctx.message.content) is not None:
-            cmd = dget(dget(ctx.bot.commands, name='preview').commands, name=canvas)
-        elif re.search('\(?-?\d+, ?-?\d+\)?', ctx.message.content) is not None and len(ctx.message.attachments) > 0 \
-                and ctx.message.attachments[0].filename[-4:].lower() == ".png":
-            cmd = dget(dget(ctx.bot.commands, name='diff').commands, name=canvas)
+    canvas = sql.guild_get_canvas_by_id(ctx.guild.id) if ctx.guild else "pixelcanvas"
 
-        if cmd:
-            ctx.command = cmd
-            ctx.is_autoscan = True
-            await ctx.bot.invoke(ctx)
-            return True
+    cmd = None
+    if re.search('pixelcanvas\.io/@-?\d+,-?\d+', ctx.message.content) is not None:
+        cmd = dget(dget(ctx.bot.commands, name='preview').commands, name='pixelcanvas')
+    elif re.search('pixelz\.io/@-?\d+,-?\d+', ctx.message.content) is not None:
+        cmd = dget(dget(ctx.bot.commands, name='preview').commands, name='pixelzio')
+    elif re.search('pixelzone\.io/\?p=-?\d+,-?\d+', ctx.message.content) is not None:
+        cmd = dget(dget(ctx.bot.commands, name='preview').commands, name='pixelzone')
+    elif re.search('pxls\.space/#x=\d+&y=\d+', ctx.message.content) is not None:
+        cmd = dget(dget(ctx.bot.commands, name='preview').commands, name='pxlsspace')
+    elif re.search('@\(?-?\d+, ?-?\d+\)?', ctx.message.content) is not None:
+        cmd = dget(dget(ctx.bot.commands, name='preview').commands, name=canvas)
+    elif re.search('\(?-?\d+, ?-?\d+\)?', ctx.message.content) is not None and len(ctx.message.attachments) > 0 \
+            and ctx.message.attachments[0].filename[-4:].lower() == ".png":
+        cmd = dget(dget(ctx.bot.commands, name='diff').commands, name=canvas)
+
+    if cmd:
+        ctx.command = cmd
+        ctx.is_autoscan = True
+        await ctx.bot.invoke(ctx)
+        return True
 
 
 def get_botadmin_role(ctx):
@@ -80,25 +82,25 @@ def is_template_adder(ctx):
 
 async def verify_attachment(ctx):
     if len(ctx.message.attachments) < 1:
-        await ctx.send(ctx.get("bot.error.missing_attachment"))
+        await ctx.send(ctx.s("error.no_attachment"))
         return
     att = ctx.message.attachments[0]
     if att.filename[-4:].lower() != ".png":
         if att.filename[-4:].lower() == ".jpg" or att.filename[-5:].lower() == ".jpeg":
             try:
                 f = discord.File("assets/disdain_for_jpegs.gif", "disdain_for_jpegs.gif")
-                await ctx.send(ctx.get("bot.error.jpeg"), file=f)
+                await ctx.send(ctx.s("error.jpeg"), file=f)
             except IOError:
-                await ctx.send(ctx.get("bot.error.jpeg"))
+                await ctx.send(ctx.s("error.jpeg"))
             return
-        await ctx.send(ctx.get("bot.error.no_png"))
+        await ctx.send(ctx.s("error.not_png"))
         return
     return att
 
 
 async def yes_no(ctx, question):
     sql.menu_locks_add(ctx.channel.id, ctx.author.id)
-    query_msg = await ctx.send(question + ctx.get("bot.yes_no"))
+    query_msg = await ctx.send("{}\n  `0` - {}\n  `1` - {}".format(question, ctx.s("bot.no"), ctx.s("bot.yes")))
 
     def check(m):
         return ctx.channel.id == m.channel.id and ctx.author.id == m.author.id
@@ -106,10 +108,10 @@ async def yes_no(ctx, question):
     try:
         resp_msg = await ctx.bot.wait_for('message', timeout=60.0, check=check)
         while not (resp_msg.content == "0" or resp_msg.content == "1"):
-            await ctx.send(ctx.get("bot.yes_no_invalid"))
+            await ctx.send(ctx.s("error.invalid_option"))
             resp_msg = await ctx.bot.wait_for('message', timeout=60.0, check=check)
     except asyncio.TimeoutError:
-        await query_msg.edit(content=ctx.get("bot.yes_no_timed_out"))
+        await query_msg.edit(content=ctx.s("error.timed_out"))
         return False
     finally:
         sql.menu_locks_delete(ctx.channel.id, ctx.author.id)

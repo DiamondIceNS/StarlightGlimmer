@@ -43,12 +43,12 @@ class Animotes:
     @commands.command()
     async def register(self, ctx):
         sql.animotes_users_add(ctx.author.id)
-        await ctx.send(ctx.get("animotes.member_opt_in"))
+        await ctx.send(ctx.s("animotes.opt_in"))
 
     @commands.command()
     async def unregister(self, ctx):
         sql.animotes_users_delete(ctx.author.id)
-        await ctx.send(ctx.get("animotes.member_opt_out"))
+        await ctx.send(ctx.s("animotes.opt_out"))
 
 
 def emote_corrector(self, message):

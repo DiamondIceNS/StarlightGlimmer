@@ -40,7 +40,7 @@ class Template:
         if a == "-f":
             faction = sql.guild_get_by_faction_name_or_alias(next(iter_args, None))
             if not faction:
-                await ctx.send(ctx.get("faction.not_found"))
+                await ctx.send(ctx.s("faction.not_found"))
                 return
             gid = faction['id']
         ts = sql.template_get_all_by_guild_id(gid)
@@ -48,25 +48,26 @@ class Template:
         if len(ts) > 0:
             pages = 1 + len(ts) // 10
             page = min(max(page, 1), pages)
-            w1 = max(max(map(lambda tx: len(tx.name), ts)) + 2, len(ctx.get("template.info_name")))
+            w1 = max(max(map(lambda tx: len(tx.name), ts)) + 2, len(ctx.s("bot.name")))
             msg = [
-                "**{}** {} {}/{}".format(ctx.get("template.list_header"), ctx.get("bot.page"), page, pages),
-                "```xl"
-                "{0:<{w1}}  {1:<14}  {2}\n".format(ctx.get("template.info_name"),
-                                                   ctx.get("template.info_canvas"),
-                                                   ctx.get("template.info_coords"), w1=w1)
+                "**{}** {} {}/{}".format(ctx.s("template.list_header"), ctx.s("bot.page"), page, pages),
+                "```xl",
+                "{0:<{w1}}  {1:<14}  {2}".format(ctx.s("bot.name"),
+                                                 ctx.s("bot.canvas"),
+                                                 ctx.s("bot.coordinates"), w1=w1)
             ]
             for t in ts[(page-1)*10:page*10]:
                 coords = "({}, {})".format(t.x, t.y)
                 name = '"{}"'.format(t.name)
                 canvas_name = canvases.pretty_print[t.canvas]
-                msg.append("{0:<{w1}}  {1:<14}  {2}\n".format(name, canvas_name, coords, w1=w1))
-            msg.append(ctx.get("template.list_footer_1").format(guild))
-            msg.append(ctx.get("template.list_footer_2").format(guild))
+                msg.append("{0:<{w1}}  {1:<14}  {2}".format(name, canvas_name, coords, w1=w1))
+            msg.append("")
+            msg.append(ctx.s("template.list_footer_1").format(guild))
+            msg.append(ctx.s("template.list_footer_2").format(guild))
             msg.append("```")
-            await ctx.send(''.join(msg))
+            await ctx.send('\n'.join(msg))
         else:
-            await ctx.send(ctx.get("template.list_no_templates"))
+            await ctx.send(ctx.s("template.list_no_templates"))
 
     @commands.guild_only()
     @commands.cooldown(1, 5, BucketType.guild)
@@ -90,27 +91,28 @@ class Template:
         if len(ts) > 0:
             pages = 1 + len(ts) // 10
             page = min(max(page, 1), pages)
-            w1 = max(max(map(lambda tx: len(tx.name), ts)) + 2, len(ctx.get("template.info_name")))
+            w1 = max(max(map(lambda tx: len(tx.name), ts)) + 2, len(ctx.s("bot.name")))
             msg = [
-                "**{}** {} {}/{}".format(ctx.get("template.list_header"), ctx.get("bot.page"), page, pages),
-                "```xl"
-                "{0:<{w1}}  {1:<34}  {2:<14}  {3}\n".format(ctx.get("template.info_name"),
-                                                            ctx.get("template.info_faction"),
-                                                            ctx.get("template.info_canvas"),
-                                                            ctx.get("template.info_coords"), w1=w1)
+                "**{}** {} {}/{}".format(ctx.s("template.list_header"), ctx.s("bot.page"), page, pages),
+                "```xl",
+                "{0:<{w1}}  {1:<34}  {2:<14}  {3}".format(ctx.s("bot.name"),
+                                                          ctx.s("bot.faction"),
+                                                          ctx.s("bot.canvas"),
+                                                          ctx.s("bot.coordinates"), w1=w1)
             ]
             for t, f in ts_with_f[(page - 1) * 10:page * 10]:
                 coords = "({}, {})".format(t.x, t.y)
                 faction = '"{}"'.format(f)
                 name = '"{}"'.format(t.name)
                 canvas_name = canvases.pretty_print[t.canvas]
-                msg.append("{0:<{w1}}  {1:<34}  {2:<14}  {3}\n".format(name, faction, canvas_name, coords, w1=w1))
-            msg.append(ctx.get("template.list_footer_1").format(guild))
-            msg.append(ctx.get("template.list_footer_2").format(guild))
+                msg.append("{0:<{w1}}  {1:<34}  {2:<14}  {3}".format(name, faction, canvas_name, coords, w1=w1))
+            msg.append("")
+            msg.append(ctx.s("template.list_footer_1").format(guild))
+            msg.append(ctx.s("template.list_footer_2").format(guild))
             msg.append("```")
-            await ctx.send(''.join(msg))
+            await ctx.send('\n'.join(msg))
         else:
-            await ctx.send(ctx.get("template.list_no_templates"))
+            await ctx.send(ctx.s("template.list_no_templates"))
 
     @commands.guild_only()
     @commands.cooldown(1, 5, BucketType.guild)
@@ -188,7 +190,7 @@ class Template:
                 return
             f = sql.guild_get_by_faction_name_or_alias(args[1])
             if not f:
-                await ctx.send(ctx.get("faction.not_found"))
+                await ctx.send(ctx.s("faction.not_found"))
                 return
             name = args[2]
             t = sql.template_get_by_name(f['id'], name)
@@ -196,7 +198,7 @@ class Template:
             name = args[0]
             t = sql.template_get_by_name(ctx.guild.id, name)
         if not t:
-            await ctx.send(ctx.get("template.name_not_found").format(name))
+            await ctx.send(ctx.s("template.name_not_found").format(name))
             return
 
         canvas_url = canvases.url_templates[t.canvas].format(*t.center())
@@ -212,14 +214,14 @@ class Template:
 
         e = discord.Embed(title=t.name, url=canvas_url, color=13594340) \
             .set_image(url=t.url) \
-            .add_field(name=ctx.get("template.info_canvas"), value=canvas_name, inline=True) \
-            .add_field(name=ctx.get("template.info_coords"), value=coords, inline=True) \
-            .add_field(name=ctx.get("template.info_dimensions"), value=dimensions, inline=True) \
-            .add_field(name=ctx.get("template.info_size"), value=size, inline=True) \
-            .add_field(name=ctx.get("template.info_visibility"), value=visibility, inline=True) \
-            .add_field(name=ctx.get("template.info_added_by"), value=added_by, inline=True) \
-            .add_field(name=ctx.get("template.info_date_added"), value=date_added, inline=True) \
-            .add_field(name=ctx.get("template.info_date_modified"), value=date_modified, inline=True)
+            .add_field(name=ctx.s("bot.canvas"), value=canvas_name, inline=True) \
+            .add_field(name=ctx.s("bot.coordinates"), value=coords, inline=True) \
+            .add_field(name=ctx.s("bot.dimensions"), value=dimensions, inline=True) \
+            .add_field(name=ctx.s("bot.size"), value=size, inline=True) \
+            .add_field(name=ctx.s("bot.visibility"), value=visibility, inline=True) \
+            .add_field(name=ctx.s("bot.added_by"), value=added_by, inline=True) \
+            .add_field(name=ctx.s("bot.date_added"), value=date_added, inline=True) \
+            .add_field(name=ctx.s("bot.date_modified"), value=date_modified, inline=True)
         await ctx.send(embed=e)
 
     @commands.guild_only()
@@ -229,21 +231,21 @@ class Template:
     async def template_remove(self, ctx, name):
         t = sql.template_get_by_name(ctx.guild.id, name)
         if not t:
-            await ctx.send(ctx.get("template.no_template_named").format(name))
+            await ctx.send(ctx.s("template.no_template_named").format(name))
             return
         if t.owner_id != ctx.author.id and not utils.is_template_admin(ctx) and not utils.is_admin(ctx):
-            await ctx.send(ctx.get("template.not_owner"))
+            await ctx.send(ctx.s("template.not_owner"))
             return
         sql.template_delete(t.gid, t.name)
-        await ctx.send(ctx.get("template.remove").format(name))
+        await ctx.send(ctx.s("template.remove").format(name))
 
     @staticmethod
     async def add_template(ctx, canvas, name, x, y, url):
         if len(name) > cfg.max_template_name_length:
-            await ctx.send(ctx.get("template.name_too_long").format(cfg.max_template_name_length))
+            await ctx.send(ctx.s("template.name_too_long").format(cfg.max_template_name_length))
             return
         if sql.template_count_by_guild_id(ctx.guild.id) >= cfg.max_templates_per_guild:
-            await ctx.send(ctx.get("template.max_templates"))
+            await ctx.send(ctx.s("template.max_templates"))
             return
         url = await Template.select_url(ctx, url)
         if url is None:
@@ -255,12 +257,12 @@ class Template:
             if not chk or await Template.check_for_duplicates_by_md5(ctx, t) is False:
                 return
             sql.template_update(t)
-            await ctx.send(ctx.get("template.updated").format(name))
+            await ctx.send(ctx.s("template.updated").format(name))
             return
         elif await Template.check_for_duplicates_by_md5(ctx, t) is False:
             return
         sql.template_add(t)
-        await ctx.send(ctx.get("template.added").format(name))
+        await ctx.send(ctx.s("template.added").format(name))
 
     @staticmethod
     async def build_template(ctx, name, x, y, url, canvas):
@@ -272,15 +274,15 @@ class Template:
                     quantized = await Template.check_colors(tmp, colors.by_name[canvas])
                     size = await render.calculate_size(tmp)
                 if not quantized:
-                    if not await utils.yes_no(ctx, ctx.get("template.not_quantized")):
+                    if not await utils.yes_no(ctx, ctx.s("template.not_quantized")):
                         return
 
-                    template, bad_pixels = await render.quantize(data, colors.by_name[canvas])
+                    template, bad_pixels = await canvas.quantize(data, colors.by_name[canvas])
                     with io.BytesIO() as bio:
                         template.save(bio, format="PNG")
                         bio.seek(0)
                         f = discord.File(bio, "template.png")
-                        new_msg = await ctx.send(ctx.get("render.quantize").format(bad_pixels), file=f)
+                        new_msg = await ctx.send(ctx.s("canvas.quantize").format(bad_pixels), file=f)
 
                     url = new_msg.attachments[0].url
                     with await http.get_template(url) as data2:
@@ -295,10 +297,10 @@ class Template:
 
     @staticmethod
     def build_template_report(ctx, ts: List[Template_]):
-        name = ctx.get("template.info_name")
-        tot = ctx.get("template.info_total")
-        err = ctx.get("template.info_errors")
-        perc = ctx.get("template.info_percent")
+        name = ctx.s("bot.name")
+        tot = ctx.s("bot.total")
+        err = ctx.s("bot.errors")
+        perc = ctx.s("bot.percent")
 
         ts = sorted(ts, key=lambda tx: tx.name)
         w1 = max(max(map(lambda tx: len(tx.name), ts)) + 2, len(name))
@@ -307,7 +309,7 @@ class Template:
         w4 = max(len(perc), 6)
 
         out = [
-            "**{}**".format(ctx.get("template.template_report_header")),
+            "**{}**".format(ctx.s("template.template_report_header")),
             "```xl",
             "{0:<{w1}}  {1:>{w2}}  {2:>{w3}}  {3:>{w4}}".format(name, tot, err, perc, w1=w1, w2=w2, w3=w3, w4=w4)
         ]
@@ -348,10 +350,10 @@ class Template:
                 empty_bcs, shape = chunk_type.get_intersecting(t.x, t.y, t.width, t.height)
                 chunks.update(empty_bcs)
 
-            msg = await ctx.send(ctx.get("template.fetching_data").format(canvases.pretty_print[canvas]))
+            msg = await ctx.send(ctx.s("template.fetching_data").format(canvases.pretty_print[canvas]))
             await fetch(chunks)
 
-            await msg.edit(content=ctx.get("template.calculating"))
+            await msg.edit(content=ctx.s("template.calculating"))
             await Template.calculate_errors(ts, chunks)
 
             await msg.edit(content=Template.build_template_report(ctx, ts))
@@ -375,13 +377,13 @@ class Template:
     async def check_for_duplicates_by_md5(ctx, template):
         dups = sql.template_get_by_hash(ctx.guild.id, template.md5)
         if len(dups) > 0:
-            msg = [ctx.get("template.duplicate_list_open")]
+            msg = [ctx.s("template.duplicate_list_open")]
             w = max(map(lambda tx: len(tx.name), dups)) + 2
             for d in dups:
                 name = '"{}"'.format(d.name)
                 canvas_name = canvases.pretty_print[d.canvas]
                 msg.append("{0:<{w}} {1:>15} ({2}, {3})\n".format(name, canvas_name, d.x, d.y, w=w))
-            msg.append(ctx.get("template.duplicate_list_close"))
+            msg.append(ctx.s("template.duplicate_list_close"))
             return await utils.yes_no(ctx, ''.join(msg))
 
     @staticmethod
@@ -389,10 +391,10 @@ class Template:
         dup = sql.template_get_by_name(ctx.guild.id, template.name)
         if dup:
             if template.owner_id != ctx.author.id and not utils.is_admin(ctx):
-                await ctx.send(ctx.get("template.name_exists_no_permission"))
+                await ctx.send(ctx.s("template.name_exists_no_permission"))
                 return False
             print(dup.x)
-            q = ctx.get("template.name_exists_ask_replace")\
+            q = ctx.s("template.name_exists_ask_replace")\
                 .format(dup.name, canvases.pretty_print[dup.canvas], dup.x, dup.y)
             return await utils.yes_no(ctx, q)
 

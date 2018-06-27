@@ -32,7 +32,7 @@ class Canvas:
                 return
             f = sql.guild_get_by_faction_name_or_alias(args[1])
             if not f:
-                await ctx.send(ctx.get("faction.not_found"))
+                await ctx.send(ctx.s("faction.not_found"))
                 return
             name = args[2]
             zoom = args[3] if len(args) >= 4 else "#1"
@@ -61,9 +61,9 @@ class Canvas:
                 = await render.diff(t.x, t.y, data, zoom, fetchers[t.canvas], colors.by_name[t.canvas])
 
             if bad > 0:
-                content = ctx.get("render.diff_bad_color").format(tot - err, tot, err, bad, 100 * (tot - err) / tot)
+                content = ctx.s("canvas.diff_bad_color").format(tot - err, tot, err, bad, 100 * (tot - err) / tot)
             else:
-                content = ctx.get("render.diff").format(tot - err, tot, err, 100 * (tot - err) / tot)
+                content = ctx.s("canvas.diff").format(tot - err, tot, err, 100 * (tot - err) / tot)
 
             with io.BytesIO() as bio:
                 diff_img.save(bio, format="PNG")
@@ -166,13 +166,13 @@ class Canvas:
             if a == "-f":
                 faction = sql.guild_get_by_faction_name_or_alias(next(iter_args, None))
                 if not faction:
-                    await ctx.send(ctx.get("faction.not_found"))
+                    await ctx.send(ctx.s("faction.not_found"))
                     return
             if a == "-c":
                 try:
                     color = abs(int(next(iter_args, None), 16) % 16777215)
                 except ValueError:
-                    await ctx.send(ctx.get("bot.error.invalid_color"))
+                    await ctx.send(ctx.s("error.invalid_color"))
                     return
             a = next(iter_args, None)
         name = a
@@ -254,14 +254,14 @@ class Canvas:
 
             if await utils.autoscan(new_ctx):
                 return
-        await ctx.send(ctx.get("canvas.repeat_not_found"))
+        await ctx.send(ctx.s("canvas.repeat_not_found"))
 
 
 async def _diff(ctx, raw_arg, fetch):
     async with ctx.typing():
         m = re.search('(-?\d+)(?:,| |, )(-?\d+)(?: #?(\d+))?', raw_arg)
         if not m:
-            await ctx.send(ctx.get("canvas.invalid_input"))
+            await ctx.send(ctx.s("canvas.invalid_input"))
             return
         att = await utils.verify_attachment(ctx)
         if att:
@@ -274,9 +274,9 @@ async def _diff(ctx, raw_arg, fetch):
             diff_img, tot, err, bad = await render.diff(x, y, data, zoom, fetch, colors.pixelcanvas)
 
             if bad > 0:
-                content = ctx.get("render.diff_bad_color").format(tot - err, tot, err, bad, 100 * (tot - err) / tot)
+                content = ctx.s("canvas.diff_bad_color").format(tot - err, tot, err, bad, 100 * (tot - err) / tot)
             else:
-                content = ctx.get("render.diff").format(tot - err, tot, err, 100 * (tot - err) / tot)
+                content = ctx.s("canvas.diff").format(tot - err, tot, err, 100 * (tot - err) / tot)
 
             with io.BytesIO() as bio:
                 diff_img.save(bio, format="PNG")
@@ -316,7 +316,7 @@ async def _quantize(ctx, args, canvas, palette):
             return
         f = sql.guild_get_by_faction_name_or_alias(args[1])
         if not f:
-            await ctx.send(ctx.get("faction.not_found"))
+            await ctx.send(ctx.s("faction.not_found"))
             return
         name = args[2]
         t = sql.template_get_by_name(f['id'], name)
@@ -336,13 +336,13 @@ async def _quantize(ctx, args, canvas, palette):
             await att.save(data)
 
     if data:
-        template, bad_pixels = await render.quantize(data, palette)
+        template, bad_pixels = await canvas.quantize(data, palette)
 
         with io.BytesIO() as bio:
             template.save(bio, format="PNG")
             bio.seek(0)
             f = discord.File(bio, "template.png")
-            return await ctx.send(ctx.get("render.quantize").format(bad_pixels), file=f)
+            return await ctx.send(ctx.s("canvas.quantize").format(bad_pixels), file=f)
 
 
 def setup(bot):

@@ -14,8 +14,9 @@ from utils import canvases, render, sqlite as sql, utils
 from utils.version import VERSION
 
 
-def get_prefix(bot, msg):
-    return [sql.guild_get_prefix_by_id(msg.guild.id), bot.user.mention + " "]
+def get_prefix(bot_, msg: discord.Message):
+    return [sql.guild_get_prefix_by_id(msg.guild.id), bot_.user.mention + " "] \
+        if msg.guild else [cfg.prefix, bot_.user.mention + " "]
 
 
 cfg = Config()
@@ -71,7 +72,7 @@ async def on_ready():
             if is_new_version:
                 ch = next((x for x in g.channels if x.id == row['alert_channel']), None)
                 if ch:
-                    await ch.send(GlimContext.get_from_guild(g, "bot.alert_update").format(VERSION, prefix))
+                    await ch.send(GlimContext.get_from_guild(g, "bot.update").format(VERSION, prefix))
                     log.info("- Sent update message")
                 else:
                     log.info("- Could not send update message: alert channel not found.")
@@ -137,48 +138,48 @@ async def on_command_error(ctx, error):
         if isinstance(error.original, discord.HTTPException) and error.original.code == 50013:
             return
     if isinstance(error, commands.CommandOnCooldown):
-        await ctx.send(ctx.get("bot.error.command_on_cooldown").format(error.retry_after))
+        await ctx.send(ctx.s("error.cooldown").format(error.retry_after))
         return
     if isinstance(error, commands.CommandNotFound):
         return
     if isinstance(error, commands.MissingRequiredArgument):
         return
     if isinstance(error, commands.NoPrivateMessage):
-        await ctx.send(ctx.get("bot.error.no_private_message"))
+        await ctx.send(ctx.s("error.no_dm"))
         return
 
     # Check errors
     if isinstance(error, errors.IdempotentActionError):
         try:
             f = discord.File("assets/y_tho.png", "y_tho.png")
-            await ctx.send(ctx.get("bot.why"), file=f)
+            await ctx.send(ctx.s("error.why"), file=f)
         except IOError:
-            await ctx.send(ctx.get("bot.why"))
+            await ctx.send(ctx.s("error.why"))
         return
     if isinstance(error, errors.NoJpegsError):
         try:
             f = discord.File("assets/disdain_for_jpegs.gif", "disdain_for_jpegs.gif")
-            await ctx.send(ctx.get("bot.error.jpeg"), file=f)
+            await ctx.send(ctx.s("error.jpeg"), file=f)
         except IOError:
-            await ctx.send(ctx.get("bot.error.jpeg"))
+            await ctx.send(ctx.s("error.jpeg"))
         return
     if isinstance(error, errors.NoPermissionError):
-        await ctx.send(ctx.get("bot.error.no_permission"))
+        await ctx.send(ctx.s("error.no_permission"))
         return
     if isinstance(error, errors.NotPngError):
-        await ctx.send(ctx.get("bot.error.no_png"))
+        await ctx.send(ctx.s("error.not_png"))
         return
     if isinstance(error, errors.PilImageError):
-        await ctx.send(ctx.get("bot.error.pil_open_exception"))
+        await ctx.send(ctx.s("error.bad_image"))
         return
     if isinstance(error, errors.TemplateHttpError):
-        await ctx.send(ctx.get("bot.error.template_http_error"))
+        await ctx.send(ctx.s("error.cannot_fetch_template"))
         return
     if isinstance(error, errors.UrlError):
-        await ctx.send(ctx.get("bot.error.url_error"))
+        await ctx.send(ctx.s("error.non_discord_url"))
         return
     if isinstance(error, errors.HttpPayloadError):
-        await ctx.send(ctx.get("bot.error.http_payload_error").format(canvases.pretty_print[error.canvas]))
+        await ctx.send(ctx.s("error.http").format(canvases.pretty_print[error.canvas]))
         return
 
     # Uncaught error
@@ -187,7 +188,7 @@ async def on_command_error(ctx, error):
     await ch_log.log("```{}```".format(error))
     log.error("An error occurred executing '{}': {}\n{}"
               .format(name, error, ''.join(traceback.format_exception(None, error, error.__traceback__))))
-    await ctx.send(ctx.get("bot.error.unhandled_command_error"))
+    await ctx.send(ctx.s("error.unknown"))
 
 
 @bot.event
