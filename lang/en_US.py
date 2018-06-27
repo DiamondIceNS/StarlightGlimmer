@@ -124,9 +124,11 @@ STRINGS = {
     "template.duplicate_list_open": "The following templates already match this image:\n```xl\n",  
     "template.duplicate_list_close": "```\nCreate a new template anyway?",
     "template.fetching_data": "Fetching data from {}...",  # TODO: Translate
+    "template.list_all_footer_1": "// Use '{0}template all <page>' to see that page",  # TODO: Translate
+    "template.list_all_footer_2": "// Use '{0}template info -f <faction> <name>' to see more info on a template",  # TODO: Translate
     "template.list_header": "Template List",  # TODO: Translate
-    "template.list_footer_1": "// Use '{0}templates <page>' to see that page",  # TODO: Translate
-    "template.list_footer_2": "// Use '{0}templates info <name>' to see more info on a template",  # TODO: Translate
+    "template.list_footer_1": "// Use '{0}template <page>' to see that page",  # TODO: Translate
+    "template.list_footer_2": "// Use '{0}template info <name>' to see more info on a template",  # TODO: Translate
     "template.list_no_templates": "This guild currently has no templates.",
     "template.max_templates": "This guild already has the maximum number of templates. Please remove a template before adding another.",  
     "template.name_exists_ask_replace": "A template with the name '{0}' already exists for {1} at ({2}, {3}). Replace it?",  

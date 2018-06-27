@@ -30,7 +30,8 @@ class Faction:  # TODO: Add brief, help, and signature strings to lang files
                 "{0:<34}  {1:<5}".format(ctx.s("bot.name"), ctx.s("bot.alias"))
             ]
             for f in fs[(page - 1) * 10:page * 10]:
-                msg.append("{0:<34}  {1:<5}".format('"{}"'.format(f['faction_name']), f['faction_alias']))
+                alias = '"{}"'.format(f['faction_alias']) if f['faction_alias'] else ""
+                msg.append("{0:<34}  {1:<5}".format('"{}"'.format(f['faction_name']), alias))
             msg.append("")
             msg.append(ctx.s("faction.faction_list_footer_1").format(g))
             msg.append(ctx.s("faction.faction_list_footer_2").format(g))

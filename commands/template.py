@@ -36,21 +36,25 @@ class Template:
         gid = ctx.guild.id
         guild = sql.guild_get_prefix_by_id(gid)
         iter_args = iter(args)
-        a = next(iter_args, None)
-        if a == "-f":
+        page = next(iter_args, 1)
+        if page == "-f":
             faction = sql.guild_get_by_faction_name_or_alias(next(iter_args, None))
             if not faction:
                 await ctx.send(ctx.s("faction.not_found"))
                 return
             gid = faction['id']
+            page = next(iter_args, 1)
+        try:
+            page = int(page)
+        except ValueError:
+            page = 1
         ts = sql.template_get_all_by_guild_id(gid)
-        page = next(iter_args, 1)
         if len(ts) > 0:
             pages = 1 + len(ts) // 10
             page = min(max(page, 1), pages)
             w1 = max(max(map(lambda tx: len(tx.name), ts)) + 2, len(ctx.s("bot.name")))
             msg = [
-                "**{}** {} {}/{}".format(ctx.s("template.list_header"), ctx.s("bot.page"), page, pages),
+                "**{}** - {} {}/{}".format(ctx.s("template.list_header"), ctx.s("bot.page"), page, pages),
                 "```xl",
                 "{0:<{w1}}  {1:<14}  {2}".format(ctx.s("bot.name"),
                                                  ctx.s("bot.canvas"),
@@ -93,7 +97,7 @@ class Template:
             page = min(max(page, 1), pages)
             w1 = max(max(map(lambda tx: len(tx.name), ts)) + 2, len(ctx.s("bot.name")))
             msg = [
-                "**{}** {} {}/{}".format(ctx.s("template.list_header"), ctx.s("bot.page"), page, pages),
+                "**{}** - {} {}/{}".format(ctx.s("template.list_header"), ctx.s("bot.page"), page, pages),
                 "```xl",
                 "{0:<{w1}}  {1:<34}  {2:<14}  {3}".format(ctx.s("bot.name"),
                                                           ctx.s("bot.faction"),
@@ -107,8 +111,8 @@ class Template:
                 canvas_name = canvases.pretty_print[t.canvas]
                 msg.append("{0:<{w1}}  {1:<34}  {2:<14}  {3}".format(name, faction, canvas_name, coords, w1=w1))
             msg.append("")
-            msg.append(ctx.s("template.list_footer_1").format(guild))
-            msg.append(ctx.s("template.list_footer_2").format(guild))
+            msg.append(ctx.s("template.list_all_footer_1").format(guild))
+            msg.append(ctx.s("template.list_all_footer_2").format(guild))
             msg.append("```")
             await ctx.send('\n'.join(msg))
         else:
