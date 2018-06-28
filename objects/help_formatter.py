@@ -27,7 +27,7 @@ class GlimmerHelpFormatter(HelpFormatter):
         data = sorted(filtered, key=parent)
         for parent, subcommands in itertools.groupby(data, key=parent):
             subcommands = sorted(subcommands, key=is_alias)
-            entry = ' OR '.join(["'{}'".format(x[0]) for x in subcommands])
+            entry = " {} ".format(self.context.s("bot.or_all_caps")).join(["'{}'".format(x[0]) for x in subcommands])
             cmd = subcommands[0][1]
             short_doc = self.context.s("brief." + cmd.qualified_name.replace(' ', '.'))
             entries.append((entry, short_doc))
@@ -36,16 +36,18 @@ class GlimmerHelpFormatter(HelpFormatter):
         for e in entries:
             out.append('{0:<{width}} // {1}'.format(*e, width=width))
 
-        out.append(
-            "\n# Use '{}help {} (subcommand)' to view more info about a subcommand".format(self.context.prefix,
-                                                                                           self.command.qualified_name))
+        out.append("")
+        out.append(self.context.s("general.help_subcommand").format(self.context.prefix, self.command.qualified_name))
         out.append("```")
         return out
 
     async def format(self):
         if self.is_bot():
-            out = ["```xl\n'Commands List'\n```",
-                   "Use `{}help [command]` to get help about a specific command.\n".format(self.clean_prefix)]
+            out = ["```xl",
+                   "'{}'".format(self.context.s("general.help_command_list_header")),
+                   "```",
+                   self.context.s("general.help_more_info").format(self.clean_prefix)
+                   ]
 
             def category(tup):
                 return {
@@ -74,10 +76,11 @@ class GlimmerHelpFormatter(HelpFormatter):
             dot_name = self.command.qualified_name.replace(' ', '.')
             out = ["**`{}`** {}".format(self.command.qualified_name, self.context.s("brief." + dot_name))]
 
-            usage = "**Usage:** "
+            usage = "**{}:** ".format(self.context.s("bot.usage"))
             sig = self.context.s("signature." + dot_name)
             if isinstance(sig, list):
-                usage += ' OR '.join(["`{}{} {}`".format(self.clean_prefix, self.command.qualified_name, x) for x in sig])
+                usage += " {} ".format(self.context.s("bot.or_all_caps"))\
+                    .join(["`{}{} {}`".format(self.clean_prefix, self.command.qualified_name, x) for x in sig])
             elif sig is not None:
                 usage += "`{}{} {}`".format(self.clean_prefix, self.command.qualified_name, sig)
             else:
@@ -85,24 +88,27 @@ class GlimmerHelpFormatter(HelpFormatter):
             out.append(usage)
 
             if len(self.command.aliases) > 0:
-                aliases = "**Aliases:** "
+                aliases = "**{}:** ".format(self.context.s("bot.aliases"))
                 aliases += ' '.join(["`{}`".format(a) for a in self.command.aliases])
                 out.append(aliases)
 
             # <long doc> section
             long_doc = self.context.s("help." + dot_name)
             if long_doc:
-                out.append("\n{}".format(inspect.cleandoc(long_doc)).format(p=self.clean_prefix))
+                out.append("")
+                out.append("{}".format(inspect.cleandoc(long_doc)).format(p=self.clean_prefix))
 
             if self.has_subcommands():
                 filtered = await self.filter_command_list()
                 if filtered:
-                    out.append("\n**Subcommands:**")
+                    out.append("")
+                    out.append("**{}:**".format(self.context.s("bot.subcommands")))
                     out += await self.add_localized_subcommands_to_page()
 
             examples = self.context.s("example." + dot_name)
             if examples:
-                out.append("\n**Examples:**")
+                out.append("")
+                out.append("**{}:**".format(self.context.s("bot.examples")))
                 for ex in self.context.s("example." + dot_name):
                     out.append("`{}{} {}` {}".format(self.clean_prefix, self.command.qualified_name, *ex))
 

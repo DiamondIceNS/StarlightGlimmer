@@ -2,6 +2,7 @@ STRINGS = {
     # Global messages
     "bot.added_by": "Added By",
     "bot.alias": "Alias",  # TODO: Translate
+    "bot.aliases": "Aliases",
     "bot.canvas": "Canvas",
     "bot.canvases": "Canvases",  # TODO: Translate
     "bot.coordinates": "Coordinates",
@@ -9,13 +10,17 @@ STRINGS = {
     "bot.date_modified": "Date Modified",
     "bot.dimensions": "Dimensions",  # TODO: Translate
     "bot.errors": "Errors",  # TODO: Translate
+    "bot.examples": "Examples",
     "bot.faction": "Faction",  # TODO: Translate
     "bot.name": "Name",
     "bot.no": "No",
+    "bot.or_all_caps": "OR",
     "bot.page": "Page",  # TODO: Translate
     "bot.percent": "Percent",  # TODO: Translate
     "bot.size": "Size",
+    "bot.subcommands": "Subcommands",
     "bot.total": "Total",  # TODO: Translate
+    "bot.usage": "Usage",
     "bot.visibility": "Visibility",  # TODO: Translate
     "bot.yes": "Yes",
 
@@ -112,11 +117,13 @@ STRINGS = {
     "faction.set_name": "Faction renamed to `{}`.",  # TODO: Translate
 
     # General command messages
-    "bot.help_ending_note": "Type '{0}{1} <command>' for more info on a command.",
-    "bot.ping": "Pinging...",
-    "bot.pong": "Pong! | **{0}ms**",
-    "bot.suggest": "Your suggestion has been sent. Thank you for your input!",
-    "bot.version": "My version number is **{0}**",
+    "general.help_command_list_header": "Command List",
+    "general.help_more_info": "Use `{}help <command>` to view more info about a specific command.",
+    "general.help_subcommand": "# Use '{}help {} (subcommand)' to view more info about a subcommand",
+    "general.ping": "Pinging...",
+    "general.pong": "Pong! | **{0}ms**",
+    "general.suggest": "Your suggestion has been sent. Thank you for your input!",
+    "general.version": "My version number is **{0}**",
 
     # Template command messages
     "template.added": "Template '{0}' added!",
