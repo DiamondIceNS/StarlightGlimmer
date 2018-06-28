@@ -156,6 +156,9 @@ async def on_command_error(ctx, error):
         except IOError:
             await ctx.send(ctx.s("error.why"))
         return
+    if isinstance(error, errors.NoAttachmentError):
+        await ctx.send(ctx.s("error.no_attachment"))
+        return
     if isinstance(error, errors.NoJpegsError):
         try:
             f = discord.File("assets/disdain_for_jpegs.gif", "disdain_for_jpegs.gif")

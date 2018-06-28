@@ -10,6 +10,10 @@ class IdempotentActionError(commands.CommandError):
     pass
 
 
+class NoAttachmentError(commands.CommandError):
+    pass
+
+
 class NoPermissionError(commands.CommandError):
     pass
 

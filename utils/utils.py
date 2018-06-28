@@ -1,9 +1,10 @@
 import asyncio
 import re
 
-import discord
+from discord.ext.commands.view import StringView
 from discord.utils import get as dget
 
+from objects import errors
 from utils import sqlite as sql
 
 
@@ -14,22 +15,36 @@ async def autoscan(ctx):
     canvas = sql.guild_get_canvas_by_id(ctx.guild.id) if ctx.guild else "pixelcanvas"
 
     cmd = None
-    if re.search('pixelcanvas\.io/@-?\d+,-?\d+', ctx.message.content) is not None:
+    view = ""
+    m_pc = re.search('pixelcanvas\.io/@(-?\d+),(-?\d+)(?:(?: |#| #)(-?\d+))?', ctx.message.content)
+    m_pzi = re.search('pixelz\.io/@(-?\d+),(-?\d+)(?:(?: |#| #)(-?\d+))?', ctx.message.content)
+    m_pz = re.search('pixelzone\.io/\?p=(-?\d+),(-?\d+)(?:,(\d+))?(?:(?: |#| #)(-?\d+))?', ctx.message.content)
+    m_ps = re.search('pxls\.space/#x=(\d+)&y=(\d+)(?:&scale=(\d+))?(?:(?: |#| #)(-?\d+))?', ctx.message.content)
+    m_pre_def = re.search('@(-?\d+)(?: |,|, )(-?\d+)(?:(?: |#| #)(-?\d+))?', ctx.message.content)
+    m_dif_def = re.search('(?:(-l) )?(-?\d+)(?: |,|, )(-?\d+)(?:(?: |#| #)(-?\d+))?', ctx.message.content)
+    if m_pc:
         cmd = dget(dget(ctx.bot.commands, name='preview').commands, name='pixelcanvas')
-    elif re.search('pixelz\.io/@-?\d+,-?\d+', ctx.message.content) is not None:
+        view = ' '.join(m_pc.groups(default='1'))
+    elif m_pzi:
         cmd = dget(dget(ctx.bot.commands, name='preview').commands, name='pixelzio')
-    elif re.search('pixelzone\.io/\?p=-?\d+,-?\d+', ctx.message.content) is not None:
+        view = ' '.join(m_pzi.groups(default='1'))
+    elif m_pz:
         cmd = dget(dget(ctx.bot.commands, name='preview').commands, name='pixelzone')
-    elif re.search('pxls\.space/#x=\d+&y=\d+', ctx.message.content) is not None:
+        view = m_pz.group(1) + ' ' + m_pz.group(2) + ' ' + (m_pz.group(4) or m_pz.group(3) or '1')
+    elif m_ps:
         cmd = dget(dget(ctx.bot.commands, name='preview').commands, name='pxlsspace')
-    elif re.search('@\(?-?\d+, ?-?\d+\)?', ctx.message.content) is not None:
+        view = m_ps.group(1) + ' ' + m_ps.group(2) + ' ' + (m_ps.group(4) or m_ps.group(3) or '1')
+    elif m_pre_def:
         cmd = dget(dget(ctx.bot.commands, name='preview').commands, name=canvas)
-    elif re.search('\(?-?\d+, ?-?\d+\)?', ctx.message.content) is not None and len(ctx.message.attachments) > 0 \
-            and ctx.message.attachments[0].filename[-4:].lower() == ".png":
+        view = ' '.join(m_pc.groups(default='1'))
+    elif m_dif_def and len(ctx.message.attachments) > 0 and ctx.message.attachments[0].filename[-4:].lower() == ".png":
         cmd = dget(dget(ctx.bot.commands, name='diff').commands, name=canvas)
+        view = (m_dif_def.group(1) or "") + ' ' + m_dif_def.group(2) + ' ' + m_dif_def.group(3) + ' ' \
+            + (m_dif_def.group(4) or 1)
 
     if cmd:
         ctx.command = cmd
+        ctx.view = StringView(view)
         ctx.is_autoscan = True
         await ctx.bot.invoke(ctx)
         return True
@@ -82,19 +97,12 @@ def is_template_adder(ctx):
 
 async def verify_attachment(ctx):
     if len(ctx.message.attachments) < 1:
-        await ctx.send(ctx.s("error.no_attachment"))
-        return
+        raise errors.NoAttachmentError
     att = ctx.message.attachments[0]
     if att.filename[-4:].lower() != ".png":
         if att.filename[-4:].lower() == ".jpg" or att.filename[-5:].lower() == ".jpeg":
-            try:
-                f = discord.File("assets/disdain_for_jpegs.gif", "disdain_for_jpegs.gif")
-                await ctx.send(ctx.s("error.jpeg"), file=f)
-            except IOError:
-                await ctx.send(ctx.s("error.jpeg"))
-            return
-        await ctx.send(ctx.s("error.not_png"))
-        return
+            raise errors.NoJpegsError
+        raise errors.NotPngError
     return att
 
 

@@ -132,23 +132,23 @@ class Canvas:
 
     @commands.cooldown(1, 5, BucketType.guild)
     @preview.command(name="pixelcanvas", aliases=["pc"])
-    async def preview_pixelcanvas(self, ctx, *, coordinates: str):
-        await _preview(ctx, coordinates, render.fetch_pixelcanvas)
+    async def preview_pixelcanvas(self, ctx, *args):
+        await _preview(ctx, args, render.fetch_pixelcanvas)
 
     @commands.cooldown(1, 5, BucketType.guild)
     @preview.command(name="pixelzio", aliases=["pzi"])
-    async def preview_pixelzio(self, ctx, *, coordinates: str):
-        await _preview(ctx, coordinates, render.fetch_pixelzio)
+    async def preview_pixelzio(self, ctx, *args):
+        await _preview(ctx, args, render.fetch_pixelzio)
 
     @commands.cooldown(1, 5, BucketType.guild)
     @preview.command(name="pixelzone", aliases=["pz"])
-    async def preview_pixelzone(self, ctx, *, coordinates: str):
-        await _preview(ctx, coordinates, render.fetch_pixelzone)
+    async def preview_pixelzone(self, ctx, *args):
+        await _preview(ctx, args, render.fetch_pixelzone)
 
     @commands.cooldown(1, 5, BucketType.guild)
     @preview.command(name="pxlsspace", aliases=["ps"])
-    async def preview_pxlsspace(self, ctx, *, coordinates: str):
-        await _preview(ctx, coordinates, render.fetch_pxlsspace)
+    async def preview_pxlsspace(self, ctx, *args):
+        await _preview(ctx, args, render.fetch_pxlsspace)
 
     # =======================
     #        QUANTIZE
@@ -288,92 +288,103 @@ class Canvas:
 async def _diff(ctx, args, canvas, fetch, palette):
     async with ctx.typing():
         att = await utils.verify_attachment(ctx)
-        if att:
-            list_pixels = False
-            iter_args = iter(args)
+        list_pixels = False
+        iter_args = iter(args)
+        a = next(iter_args, None)
+        if a == "-l":
+            list_pixels = True
             a = next(iter_args, None)
-            if a == "-l":
-                list_pixels = True
-                a = next(iter_args, None)
-            if a and ',' in a:
-                x, y = a.split(',')
-            else:
-                x = a
-                y = next(iter_args, None)
+        if a and ',' in a:
+            x, y = a.split(',')
+        else:
+            x = a
+            y = next(iter_args, None)
 
-            try:
-                x = int(x)
-                y = int(y)
-            except (ValueError, TypeError):
-                await ctx.send(ctx.s("canvas.invalid_input"))
-                return
+        try:
+            x = int(x)
+            y = int(y)
+        except (ValueError, TypeError):
+            await ctx.send(ctx.s("canvas.invalid_input"))
+            return
 
-            zoom = next(iter_args, 1)
-            try:
-                if type(zoom) is not int:
-                    if zoom.startswith("#"):
-                        zoom = zoom[1:]
-                    zoom = int(zoom)
-            except ValueError:
-                zoom = 1
+        zoom = next(iter_args, 1)
+        try:
+            if type(zoom) is not int:
+                if zoom.startswith("#"):
+                    zoom = zoom[1:]
+                zoom = int(zoom)
+        except ValueError:
+            zoom = 1
 
-            data = io.BytesIO()
-            await att.save(data)
-            max_zoom = int(math.sqrt(4000000 // (att.width * att.height)))
-            zoom = max(1, min(zoom, max_zoom))
-            diff_img, tot, err, bad, err_list = await render.diff(x, y, data, zoom, fetch, palette)
+        data = io.BytesIO()
+        await att.save(data)
+        max_zoom = int(math.sqrt(4000000 // (att.width * att.height)))
+        zoom = max(1, min(zoom, max_zoom))
+        diff_img, tot, err, bad, err_list = await render.diff(x, y, data, zoom, fetch, palette)
 
-            done = tot - err
-            perc = int(10000 * (tot - err) / tot)
-            if perc == 0 and done > 0:
-                perc = ">0.00%"
-            elif perc == 100 and err > 0:
-                perc = "<100.00%"
-            else:
-                perc = "{:.2f}%".format(perc / 100)
-            out = ctx.s("canvas.diff") if bad == 0 else ctx.s("canvas.diff_bad_color")
-            out = out.format(done, tot, err, perc, bad=bad)
+        done = tot - err
+        perc = int(10000 * (tot - err) / tot)
+        if perc == 0 and done > 0:
+            perc = ">0.00%"
+        elif perc == 100 and err > 0:
+            perc = "<100.00%"
+        else:
+            perc = "{:.2f}%".format(perc / 100)
+        out = ctx.s("canvas.diff") if bad == 0 else ctx.s("canvas.diff_bad_color")
+        out = out.format(done, tot, err, perc, bad=bad)
 
-            with io.BytesIO() as bio:
-                diff_img.save(bio, format="PNG")
-                bio.seek(0)
-                f = discord.File(bio, "diff.png")
-                await ctx.send(content=out, file=f)
+        with io.BytesIO() as bio:
+            diff_img.save(bio, format="PNG")
+            bio.seek(0)
+            f = discord.File(bio, "diff.png")
+            await ctx.send(content=out, file=f)
 
-            if list_pixels and len(err_list) > 0:
-                out = ["```xl"]
-                for p in err_list:
-                    err_x, err_y, current, target = p
-                    current = ctx.s("color.{}.{}".format(canvas, current))
-                    target = ctx.s("color.{}.{}".format(canvas, target))
-                    out.append("({}, {}) is {}, should be {}".format(err_x + x, err_y + y, current, target))
-                if err > 15:
-                    out.append("...")
-                out.append("```")
-                await ctx.send('\n'.join(out))
+        if list_pixels and len(err_list) > 0:
+            out = ["```xl"]
+            for p in err_list:
+                err_x, err_y, current, target = p
+                current = ctx.s("color.{}.{}".format(canvas, current))
+                target = ctx.s("color.{}.{}".format(canvas, target))
+                out.append("({}, {}) is {}, should be {}".format(err_x + x, err_y + y, current, target))
+            if err > 15:
+                out.append("...")
+            out.append("```")
+            await ctx.send('\n'.join(out))
 
 
-async def _preview(ctx, coords, fetch):
+async def _preview(ctx, args, fetch):
     async with ctx.typing():
-        m = re.search('(-?\d+)(?:,|&y=) ?(-?\d+)(?:(?:,|&scale=)(\d+))?/?\s?#?(-?\d+)?', coords)
-        if m is not None:
-            x = int(m.group(1))
-            y = int(m.group(2))
-            if m.group(4):
-                zoom = int(m.group(4))
-            elif m.group(3):
-                zoom = int(m.group(3))
-            else:
-                zoom = 1
-            zoom = max(min(zoom, 16), -8)
+        iter_args = iter(args)
+        a = next(iter_args, None)
+        if a and ',' in a:
+            x, y = a.split(',')
+        else:
+            x = a
+            y = next(iter_args, None)
 
-            preview_img = await render.preview(x, y, zoom, fetch)
+        try:
+            x = int(x)
+            y = int(y)
+        except (ValueError, TypeError):
+            await ctx.send(ctx.s("canvas.invalid_input"))
+            return
 
-            with io.BytesIO() as bio:
-                preview_img.save(bio, format="PNG")
-                bio.seek(0)
-                f = discord.File(bio, "preview.png")
-                await ctx.send(file=f)
+        zoom = next(iter_args, 1)
+        try:
+            if type(zoom) is not int:
+                if zoom.startswith("#"):
+                    zoom = zoom[1:]
+                zoom = int(zoom)
+        except ValueError:
+            zoom = 1
+
+        preview_img = await render.preview(x, y, zoom, fetch)
+
+        with io.BytesIO() as bio:
+            preview_img.save(bio, format="PNG")
+            bio.seek(0)
+            f = discord.File(bio, "preview.png")
+            await ctx.send(file=f)
 
 
 async def _quantize(ctx, args, canvas, palette):
