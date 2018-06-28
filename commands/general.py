@@ -1,11 +1,13 @@
 from time import time
 
+import discord
 from discord.ext import commands
 from discord.ext.commands import BucketType
 
 from objects.channel_logger import ChannelLogger
 from objects.config import Config
 from objects.logger import Log
+from utils import http
 from utils.version import VERSION
 
 
@@ -18,7 +20,12 @@ class General:
 
     @commands.command()
     async def changelog(self, ctx):
-        await ctx.send("https://github.com/DiamondIceNS/StarlightGlimmer/releases")
+        data = await http.get_changelog()
+        e = discord.Embed(title=data['name'], url=data['url'], color=13594340, description=data['body']) \
+            .set_author(name=data['author']['login']) \
+            .set_thumbnail(url=data['author']['avatar_url']) \
+            .set_footer(text="Released " + data['published_at'])
+        await ctx.send(embed=e)
 
     @commands.command()
     async def github(self, ctx):

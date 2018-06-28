@@ -85,6 +85,14 @@ async def fetch_pxlsspace(board: PxlsBoard):
             board.load(await resp.read())
 
 
+async def get_changelog():
+    async with aiohttp.ClientSession() as sess:
+        async with sess.get("https://api.github.com/repos/DiamondIceNS/StarlightGlimmer/releases/latest") as resp:
+            if resp.status != 200:
+                raise HttpPayloadError
+            return json.loads(await resp.read())
+
+
 async def get_template(url):
     async with aiohttp.ClientSession() as sess:
         async with sess.get(url) as resp:
