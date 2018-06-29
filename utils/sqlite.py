@@ -326,6 +326,12 @@ def guild_get_canvas_by_id(gid):
     return ca[0] if ca else None
 
 
+def guild_get_hidden_factions(gid):
+    c.execute("SELECT g.faction_name, g.faction_alias FROM guilds g INNER JOIN faction_blocks fb ON g.id = fb.blocked WHERE fb.blocker=?",
+              (gid,))
+    return c.fetchall()
+
+
 def guild_get_language_by_id(gid):
     c.execute("""SELECT language FROM guilds WHERE id=?""", (gid,))
     g = c.fetchone()

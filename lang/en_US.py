@@ -89,8 +89,8 @@ STRINGS = {
 
     # Faction command messages
     "faction.alias_already_exists": "A faction with that alias already exists.",  # TODO: Translate
-    "faction.already_hidden": "That faction is already hidden.",  # TODO: Translate
     "faction.already_faction": "This guild is already a faction.",  # TODO: Translate
+    "faction.assembled": "Faction `{}` assembled.",  # TODO: Translate
     "faction.clear_alias": "Faction alias cleared.",  # TODO: Translate
     "faction.clear_hide": "Unhid faction `{}`.",  # TODO: Translate
     "faction.clear_color": "Faction color cleared.",  # TODO: Translate
@@ -98,7 +98,7 @@ STRINGS = {
     "faction.clear_emblem": "Faction emblem cleared.",  # TODO: Translate
     "faction.clear_invite": "Faction invite cleared.",  # TODO: Translate
     "faction.clear_invite_cannot_delete": "Faction invite cleared, but I don't have permission to completely delete it.",  # TODO: Translate
-    "faction.created": "Faction `{}` created.",  # TODO: Translate
+    "faction.currently_hidden": "The following factions are currently hidden:",
     "faction.disbanded": "Faction successfully disbanded.",  # TODO: Translate
     "faction.faction_list_footer_1": "// Use '{0}faction <page>' to see that page",  # TODO: Translate
     "faction.faction_list_footer_2": "// Use '{0}faction info <name>' to see more info on a faction",  # TODO: Translate
@@ -106,6 +106,7 @@ STRINGS = {
     "faction.must_be_a_faction": "This guild needs to become a faction to use that command.",  # TODO: Translate
     "faction.name_already_exists": "A faction with that name already exists.",  # TODO: Translate
     "faction.no_factions": "There doesn't seem to be any guilds yet...",  # TODO: Translate
+    "faction.no_factions_hidden": "This guild has not hidden any factions.",
     "faction.not_a_faction_yet": "This guild has not created a faction yet.",  # TODO: Translate
     "faction.not_found": "That faction could not be found.",  # TODO: Translate
     "faction.set_alias": "Faction alias set to `{}`.",  # TODO: Translate
@@ -153,6 +154,7 @@ STRINGS = {
     "brief.alertchannel": "Set or clear the channel used for update alerts.",
     "brief.alertchannel.clear": "Clears the alert channel.",
     "brief.alertchannel.set": "Sets the alert channel.",
+    "brief.assemble": "Assemble this guild into a faction.",
     "brief.autoscan": "Toggles automatic preview and diff.",
     "brief.canvas": "Sets the default canvas website for this guild.",
     "brief.canvas.pixelcanvas": "Sets the default canvas to Pixelcanvas.io.",
@@ -165,33 +167,35 @@ STRINGS = {
     "brief.diff.pixelzio": "Creates a diff using Pixelz.io.",
     "brief.diff.pixelzone": "Creates a diff using Pixelzone.io.",
     "brief.diff.pxlsspace": "Creates a diff using Pxls.space",
+    "brief.disband": "Disband this guild's faction.",
     "brief.ditherchart": "Gets a chart of canvas colors dithered together.",
     "brief.ditherchart.pixelcanvas": "Gets a dither chart of Pixelcanvas.io colors.",
     "brief.ditherchart.pixelzio": "Gets a dither chart of Pixelz.io colors.",
     "brief.ditherchart.pixelzone": "Gets a dither chart of Pixelzone.io colors.",
     "brief.ditherchart.pxlsspace": "Gets a dither chart of Pxls.space colors.",
-    "brief.faction": "Manages factions.",
-    "brief.faction.create": "Create a faction for this guild.",
-    "brief.faction.disband": "Disband this guild's faction.",
-    "brief.faction.info": "Get info about a faction.",
-    "brief.faction.hide": "Hide a faction from public lists.",
-    "brief.faction.unhide": "Unhide a faction from public lists.",
-    "brief.faction.set": "Set a property of this guild's faction.",
-    "brief.faction.set.name": "Set the name of this guild's faction.",
-    "brief.faction.set.alias": "Set the alias of this guild's faction.",
-    "brief.faction.set.invite": "Set the invite link of this guild's faction.",
-    "brief.faction.set.desc": "Set the description of this guild's faction.",
-    "brief.faction.set.emblem": "Set the emblem of this guild's faction",
-    "brief.faction.set.color": "Set the color of this guild's faction.",
-    "brief.faction.clear": "Clear a property of this guild's faction.",
-    "brief.faction.clear.alias": "Clear the alias of this guild's faction.",
-    "brief.faction.clear.invite": "Clear the invite of this guild's faction.",
-    "brief.faction.clear.desc": "Clear the description of this guild's faction.",
-    "brief.faction.clear.emblem": "Clear the emblem of this guild's faction.",
-    "brief.faction.clear.color": "Clear the color of this guild's faction.",
+    "brief.faction": "Manages this guild's faction.",
+    "brief.faction.name": "View or modify the name of this guild's faction.",
+    "brief.faction.name.set": "Set the name of this guild's faction.",
+    "brief.faction.alias": "View or modify the alias of this guild's faction.",
+    "brief.faction.alias.clear": "Clear the alias of this guild's faction.",
+    "brief.faction.alias.set": "Set the alias of this guild's faction.",
+    "brief.faction.invite": "View or modify the invite link.",
+    "brief.faction.invite.clear": "Clear the invite link.",
+    "brief.faction.invite.set": "Set the invite link.",
+    "brief.faction.desc": "View or modify the description.",
+    "brief.faction.desc.clear": "Clear the description.",
+    "brief.faction.desc.set": "Set the description.",
+    "brief.faction.emblem": "View or modify the emblem image.",
+    "brief.faction.emblem.clear": "Clear the emblem image.",
+    "brief.faction.emblem.set": "Set the emblem image.",
+    "brief.faction.color": "View or modify the color.",
+    "brief.faction.color.clear": "Clear the color.",
+    "brief.faction.color.set": "Set the color.",
     "brief.github": "Gets a link to my GitHub repository.",
     "brief.gridify": "Adds a grid to a template.",
     "brief.help": "Displays this message.",
+    "brief.hide": "Hide a faction from public lists.",
+    "brief.info": "Get info about a faction.",
     "brief.invite": "Gets my invite link.",
     "brief.language": "Sets my language.",
     "brief.ping": "Pong!",
@@ -233,6 +237,7 @@ STRINGS = {
     "brief.template.check.pxlsspace": "Check the completion status of all Pxls.space templates.",
     "brief.template.info": "Displays info about a template.",
     "brief.template.remove": "Removes a template.",
+    "brief.unhide": "Unhide a faction from public lists.",
     "brief.unregister": "Opt-out of animated emoji replacement.",
     "brief.version": "Gets my version number.",
 
@@ -253,11 +258,11 @@ STRINGS = {
         """Factions must have unique names (6 to 32 chars, case sensitive) and, if at all, unique aliases (1 to 5 chars, case insensitive).
         A guild can only have one faction at any given time.""",
     "help.faction.hide": "You can still view info about hidden factions if you explicitly use their name or alias in commands with the `-f` paramater.",
-    "help.faction.set.name": "Faction names must be unique. Min 6 chars, max 32 chars. Case sensitive.",
-    "help.faction.set.alias": "Faction aliases must be unique. Min 1 char, max 32 chars. Case insensitive.",
-    "help.faction.set.desc": "Max 240 characters.",
-    "help.faction.set.emblem": "URLs must be Discord URLs.",
-    "help.faction.set.color": "Color must be a valid hexidecimal number. Default 0xCF6EE4.",
+    "help.faction.name.set": "Faction names must be unique. Min 6 chars, max 32 chars. Case sensitive.",
+    "help.faction.alias.set": "Faction aliases must be unique. Min 1 char, max 32 chars. Case insensitive.",
+    "help.faction.desc.set": "Max 240 characters.",
+    "help.faction.emblem.set": "URLs must be Discord URLs.",
+    "help.faction.color.set": "Color must be a valid hexidecimal number. Default 0xCF6EE4.",
     "help.gridify": "You cannot zoom an image to contain more than 4 million pixels.",
     "help.prefix": "Max length is 5 characters. You really shouldn't need more than 2.",
     "help.preview": "Maximum zoom is 16. Minimum zoom is -8.",
@@ -361,6 +366,7 @@ STRINGS = {
     # Command signatures
     "signature.alertchannel": "(subcommand)",
     "signature.alertchannel.set": "<channel>",
+    "signature.assemble": "<name> (alias)",
     "signature.canvas": "(subcommand)",
     "signature.diff": ["(subcommand) <coordinates> (zoom)", "(-f faction) <template> (zoom)"],
     "signature.diff.pixelcanvas": "<coordinates> (zoom)",
@@ -369,18 +375,19 @@ STRINGS = {
     "signature.diff.pxlsspace": "<coordinates> (zoom)",
     "signature.ditherchart": "(subcommand)",
     "signature.faction": "(subcommand)",
-    "signature.faction.create": "<name> (alias)",
-    "signature.faction.info": "<faction>",
-    "signature.faction.hide": "<faction>",
-    "signature.faction.unhide": "<faction>",
-    "signature.faction.set": "<subcommand>",
-    "signature.faction.set.name": "<name>",
-    "signature.faction.set.alias": "<alias>",
-    "signature.faction.set.desc": "<description>",
-    "signature.faction.set.emblem": ["", "<url>"],
-    "signature.faction.set.color": "<color>",
-    "signature.faction.clear": "<subcommand>",
+    "signature.faction.name": "(subcommand)",
+    "signature.faction.name.set": "<name>",
+    "signature.faction.alias": "(subcommand)",
+    "signature.faction.alias.set": "<alias>",
+    "signature.faction.desc": "(subcommand)",
+    "signature.faction.desc.set": "<description>",
+    "signature.faction.emblem": "(subcommand)",
+    "signature.faction.emblem.set": ["", "<url>"],
+    "signature.faction.color": "(subcommand)",
+    "signature.faction.color.set": "<color>",
     "signature.gridify": ["#(size)", "<template> #(size)"],
+    "signature.hide": "<faction>",
+    "signature.info": "<faction>",
     "signature.language": "(code)",
     "signature.prefix": "<prefix>",
     "signature.preview": "(subcommand) <coordinates> #(zoom)",
@@ -410,6 +417,7 @@ STRINGS = {
     "signature.template.check": "(subcommand)",
     "signature.template.info": "(-f faction) <template>",
     "signature.template.remove": "<template>",
+    "signature.unhide": "<faction>",
 
     # Examples
     "example.alertchannel": [("clear", "Clear the alert channel if there is one"),
@@ -433,7 +441,7 @@ STRINGS = {
     "example.faction": [("", "List all factions"),
                         ("create \"My Cool Faction\"", "Create a new faction called 'My Cool Faction'"),
                         ("disband", "Disband your faction"),
-                        ("info OtherFaction", "Get info about a faction named 'OtherFaction'")],
+                        ("info OtherFaction", "Get info about a faction named 'OtherFaction'")],  # TODO: rewrite
     "example.faction.create": [("MyCoolFaction", "Create a new faction called 'MyCoolFaction'"),
                                ("\"My Cool Faction\" mcf", "Create a new faction called 'My Cool Faction' with alias 'mcf'")],
     "example.faction.info": [("OtherFaction", "Get info about a faction named 'OtherFaction'"),
