@@ -42,7 +42,7 @@ class Template:
             if not faction:
                 await ctx.send(ctx.s("faction.not_found"))
                 return
-            gid = faction['id']
+            gid = faction.id
             page = next(iter_args, 1)
         try:
             page = int(page)
@@ -77,14 +77,14 @@ class Template:
     @commands.cooldown(1, 5, BucketType.guild)
     @template.command(name='all')
     async def template_all(self, ctx, page: int = 1):  # TODO: Add brief, help, and signature strings to lang files
-        ts = sql.template_get_all_public()
-        fs = sql.guild_get_all_factions()
+        gs = [x for x in sql.guild_get_all_factions() if x.id not in sql.faction_hides_get_all(ctx.guild.id)]
+        ts = [x for x in sql.template_get_all() if x.gid in [y.id for y in gs]]
         guild = sql.guild_get_prefix_by_id(ctx.guild.id)
 
         def by_faction_name(template):
-            for f in fs:
-                if template.gid == f['id']:
-                    return f['faction_name']
+            for g in gs:
+                if template.gid == g.id:
+                    return g.faction_name
 
         ts = sorted(ts, key=by_faction_name)
         ts_with_f = []
@@ -116,7 +116,7 @@ class Template:
             msg.append("```")
             await ctx.send('\n'.join(msg))
         else:
-            await ctx.send(ctx.s("template.list_no_templates"))
+            await ctx.send(ctx.s("template.list_all_no_templates"))
 
     @commands.guild_only()
     @commands.cooldown(1, 5, BucketType.guild)
@@ -192,12 +192,12 @@ class Template:
         if args[0] == "-f":
             if len(args) < 3:
                 return
-            f = sql.guild_get_by_faction_name_or_alias(args[1])
-            if not f:
+            g = sql.guild_get_by_faction_name_or_alias(args[1])
+            if not g:
                 await ctx.send(ctx.s("faction.not_found"))
                 return
             name = args[2]
-            t = sql.template_get_by_name(f['id'], name)
+            t = sql.template_get_by_name(g.id, name)
         else:
             name = args[0]
             t = sql.template_get_by_name(ctx.guild.id, name)

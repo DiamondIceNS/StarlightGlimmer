@@ -58,7 +58,7 @@ class Faction:
             await ctx.send(ctx.s("faction.must_be_a_faction"))
             return
         if not ctx.invoked_subcommand:
-            await ctx.send(sql.guild_get_by_id(ctx.guild.id)['faction_alias'])
+            await ctx.send(sql.guild_get_by_id(ctx.guild.id).faction_alias)
 
     @faction_alias.command(name="clear")
     async def faction_alias_clear(self, ctx):
@@ -82,7 +82,7 @@ class Faction:
             await ctx.send(ctx.s("faction.must_be_a_faction"))
             return
         if not ctx.invoked_subcommand:
-            await ctx.send(sql.guild_get_by_id(ctx.guild.id)['faction_color'])
+            await ctx.send(sql.guild_get_by_id(ctx.guild.id).faction_color)
 
     @faction_color.command(name="clear")
     async def faction_color_clear(self, ctx):
@@ -106,7 +106,7 @@ class Faction:
             await ctx.send(ctx.s("faction.must_be_a_faction"))
             return
         if not ctx.invoked_subcommand:
-            await ctx.send(sql.guild_get_by_id(ctx.guild.id)['faction_desc'])
+            await ctx.send(sql.guild_get_by_id(ctx.guild.id).faction_desc)
 
     @faction_desc.command(name="clear")
     async def faction_desc_clear(self, ctx):
@@ -127,7 +127,7 @@ class Faction:
             await ctx.send(ctx.s("faction.must_be_a_faction"))
             return
         if not ctx.invoked_subcommand:
-            await ctx.send(sql.guild_get_by_id(ctx.guild.id)['faction_emblem'])
+            await ctx.send(sql.guild_get_by_id(ctx.guild.id).faction_emblem)
 
     @faction_emblem.command(name="clear")
     async def faction_emblem_clear(self, ctx):
@@ -154,11 +154,11 @@ class Faction:
             await ctx.send(ctx.s("faction.must_be_a_faction"))
             return
         if not ctx.invoked_subcommand:
-            await ctx.send(sql.guild_get_by_id(ctx.guild.id)['faction_invite'])
+            await ctx.send(sql.guild_get_by_id(ctx.guild.id).faction_invite)
 
     @faction_invite.command(name="clear")
     async def faction_invite_clear(self, ctx):
-        url = sql.guild_get_by_id(ctx.guild.id)['faction_invite']
+        url = sql.guild_get_by_id(ctx.guild.id).faction_invite
         sql.guild_faction_clear(ctx.guild.id, invite=True)
 
         try:
@@ -183,7 +183,7 @@ class Faction:
             await ctx.send(ctx.s("faction.must_be_a_faction"))
             return
         if not ctx.invoked_subcommand:
-            await ctx.send(sql.guild_get_by_id(ctx.guild.id)['faction_name'])
+            await ctx.send(sql.guild_get_by_id(ctx.guild.id).faction_name)
 
     @faction_name.command(name="set")
     async def faction_name_set(self, ctx, new_name):
@@ -199,6 +199,9 @@ class Faction:
     @commands.command(name="factionlist", aliases=['fl'])
     async def factionlist(self, ctx, page: int = 1):
         fs = sql.guild_get_all_factions()
+        b_fs = sql.faction_hides_get_all(ctx.guild.id)
+        fs = [x for x in fs if x.id not in b_fs]
+
         if len(fs) > 0:
             pages = 1 + len(fs) // 10
             page = min(max(page, 1), pages)
@@ -210,8 +213,8 @@ class Faction:
                 "{0:<34}  {1:<5}".format(ctx.s("bot.name"), ctx.s("bot.alias"))
             ]
             for f in fs[(page - 1) * 10:page * 10]:
-                alias = '"{}"'.format(f['faction_alias']) if f['faction_alias'] else ""
-                msg.append("{0:<34}  {1:<5}".format('"{}"'.format(f['faction_name']), alias))
+                alias = '"{}"'.format(f.faction_alias) if f.faction_alias else ""
+                msg.append("{0:<34}  {1:<5}".format('"{}"'.format(f.faction_name), alias))
             msg.append("")
             msg.append(ctx.s("faction.faction_list_footer_1").format(g))
             msg.append(ctx.s("faction.faction_list_footer_2").format(g))
@@ -227,20 +230,20 @@ class Faction:
         if not other_fac:
             await ctx.send(ctx.s("faction.not_found"))
             return
-        sql.faction_block_add(ctx.guild.id, other_fac['id'])
-        await ctx.send(ctx.s("faction.set_hide").format(other_fac['faction_name']))
+        sql.faction_hides_add(ctx.guild.id, other_fac.id)
+        await ctx.send(ctx.s("faction.set_hide").format(other_fac.faction_name))
 
     @commands.command(name="factioninfo", aliases=['fi'])
     async def factioninfo(self, ctx, other=None):
-        faction = sql.guild_get_by_faction_name_or_alias(other) if other else sql.guild_get_by_id(ctx.guild.id)
-        if not faction:
+        g = sql.guild_get_by_faction_name_or_alias(other) if other else sql.guild_get_by_id(ctx.guild.id)
+        if not g:
             await ctx.send(ctx.s("faction.not_found"))
             return
-        if not faction['faction_name']:
+        if not g.faction_name:
             await ctx.send(ctx.s("faction.not_a_faction_yet"))
             return
 
-        templates = sql.template_get_all_public_by_guild_id(faction['id'])
+        templates = sql.template_get_all_public_by_guild_id(g.id)
         canvas_list = set()
         for t in templates:
             canvas_list.add(t.canvas)
@@ -250,19 +253,19 @@ class Faction:
             canvases_pretty.append(canvases.pretty_print[c])
         canvases_pretty.sort()
 
-        e = discord.Embed(color=faction['faction_color']) \
+        e = discord.Embed(color=g.faction_color) \
             .add_field(name=ctx.s("bot.canvases"), value='\n'.join(canvases_pretty))
-        if faction['faction_invite']:
-            icon_url = self.bot.get_guild(faction['id']).icon_url
-            e.set_author(name=faction['faction_name'], url=faction['faction_invite'], icon_url=icon_url)
+        if g.faction_invite:
+            icon_url = self.bot.get_guild(g.id).icon_url
+            e.set_author(name=g.faction_name, url=g.faction_invite, icon_url=icon_url)
         else:
-            e.set_author(name=faction['faction_name'])
-        if faction['faction_desc']:
-            e.description = faction['faction_desc']
-        if faction['faction_alias']:
-            e.description += "\n**{}:** {}".format(ctx.s("bot.alias"), faction['faction_alias'])
-        if faction['faction_emblem']:
-            e.set_thumbnail(url=faction['faction_emblem'])
+            e.set_author(name=g.faction_name)
+        if g.faction_desc:
+            e.description = g.faction_desc
+        if g.faction_alias:
+            e.description += "\n**{}:** {}".format(ctx.s("bot.alias"), g.faction_alias)
+        if g.faction_emblem:
+            e.set_thumbnail(url=g.faction_emblem)
 
         await ctx.send(embed=e)
 
@@ -289,8 +292,8 @@ class Faction:
         if not other_fac:
             await ctx.send(ctx.s("faction.not_found"))
             return
-        sql.faction_block_remove(ctx.guild.id, other_fac['id'])
-        await ctx.send(ctx.s("faction.clear_hide").format(other_fac['faction_name']))
+        sql.faction_hides_remove(ctx.guild.id, other_fac.id)
+        await ctx.send(ctx.s("faction.clear_hide").format(other_fac.faction_name))
 
 
 def setup(bot):

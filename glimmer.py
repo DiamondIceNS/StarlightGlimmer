@@ -65,12 +65,12 @@ async def on_ready():
         log.info("'{0.name}' (ID: {0.id})".format(g))
         row = sql.guild_get_by_id(g.id)
         if row:
-            prefix = row['prefix'] if row['prefix'] else cfg.prefix
-            if g.name != row['name']:
-                await ch_log.log("Guild **{1}** is now known as **{0.name}** `(ID:{0.id})`".format(g, row['name']))
+            prefix = row.prefix if row.prefix else cfg.prefix
+            if g.name != row.name:
+                await ch_log.log("Guild **{1}** is now known as **{0.name}** `(ID:{0.id})`".format(g, row.name))
                 sql.guild_update(g.id, name=g.name)
             if is_new_version:
-                ch = next((x for x in g.channels if x.id == row['alert_channel']), None)
+                ch = next((x for x in g.channels if x.id == row.alert_channel), None)
                 if ch:
                     await ch.send(GlimContext.get_from_guild(g, "bot.update").format(VERSION, prefix))
                     log.info("- Sent update message")
@@ -86,10 +86,10 @@ async def on_ready():
     db_guilds = sql.guild_get_all()
     if len(bot.guilds) != len(db_guilds):
         for g in db_guilds:
-            if not any(x for x in bot.guilds if x.id == g['id']):
-                log.info("Kicked from guild '{0}' (ID: {1}) between sessions".format(g['name'], g['id']))
-                await ch_log.log("Kicked from guild **{0}** (ID: `{1}`)".format(g['name'], g['id']))
-                sql.guild_delete(g['id'])
+            if not any(x for x in bot.guilds if x.id == g.id):
+                log.info("Kicked from guild '{0}' (ID: {1}) between sessions".format(g.name, g.id))
+                await ch_log.log("Kicked from guild **{0}** (ID: `{1}`)".format(g.name, g.id))
+                sql.guild_delete(g.id)
 
     log.info('I am ready!')
     await ch_log.log("I am ready!")

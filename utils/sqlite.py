@@ -1,8 +1,10 @@
 import os
 import sqlite3
 import time
+from typing import List, Optional
 
 from objects.config import Config
+from objects.dbguild import DbGuild
 from objects.template import Template
 
 if not os.path.exists('data'):
@@ -23,7 +25,6 @@ def _create_tables():
           join_date           INTEGER NOT NULL,
           prefix              TEXT    DEFAULT NULL,
           alert_channel       INTEGER DEFAULT NULL,
-          emojishare          INTEGER DEFAULT 0 NOT NULL,
           autoscan            INTEGER DEFAULT 1 NOT NULL,
           canvas              TEXT    DEFAULT 'pixelcanvas' NOT NULL,
           language            TEXT    DEFAULT 'en-us' NOT NULL,
@@ -39,15 +40,15 @@ def _create_tables():
         );
     """)
     c.execute("""
-      CREATE TABLE IF NOT EXISTS faction_blocks(
-        blocker INTEGER NOT NULL
-            CONSTRAINT faction_blocks_guilds_guild1_fk
+      CREATE TABLE IF NOT EXISTS faction_hides(
+        hider INTEGER NOT NULL
+            CONSTRAINT faction_hides_guilds_guild1_fk
             REFERENCES guilds,
-        blocked INTEGER NOT NULL
-            CONSTRAINT faction_blocks_guilds_guild2_fk
+        hidden INTEGER NOT NULL
+            CONSTRAINT faction_hides_guilds_guild2_fk
             REFERENCES guilds,
-        CONSTRAINT faction_blocks_pk
-        PRIMARY KEY (blocker, blocked)
+        CONSTRAINT faction_hides_pk
+        PRIMARY KEY (hider, hidden)
       );
     """)
     c.execute("""
@@ -214,21 +215,26 @@ def animotes_users_is_registered(uid):
 
 
 # ================================
-#      Faction Blocks queries
+#      Faction Hides queries
 # ================================
 
-def faction_block_add(blocker, blocked):
-    c.execute("INSERT INTO faction_blocks(blocker, blocked) VALUES(?, ?)", (blocker, blocked))
+def faction_hides_add(hider, hidden):
+    c.execute("INSERT INTO faction_hides(hider, hidden) VALUES(?, ?)", (hider, hidden))
     conn.commit()
 
 
-def faction_block_remove(blocker, blocked):
-    c.execute("DELETE FROM faction_blocks WHERE blocker=? AND blocked=?", (blocker, blocked))
+def faction_hides_get_all(hider) -> List[int]:
+    c.execute("SELECT hidden FROM faction_hides WHERE hider=?", (hider,))
+    return [x[0] for x in c.fetchall()]
+
+
+def faction_hides_remove(hider, hidden):
+    c.execute("DELETE FROM faction_hides WHERE hider=? AND hidden=?", (hider, hidden))
     conn.commit()
 
 
-def is_blocked(blocker, blocked):
-    c.execute("SELECT * FROM faction_blocks WHERE blocker=? AND blocked=?", (blocker, blocked))
+def faction_hides_is_hidden(hider, hidden) -> bool:
+    c.execute("SELECT * FROM faction_hides WHERE hider=? AND hidden=?", (hider, hidden))
     return bool(c.fetchone())
 
 
@@ -269,9 +275,10 @@ def guild_faction_clear(gid, alias=False, desc=False, color=False, emblem=False,
 
 
 def guild_faction_disband(gid):
-    c.execute('DELETE FROM faction_blocks WHERE blocker=?', (gid,))
+    c.execute('DELETE FROM faction_hides WHERE hider=?', (gid,))
     c.execute('UPDATE guilds SET faction_name=NULL, faction_alias=NULL, faction_emblem=NULL, faction_invite=NULL '
               'WHERE id=?', (gid,))
+    conn.commit()
 
 
 def guild_faction_set(gid, name=None, alias=None, desc=None, color=None, emblem=None, invite=None):
@@ -290,71 +297,74 @@ def guild_faction_set(gid, name=None, alias=None, desc=None, color=None, emblem=
     conn.commit()
 
 
-def guild_get_all():
+def guild_get_all() -> List[DbGuild]:
     c.execute("SELECT * FROM guilds")
-    return c.fetchall()
+    return [DbGuild(*g) for g in c.fetchall()]
 
 
-def guild_get_all_factions():
+def guild_get_all_factions() -> List[DbGuild]:
     c.execute("SELECT * FROM guilds WHERE faction_name IS NOT NULL ORDER BY faction_name")
-    return c.fetchall()
+    return [DbGuild(*g) for g in c.fetchall()]
 
 
-def guild_get_by_faction_alias(alias):
+def guild_get_by_faction_alias(alias) -> Optional[DbGuild]:
     c.execute("SELECT * FROM guilds WHERE faction_alias=?", (alias,))
-    return c.fetchone()
+    g = c.fetchone()
+    return DbGuild(*g) if g else None
 
 
-def guild_get_by_faction_name(name):
+def guild_get_by_faction_name(name) -> Optional[DbGuild]:
     c.execute("SELECT * FROM guilds WHERE faction_name=?", (name,))
-    return c.fetchone()
+    g = c.fetchone()
+    return DbGuild(*g) if g else None
 
 
-def guild_get_by_faction_name_or_alias(arg):
-    row = guild_get_by_faction_name(arg)
-    return row if row else guild_get_by_faction_alias(arg.lower())
+def guild_get_by_faction_name_or_alias(arg) -> Optional[DbGuild]:
+    g = guild_get_by_faction_name(arg)
+    return g if g else guild_get_by_faction_alias(arg.lower())
 
 
-def guild_get_by_id(gid):
+def guild_get_by_id(gid) -> Optional[DbGuild]:
     c.execute("SELECT * FROM guilds WHERE id=?", (gid,))
-    return c.fetchone()
+    g = c.fetchone()
+    return DbGuild(*g) if g else None
 
 
-def guild_get_canvas_by_id(gid):
+def guild_get_canvas_by_id(gid) -> str:
     c.execute("SELECT canvas FROM guilds WHERE id=?", (gid,))
     ca = c.fetchone()
     return ca[0] if ca else None
 
 
-def guild_get_hidden_factions(gid):
-    c.execute("SELECT g.faction_name, g.faction_alias FROM guilds g INNER JOIN faction_blocks fb ON g.id = fb.blocked WHERE fb.blocker=?",
+def guild_get_hidden_factions(gid):  # TODO: replace this
+    c.execute("SELECT g.faction_name, g.faction_alias FROM guilds g INNER JOIN faction_hides fb ON g.id = fb.hidden WHERE fb.hider=?",
               (gid,))
     return c.fetchall()
 
 
-def guild_get_language_by_id(gid):
+def guild_get_language_by_id(gid) -> str:
     c.execute("""SELECT language FROM guilds WHERE id=?""", (gid,))
     g = c.fetchone()
     return g[0] if c else None
 
 
-def guild_get_prefix_by_id(gid):
+def guild_get_prefix_by_id(gid) -> Optional[str]:
     g = guild_get_by_id(gid)
-    return g['prefix'] if g and g['prefix'] else cfg.prefix
+    return g.prefix if g and g.prefix else cfg.prefix
 
 
-def guild_is_autoscan(gid):
+def guild_is_autoscan(gid) -> bool:
     c.execute("SELECT autoscan FROM guilds WHERE id=?", (gid,))
     return bool(c.fetchone())
 
 
-def guild_is_faction(gid):
+def guild_is_faction(gid) -> bool:
     c.execute("SELECT * FROM guilds WHERE id=?", (gid,))
     g = c.fetchone()
     return g and g['faction_name'] is not None
 
 
-def guild_update(gid, name=None, prefix=None, alert_channel=None, emojishare=None, autoscan=None, canvas=None,
+def guild_update(gid, name=None, prefix=None, alert_channel=None, autoscan=None, canvas=None,
                  language=None, template_admin=None, template_adder=None, bot_admin=None):
     if name:
         c.execute("UPDATE guilds SET name=? WHERE id=?", (name, gid))
@@ -362,8 +372,6 @@ def guild_update(gid, name=None, prefix=None, alert_channel=None, emojishare=Non
         c.execute("UPDATE guilds SET prefix=? WHERE id=?", (prefix, gid))
     if alert_channel:
         c.execute("UPDATE guilds SET alert_channel=? WHERE id=?", (alert_channel, gid))
-    if emojishare:
-        c.execute("UPDATE guilds SET emojishare=? WHERE id=?", (emojishare, gid))
     if autoscan:
         c.execute("UPDATE guilds SET autoscan=? WHERE id=?", (autoscan, gid))
     if canvas:

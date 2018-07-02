@@ -51,7 +51,7 @@ async def autoscan(ctx):
 
 
 def get_botadmin_role(ctx):
-    role_id = sql.guild_get_by_id(ctx.guild.id)['bot_admin']
+    role_id = sql.guild_get_by_id(ctx.guild.id).bot_admin
     r = dget(ctx.guild.roles, id=role_id)
     if role_id and not r:
         sql.guild_update(ctx.guild.id, bot_admin=None)
@@ -60,7 +60,7 @@ def get_botadmin_role(ctx):
 
 
 def get_templateadmin_role(ctx):
-    role_id = sql.guild_get_by_id(ctx.guild.id)['template_admin']
+    role_id = sql.guild_get_by_id(ctx.guild.id).template_admin
     r = dget(ctx.guild.roles, id=role_id)
     if role_id and not r:
         sql.guild_update(ctx.guild.id, template_admin=None)
@@ -69,7 +69,7 @@ def get_templateadmin_role(ctx):
 
 
 def get_templateadder_role(ctx):
-    role_id = sql.guild_get_by_id(ctx.guild.id)['template_adder']
+    role_id = sql.guild_get_by_id(ctx.guild.id).template_adder
     r = dget(ctx.guild.roles, id=role_id)
     if role_id and not r:
         sql.guild_update(ctx.guild.id, template_adder=None)
@@ -78,19 +78,19 @@ def get_templateadder_role(ctx):
 
 
 def is_admin(ctx):
-    role_id = sql.guild_get_by_id(ctx.guild.id)['bot_admin']
+    role_id = sql.guild_get_by_id(ctx.guild.id).bot_admin
     r = dget(ctx.author.roles, id=role_id)
     return bool(r) or ctx.author.permissions_in(ctx.channel).administrator
 
 
 def is_template_admin(ctx):
-    role_id = sql.guild_get_by_id(ctx.guild.id)['template_admin']
+    role_id = sql.guild_get_by_id(ctx.guild.id).template_admin
     r = dget(ctx.author.roles, id=role_id)
     return bool(r)
 
 
 def is_template_adder(ctx):
-    role_id = sql.guild_get_by_id(ctx.guild.id)['template_adder']
+    role_id = sql.guild_get_by_id(ctx.guild.id).template_adder
     r = dget(ctx.author.roles, id=role_id)
     return bool(not role_id or r)
 

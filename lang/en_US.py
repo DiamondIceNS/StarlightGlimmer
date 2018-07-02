@@ -138,6 +138,7 @@ STRINGS = {
     "template.list_footer_1": "// Use '{0}template <page>' to see that page",  # TODO: Translate
     "template.list_footer_2": "// Use '{0}template info <name>' to see more info on a template",  # TODO: Translate
     "template.list_no_templates": "This guild currently has no templates.",
+    "template.list_all_no_templates": "There are currently no public templates.",
     "template.max_templates": "This guild already has the maximum number of templates. Please remove a template before adding another.",  
     "template.name_exists_ask_replace": "A template with the name '{0}' already exists for {1} at ({2}, {3}). Replace it?",  
     "template.name_exists_no_permission": "A template with that name already exists. Please choose a different name.",  

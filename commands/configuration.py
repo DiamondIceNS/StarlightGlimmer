@@ -17,7 +17,7 @@ class Configuration:
     @commands.guild_only()
     @commands.group(name="alertchannel", invoke_without_command=True)
     async def alertchannel(self, ctx):
-        channel = dget(ctx.guild.channels, id=sql.guild_get_by_id(ctx.guild.id)['alert_channel'])
+        channel = dget(ctx.guild.channels, id=sql.guild_get_by_id(ctx.guild.id).alert_channel)
         if channel:
             await ctx.send("Alert channel is currently set to {0}.".format(channel.mention))
         else:
