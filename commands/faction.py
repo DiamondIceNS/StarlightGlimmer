@@ -1,7 +1,9 @@
+import io
 import re
 
 import discord
 from discord.ext import commands
+from PIL import Image
 
 from objects import errors
 from objects.logger import Log
@@ -24,13 +26,13 @@ class Faction:
             return
         name = re.sub("[^\S ]+", "", name)
         if not (6 <= len(name) <= 32):
-            raise commands.BadArgument  # TODO: Tell out of range
+            raise errors.BadArgumentErrorWithMessage(ctx.s("faction.err.name_length"))
         if sql.guild_get_by_faction_name(name):
             await ctx.send(ctx.s("faction.name_already_exists"))
             return
         alias = re.sub("[^A-Za-z]+", "", alias).lower()
         if alias and not (1 <= len(alias) <= 5):
-            raise commands.BadArgument  # TODO: Tell out of range
+            raise errors.BadArgumentErrorWithMessage(ctx.s("faction.err.alias_length"))
         if sql.guild_get_by_faction_alias(alias):
             await ctx.send(ctx.s("faction.alias_already_exists"))
             return
@@ -44,7 +46,7 @@ class Faction:
         if not sql.guild_is_faction(ctx.guild.id):
             await ctx.send(ctx.s("faction.must_be_a_faction"))
             return
-        sql.guild_faction_set(ctx.guild.id, name=None, alias=None, emblem=None, invite=None)
+        sql.guild_faction_disband(ctx.guild.id)
         await ctx.send(ctx.s("faction.disbanded"))
 
     @checks.admin_only()
@@ -57,8 +59,12 @@ class Faction:
         if not sql.guild_is_faction(ctx.guild.id):
             await ctx.send(ctx.s("faction.must_be_a_faction"))
             return
-        if not ctx.invoked_subcommand:
-            await ctx.send(sql.guild_get_by_id(ctx.guild.id).faction_alias)
+        if not ctx.invoked_subcommand or ctx.invoked_subcommand.name == "alias":
+            alias = sql.guild_get_by_id(ctx.guild.id).faction_alias
+            if alias:
+                await ctx.send(alias)
+            else:
+                await ctx.send(ctx.s("faction.no_alias"))
 
     @faction_alias.command(name="clear")
     async def faction_alias_clear(self, ctx):
@@ -69,7 +75,7 @@ class Faction:
     async def faction_alias_set(self, ctx, new_alias):
         new_alias = re.sub("[^A-Za-z]+", "", new_alias).lower()
         if not (1 <= len(new_alias) <= 5):
-            raise commands.BadArgument  # TODO: Tell too long
+            raise errors.BadArgumentErrorWithMessage(ctx.s("faction.err.alias_length"))
         if sql.guild_get_by_faction_alias(new_alias):
             await ctx.send(ctx.s("faction.alias_already_exists"))
             return
@@ -81,8 +87,14 @@ class Faction:
         if not sql.guild_is_faction(ctx.guild.id):
             await ctx.send(ctx.s("faction.must_be_a_faction"))
             return
-        if not ctx.invoked_subcommand:
-            await ctx.send(sql.guild_get_by_id(ctx.guild.id).faction_color)
+        if not ctx.invoked_subcommand or ctx.invoked_subcommand.name == "color":
+            color = sql.guild_get_by_id(ctx.guild.id).faction_color
+            img = Image.new('RGB', (32, 32), color)
+            with io.BytesIO() as bio:
+                img.save(bio, format="PNG")
+                bio.seek(0)
+                f = discord.File(bio, "color.png")
+                await ctx.send('0x' + format(color, 'X'), file=f)
 
     @faction_color.command(name="clear")
     async def faction_color_clear(self, ctx):
@@ -105,8 +117,12 @@ class Faction:
         if not sql.guild_is_faction(ctx.guild.id):
             await ctx.send(ctx.s("faction.must_be_a_faction"))
             return
-        if not ctx.invoked_subcommand:
-            await ctx.send(sql.guild_get_by_id(ctx.guild.id).faction_desc)
+        if not ctx.invoked_subcommand or ctx.invoked_subcommand.name == "desc":
+            desc = sql.guild_get_by_id(ctx.guild.id).faction_desc
+            if desc:
+                await ctx.send(desc)
+            else:
+                await ctx.send(ctx.s("faction.no_description"))
 
     @faction_desc.command(name="clear")
     async def faction_desc_clear(self, ctx):
@@ -117,7 +133,7 @@ class Faction:
     async def faction_desc_set(self, ctx, *, description):
         description = re.sub("[^\S ]+", "", description)
         if not (len(description) <= 240):
-            raise commands.BadArgument  # TODO: Tell to long
+            raise errors.BadArgumentErrorWithMessage(ctx.s("faction.err.description_length"))
         sql.guild_faction_set(ctx.guild.id, desc=description)
         await ctx.send(ctx.s("faction.set_description"))
 
@@ -126,8 +142,12 @@ class Faction:
         if not sql.guild_is_faction(ctx.guild.id):
             await ctx.send(ctx.s("faction.must_be_a_faction"))
             return
-        if not ctx.invoked_subcommand:
-            await ctx.send(sql.guild_get_by_id(ctx.guild.id).faction_emblem)
+        if not ctx.invoked_subcommand or ctx.invoked_subcommand.name == "emblem":
+            emblem = sql.guild_get_by_id(ctx.guild.id).faction_emblem
+            if emblem:
+                await ctx.send(emblem)
+            else:
+                await ctx.send(ctx.s("faction.no_emblem"))
 
     @faction_emblem.command(name="clear")
     async def faction_emblem_clear(self, ctx):
@@ -153,8 +173,12 @@ class Faction:
         if not sql.guild_is_faction(ctx.guild.id):
             await ctx.send(ctx.s("faction.must_be_a_faction"))
             return
-        if not ctx.invoked_subcommand:
-            await ctx.send(sql.guild_get_by_id(ctx.guild.id).faction_invite)
+        if not ctx.invoked_subcommand or ctx.invoked_subcommand.name == "invite":
+            invite = sql.guild_get_by_id(ctx.guild.id).faction_invite
+            if invite:
+                await ctx.send(invite)
+            else:
+                await ctx.send(ctx.s("faction.no_invite"))
 
     @faction_invite.command(name="clear")
     async def faction_invite_clear(self, ctx):
@@ -182,14 +206,14 @@ class Faction:
         if not sql.guild_is_faction(ctx.guild.id):
             await ctx.send(ctx.s("faction.must_be_a_faction"))
             return
-        if not ctx.invoked_subcommand:
+        if not ctx.invoked_subcommand or ctx.invoked_subcommand.name == "name":
             await ctx.send(sql.guild_get_by_id(ctx.guild.id).faction_name)
 
     @faction_name.command(name="set")
     async def faction_name_set(self, ctx, new_name):
         new_name = re.sub("[^\S ]+", "", new_name)
         if not (6 <= len(new_name) <= 32):
-            raise commands.BadArgument  # TODO: Tell to long
+            raise errors.BadArgumentErrorWithMessage(ctx.s("faction.err.name_length"))
         if sql.guild_get_by_faction_name(new_name):
             await ctx.send(ctx.s("faction.name_already_exists"))
             return
@@ -260,8 +284,7 @@ class Faction:
             e.set_author(name=g.faction_name, url=g.faction_invite, icon_url=icon_url)
         else:
             e.set_author(name=g.faction_name)
-        if g.faction_desc:
-            e.description = g.faction_desc
+        e.description = g.faction_desc if g.faction_desc else ""
         if g.faction_alias:
             e.description += "\n**{}:** {}".format(ctx.s("bot.alias"), g.faction_alias)
         if g.faction_emblem:

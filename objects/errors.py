@@ -1,6 +1,11 @@
 from discord.ext import commands
 
 
+class BadArgumentErrorWithMessage(commands.CommandError):
+    def __init__(self, message):
+        self.message = message
+
+
 class HttpPayloadError(commands.CommandError):
     def __init__(self, canvas):
         self.canvas = canvas

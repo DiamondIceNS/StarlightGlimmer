@@ -133,65 +133,58 @@ async def on_command_preprocess(ctx):
 async def on_command_error(ctx, error):
     # Command errors
     if isinstance(error, commands.BadArgument):
-        return
-    if isinstance(error, commands.CommandInvokeError):
-        if isinstance(error.original, discord.HTTPException) and error.original.code == 50013:
-            return
-    if isinstance(error, commands.CommandOnCooldown):
+        pass
+    elif isinstance(error, commands.CommandInvokeError) \
+            and isinstance(error.original, discord.HTTPException)\
+            and error.original.code == 50013:
+        pass
+    elif isinstance(error, commands.CommandOnCooldown):
         await ctx.send(ctx.s("error.cooldown").format(error.retry_after))
-        return
-    if isinstance(error, commands.CommandNotFound):
-        return
-    if isinstance(error, commands.MissingRequiredArgument):
-        return
-    if isinstance(error, commands.NoPrivateMessage):
+    elif isinstance(error, commands.CommandNotFound):
+        pass
+    elif isinstance(error, commands.MissingRequiredArgument):
+        pass
+    elif isinstance(error, commands.NoPrivateMessage):
         await ctx.send(ctx.s("error.no_dm"))
-        return
 
     # Check errors
-    if isinstance(error, errors.IdempotentActionError):
+    elif isinstance(error, errors.BadArgumentErrorWithMessage):
+        await ctx.send(error.message)
+    elif isinstance(error, errors.IdempotentActionError):
         try:
             f = discord.File("assets/y_tho.png", "y_tho.png")
             await ctx.send(ctx.s("error.why"), file=f)
         except IOError:
             await ctx.send(ctx.s("error.why"))
-        return
-    if isinstance(error, errors.NoAttachmentError):
+    elif isinstance(error, errors.NoAttachmentError):
         await ctx.send(ctx.s("error.no_attachment"))
-        return
-    if isinstance(error, errors.NoJpegsError):
+    elif isinstance(error, errors.NoJpegsError):
         try:
             f = discord.File("assets/disdain_for_jpegs.gif", "disdain_for_jpegs.gif")
             await ctx.send(ctx.s("error.jpeg"), file=f)
         except IOError:
             await ctx.send(ctx.s("error.jpeg"))
-        return
-    if isinstance(error, errors.NoPermissionError):
+    elif isinstance(error, errors.NoPermissionError):
         await ctx.send(ctx.s("error.no_permission"))
-        return
-    if isinstance(error, errors.NotPngError):
+    elif isinstance(error, errors.NotPngError):
         await ctx.send(ctx.s("error.not_png"))
-        return
-    if isinstance(error, errors.PilImageError):
+    elif isinstance(error, errors.PilImageError):
         await ctx.send(ctx.s("error.bad_image"))
-        return
-    if isinstance(error, errors.TemplateHttpError):
+    elif isinstance(error, errors.TemplateHttpError):
         await ctx.send(ctx.s("error.cannot_fetch_template"))
-        return
-    if isinstance(error, errors.UrlError):
+    elif isinstance(error, errors.UrlError):
         await ctx.send(ctx.s("error.non_discord_url"))
-        return
-    if isinstance(error, errors.HttpPayloadError):
+    elif isinstance(error, errors.HttpPayloadError):
         await ctx.send(ctx.s("error.http").format(canvases.pretty_print[error.canvas]))
-        return
 
     # Uncaught error
-    name = ctx.command.qualified_name if ctx.command else "None"
-    await ch_log.log("An error occurred executing `{0}` in server **{1.name}** (ID: `{1.id}`):".format(name, ctx.guild))
-    await ch_log.log("```{}```".format(error))
-    log.error("An error occurred executing '{}': {}\n{}"
-              .format(name, error, ''.join(traceback.format_exception(None, error, error.__traceback__))))
-    await ctx.send(ctx.s("error.unknown"))
+    else:
+        name = ctx.command.qualified_name if ctx.command else "None"
+        await ch_log.log("An error occurred executing `{0}` in server **{1.name}** (ID: `{1.id}`):".format(name, ctx.guild))
+        await ch_log.log("```{}```".format(error))
+        log.error("An error occurred executing '{}': {}\n{}"
+                  .format(name, error, ''.join(traceback.format_exception(None, error, error.__traceback__))))
+        await ctx.send(ctx.s("error.unknown"))
 
 
 @bot.event

@@ -100,11 +100,18 @@ STRINGS = {
     "faction.clear_invite_cannot_delete": "Faction invite cleared, but I don't have permission to completely delete it.",  # TODO: Translate
     "faction.currently_hidden": "The following factions are currently hidden:",
     "faction.disbanded": "Faction successfully disbanded.",  # TODO: Translate
+    "faction.err.alias_length": "Faction aliases must be between 1 and 5 characters.",
+    "faction.err.description_length": "Faction descriptions must be at most 240 characters.",
+    "faction.err.name_length": "Faction names must be between 6 and 32 characters.",
     "faction.faction_list_footer_1": "// Use '{0}faction <page>' to see that page",  # TODO: Translate
     "faction.faction_list_footer_2": "// Use '{0}faction info <name>' to see more info on a faction",  # TODO: Translate
     "faction.list_header": "Faction List",  # TODO: Translate
     "faction.must_be_a_faction": "This guild needs to become a faction to use that command.",  # TODO: Translate
     "faction.name_already_exists": "A faction with that name already exists.",  # TODO: Translate
+    "faction.no_alias": "This faction does not have an alias.",
+    "faction.no_description": "This faction does not have a description.",
+    "faction.no_emblem": "This faction does not have an emblem.",
+    "faction.no_invite": "This faction has not set a public invite.",
     "faction.no_factions": "There doesn't seem to be any guilds yet...",  # TODO: Translate
     "faction.no_factions_hidden": "This guild has not hidden any factions.",
     "faction.not_a_faction_yet": "This guild has not created a faction yet.",  # TODO: Translate
