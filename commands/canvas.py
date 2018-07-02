@@ -40,7 +40,7 @@ class Canvas:
                 return
             name = next(iter_args, None)
             zoom = next(iter_args, 1)
-            t = sql.template_get_by_name(f['id'], name)
+            t = sql.template_get_by_name(f.id, name)
         else:
             name = a
             zoom = next(iter_args, 1)
@@ -207,7 +207,7 @@ class Canvas:
         zoom = next(iter_args, None)
 
         if faction:
-            t = sql.template_get_by_name(faction['id'], name)
+            t = sql.template_get_by_name(faction.id, name)
         else:
             t = sql.template_get_by_name(ctx.guild.id, name)
 
@@ -398,7 +398,7 @@ async def _quantize(ctx, args, canvas, palette):
             await ctx.send(ctx.s("faction.not_found"))
             return
         name = args[2]
-        t = sql.template_get_by_name(f['id'], name)
+        t = sql.template_get_by_name(f.id, name)
     else:
         name = args[0]
         t = sql.template_get_by_name(ctx.guild.id, name)
