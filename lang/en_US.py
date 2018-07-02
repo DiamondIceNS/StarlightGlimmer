@@ -35,7 +35,8 @@ STRINGS = {
     "error.invalid_color": "That is not a valid color.",  # TODO: Translate
     "error.jpeg": "Seriously? A JPEG? Gross! Please create a PNG template instead.",
     "error.no_attachment": "That command requires an attachment.",
-    "error.no_permission": "You do not have permission to use that command.",
+    "error.no_self_permission": "I do not have the permission to do that in this channel.",
+    "error.no_user_permission": "You do not have permission to use that command.",
     "error.not_png": "That command requires a PNG image.",
     "error.no_dm": "That command only works in guilds.",
     "error.bad_image": "An error occurred while attempting to open an image. Ensure that the supplied image is not corrupted.",
@@ -98,12 +99,13 @@ STRINGS = {
     "faction.clear_color": "Faction color cleared.",  # TODO: Translate
     "faction.clear_description": "Faction description cleared.",  # TODO: Translate
     "faction.clear_emblem": "Faction emblem cleared.",  # TODO: Translate
-    "faction.clear_invite": "Faction invite cleared.",  # TODO: Translate
-    "faction.clear_invite_cannot_delete": "Faction invite cleared, but I don't have permission to completely delete it.",  # TODO: Translate
+    "faction.clear_invite": "Faction invite cleared. NOTE: Invite link is still active and must be removed manually.",  # TODO: Translate
     "faction.currently_hidden": "The following factions are currently hidden:",
     "faction.disbanded": "Faction successfully disbanded.",  # TODO: Translate
     "faction.err.alias_length": "Faction aliases must be between 1 and 5 characters.",
     "faction.err.description_length": "Faction descriptions must be at most 240 characters.",
+    "faction.err.invalid_invite": "That is not a valid invite.",
+    "faction.err.invite_not_this_guild": "You must use an invite to this guild.",
     "faction.err.name_length": "Faction names must be between 6 and 32 characters.",
     "faction.faction_list_footer_1": "// Use '{0}faction <page>' to see that page",  # TODO: Translate
     "faction.faction_list_footer_2": "// Use '{0}faction info <name>' to see more info on a faction",  # TODO: Translate

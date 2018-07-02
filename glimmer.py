@@ -164,8 +164,10 @@ async def on_command_error(ctx, error):
             await ctx.send(ctx.s("error.jpeg"), file=f)
         except IOError:
             await ctx.send(ctx.s("error.jpeg"))
-    elif isinstance(error, errors.NoPermissionError):
-        await ctx.send(ctx.s("error.no_permission"))
+    elif isinstance(error, errors.NoSelfPermissionerror):
+        await ctx.send(ctx.s("error.no_self_permission"))
+    elif isinstance(error, errors.NoUserPermissionError):
+        await ctx.send(ctx.s("error.no_user_permission"))
     elif isinstance(error, errors.NotPngError):
         await ctx.send(ctx.s("error.not_png"))
     elif isinstance(error, errors.PilImageError):

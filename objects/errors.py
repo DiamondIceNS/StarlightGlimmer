@@ -19,7 +19,11 @@ class NoAttachmentError(commands.CommandError):
     pass
 
 
-class NoPermissionError(commands.CommandError):
+class NoSelfPermissionerror(commands.CommandError):
+    pass
+
+
+class NoUserPermissionError(commands.CommandError):
     pass
 
 

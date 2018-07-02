@@ -11,7 +11,7 @@ def admin_only():
         if utils.is_admin(ctx):
             return True
         else:
-            raise errors.NoPermissionError
+            raise errors.NoUserPermissionError
     return commands.check(predicate)
 
 
@@ -22,7 +22,7 @@ def template_admin_only():
         if utils.is_template_admin(ctx) or utils.is_admin(ctx):
             return True
         else:
-            raise errors.NoPermissionError
+            raise errors.NoUserPermissionError
     return commands.check(predicate)
 
 
@@ -33,5 +33,5 @@ def template_adder_only():
         if utils.is_template_adder(ctx) or utils.is_template_admin(ctx) or utils.is_admin(ctx):
             return True
         else:
-            raise errors.NoPermissionError
+            raise errors.NoUserPermissionError
     return commands.check(predicate)

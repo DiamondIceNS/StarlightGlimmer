@@ -182,23 +182,28 @@ class Faction:
 
     @faction_invite.command(name="clear")
     async def faction_invite_clear(self, ctx):
-        url = sql.guild_get_by_id(ctx.guild.id).faction_invite
         sql.guild_faction_clear(ctx.guild.id, invite=True)
-
-        try:
-            await self.bot.delete_invite(url)
-            await ctx.send(ctx.s("faction.clear_invite"))
-        except discord.Forbidden:
-            await ctx.send(ctx.s("faction.clear_invite_cannot_delete"))
-        except discord.NotFound:
-            await ctx.send(ctx.s("faction.clear_invite"))
+        await ctx.send(ctx.s("faction.clear_invite"))
 
     @faction_invite.command(name="set")
-    async def faction_invite_set(self, ctx):
-        if not ctx.channel.permissions_for(ctx.guild.me).create_instant_invite:
-            raise Exception  # TODO: I do not have permission to do that
-        invite = await ctx.channel.create_invite(reason="Invite for faction info page")
-        sql.guild_faction_set(ctx.guild.id, invite=invite.url)
+    async def faction_invite_set(self, ctx, url=None):
+        if url:
+            try:
+                invite = await self.bot.get_invite(url)
+            except discord.NotFound:
+                await ctx.send(ctx.s("faction.err.invalid_invite"))
+                return
+            if invite.guild.id != ctx.guild.id:
+                await ctx.send(ctx.s("faction.err.invite_not_this_guild"))
+                return
+            if not re.match(r'(?:https?://)discord\.gg/\w+', url):
+                url = "https://discord.gg/" + url
+        else:
+            if not ctx.channel.permissions_for(ctx.guild.me).create_instant_invite:
+                raise errors.NoSelfPermissionerror
+            invite = await ctx.channel.create_invite(reason="Invite for faction info page")
+            url = invite.url
+        sql.guild_faction_set(ctx.guild.id, invite=url)
         await ctx.send(ctx.s("faction.set_invite"))
 
     @faction.group(name="name")
