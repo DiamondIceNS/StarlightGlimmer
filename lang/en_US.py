@@ -17,6 +17,8 @@ STRINGS = {
     "bot.or_all_caps": "OR",
     "bot.page": "Page",  # TODO: Translate
     "bot.percent": "Percent",  # TODO: Translate
+    "bot.private": "Private",
+    "bot.public": "Public",
     "bot.size": "Size",
     "bot.subcommands": "Subcommands",
     "bot.total": "Total",  # TODO: Translate

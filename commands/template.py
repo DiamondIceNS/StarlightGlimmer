@@ -210,7 +210,7 @@ class Template:
         coords = "({}, {})".format(t.x, t.y)
         dimensions = "{} x {}".format(t.width, t.height)
         size = t.size
-        visibility = "Private" if bool(t.private) else "Public"
+        visibility = ctx.s("bot.private") if bool(t.private) else ctx.s("bot.private")
         owner = self.bot.get_user(t.owner_id)
         added_by = owner.name + "#" + owner.discriminator
         date_added = datetime.date.fromtimestamp(t.date_created).strftime("%d %b, %Y")
