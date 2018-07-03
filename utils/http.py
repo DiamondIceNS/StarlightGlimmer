@@ -8,8 +8,8 @@ import cfscrape
 import websockets
 from typing import Iterable
 
+from objects import errors
 from objects.chunks import BigChunk, ChunkPzi, ChunkPz, PxlsBoard
-from objects.errors import HttpPayloadError, TemplateHttpError, NoJpegsError, NotPngError
 
 
 async def fetch_chunks_pixelcanvas(bigchunks: Iterable[BigChunk]):
@@ -31,7 +31,7 @@ async def fetch_chunks_pixelcanvas(bigchunks: Iterable[BigChunk]):
                 data = None
                 attempts += 1
             if not data:
-                raise HttpPayloadError('pixelcanvas')
+                raise errors.HttpCanvasError('pixelcanvas')
             bc.load(data)
 
 
@@ -85,21 +85,23 @@ async def fetch_pxlsspace(board: PxlsBoard):
             board.load(await resp.read())
 
 
-async def get_changelog():
+async def get_changelog(version):
+    url = "https://api.github.com/repos/DiamondIceNS/StarlightGlimmer/releases"
     async with aiohttp.ClientSession() as sess:
-        async with sess.get("https://api.github.com/repos/DiamondIceNS/StarlightGlimmer/releases/latest") as resp:
+        async with sess.get(url) as resp:
             if resp.status != 200:
-                raise HttpPayloadError
-            return json.loads(await resp.read())
+                raise errors.HttpGeneralError
+            data = json.loads(await resp.read())
+            return next((x for x in data if x['tag_name'] == "v{}".format(version)), None)
 
 
 async def get_template(url):
     async with aiohttp.ClientSession() as sess:
         async with sess.get(url) as resp:
             if resp.status != 200:
-                raise TemplateHttpError
+                raise errors.TemplateHttpError
             if resp.content_type == "image/jpg" or resp.content_type == "image/jpeg":
-                raise NoJpegsError
+                raise errors.NoJpegsError
             if resp.content_type != "image/png":
-                raise NotPngError
+                raise errors.NotPngError
             return io.BytesIO(await resp.read())

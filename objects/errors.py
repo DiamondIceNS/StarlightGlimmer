@@ -6,7 +6,11 @@ class BadArgumentErrorWithMessage(commands.CommandError):
         self.message = message
 
 
-class HttpPayloadError(commands.CommandError):
+class HttpGeneralError(commands.CommandError):
+    pass
+
+
+class HttpCanvasError(commands.CommandError):
     def __init__(self, canvas):
         self.canvas = canvas
 

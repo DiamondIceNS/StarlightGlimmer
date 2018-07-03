@@ -20,7 +20,10 @@ class General:
 
     @commands.command()
     async def changelog(self, ctx):
-        data = await http.get_changelog()
+        data = await http.get_changelog(VERSION)
+        if not data:
+            await ctx.send(ctx.s("general.err.cannot_get_changelog"))
+            return
         e = discord.Embed(title=data['name'], url=data['url'], color=13594340, description=data['body']) \
             .set_author(name=data['author']['login']) \
             .set_thumbnail(url=data['author']['avatar_url']) \

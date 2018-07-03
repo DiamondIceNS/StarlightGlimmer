@@ -10,7 +10,7 @@ from objects.config import Config
 from objects.glimcontext import GlimContext
 from objects.help_formatter import GlimmerHelpFormatter
 from objects.logger import Log
-from utils import canvases, render, sqlite as sql, utils
+from utils import canvases, http, render, sqlite as sql, utils
 from utils.version import VERSION
 
 
@@ -72,7 +72,15 @@ async def on_ready():
             if is_new_version:
                 ch = next((x for x in g.channels if x.id == row.alert_channel), None)
                 if ch:
-                    await ch.send(GlimContext.get_from_guild(g, "bot.update").format(VERSION, prefix))
+                    data = await http.get_changelog(VERSION)
+                    if data:
+                        e = discord.Embed(title=data['name'], url=data['url'], color=13594340, description=data['body']) \
+                            .set_author(name=data['author']['login']) \
+                            .set_thumbnail(url=data['author']['avatar_url']) \
+                            .set_footer(text="Released " + data['published_at'])
+                        await ch.send(GlimContext.get_from_guild(g, "bot.update").format(VERSION, prefix), embed=e)
+                    else:
+                        await ch.send(GlimContext.get_from_guild(g, "bot.update_no_changelog").format(VERSION, prefix))
                     log.info("- Sent update message")
                 else:
                     log.info("- Could not send update message: alert channel not found.")
@@ -176,8 +184,10 @@ async def on_command_error(ctx, error):
         await ctx.send(ctx.s("error.cannot_fetch_template"))
     elif isinstance(error, errors.UrlError):
         await ctx.send(ctx.s("error.non_discord_url"))
-    elif isinstance(error, errors.HttpPayloadError):
-        await ctx.send(ctx.s("error.http").format(canvases.pretty_print[error.canvas]))
+    elif isinstance(error, errors.HttpCanvasError):
+        await ctx.send(ctx.s("error.http_canvas").format(canvases.pretty_print[error.canvas]))
+    elif isinstance(error, errors.HttpGeneralError):
+        await ctx.send(ctx.s("error.http"))
 
     # Uncaught error
     else:

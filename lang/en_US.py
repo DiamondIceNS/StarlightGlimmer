@@ -22,7 +22,8 @@ STRINGS = {
     "bot.size": "Size",
     "bot.subcommands": "Subcommands",
     "bot.total": "Total",
-    "bot.update": "I have updated to version **{0}**! Visit https://github.com/DiamondIceNS/StarlightGlimmer/releases for the full changelog.",
+    "bot.update": "I have updated to version **{0}**! Here's the changelog:",
+    "bot.update_no_changelog": "I have updated to version **{0}**! Visit https://github.com/DiamondIceNS/StarlightGlimmer/releases for the full changelog.",
     "bot.usage": "Usage",
     "bot.visibility": "Visibility",
     "bot.yes": "Yes",
@@ -32,7 +33,8 @@ STRINGS = {
     "error.bad_png": "This image seems to be corrupted. Try re-saving it with an image editor or using `{0}quantize`.",
     "error.cannot_fetch_template": "Could not access template URL. (Was the original attachment deleted?)",
     "error.cooldown": "That command is on cooldown. Try again in {0:.01f}s.",
-    "error.http": "{0} seems to be having connection issues. Try again later.",
+    "error.http": "There was an error retrieving data from a remote location. Try again later.",
+    "error.http_canvas": "{0} seems to be having connection issues. Try again later.",
     "error.invalid_color": "That is not a valid color.",
     "error.invalid_option": "That is not a valid option. Please try again.",
     "error.jpeg": "Seriously? A JPEG? Gross! Please create a PNG template instead.",
@@ -128,6 +130,7 @@ STRINGS = {
     "faction.set_name": "Faction renamed to `{}`.",
 
     # General command messages
+    "general.err.cannot_get_changelog": "There was an error fetching the changelog. Visit https://github.com/DiamondIceNS/StarlightGlimmer/releases to see all releases.",
     "general.help_command_list_header": "Command List",
     "general.help_more_info": "Use `{}help <command>` to view more info about a specific command.",
     "general.help_subcommand": "# Use '{}help {} (subcommand)' to view more info about a subcommand",
