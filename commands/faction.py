@@ -245,8 +245,8 @@ class Faction:
                 alias = '"{}"'.format(f.faction_alias) if f.faction_alias else ""
                 msg.append("{0:<34}  {1:<5}".format('"{}"'.format(f.faction_name), alias))
             msg.append("")
-            msg.append(ctx.s("faction.faction_list_footer_1").format(g))
-            msg.append(ctx.s("faction.faction_list_footer_2").format(g))
+            msg.append("// " + ctx.s("faction.faction_list_footer_1").format(g))
+            msg.append("// " + ctx.s("faction.faction_list_footer_2").format(g))
             msg.append("```")
             await ctx.send('\n'.join(msg))
         else:

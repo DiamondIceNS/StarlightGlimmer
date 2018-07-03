@@ -66,8 +66,8 @@ class Template:
                 canvas_name = canvases.pretty_print[t.canvas]
                 msg.append("{0:<{w1}}  {1:<14}  {2}".format(name, canvas_name, coords, w1=w1))
             msg.append("")
-            msg.append(ctx.s("template.list_footer_1").format(guild))
-            msg.append(ctx.s("template.list_footer_2").format(guild))
+            msg.append("// " + ctx.s("template.list_footer_1").format(guild))
+            msg.append("// " + ctx.s("template.list_footer_2").format(guild))
             msg.append("```")
             await ctx.send('\n'.join(msg))
         else:
@@ -111,8 +111,8 @@ class Template:
                 canvas_name = canvases.pretty_print[t.canvas]
                 msg.append("{0:<{w1}}  {1:<34}  {2:<14}  {3}".format(name, faction, canvas_name, coords, w1=w1))
             msg.append("")
-            msg.append(ctx.s("template.list_all_footer_1").format(guild))
-            msg.append(ctx.s("template.list_all_footer_2").format(guild))
+            msg.append("// " + ctx.s("template.list_all_footer_1").format(guild))
+            msg.append("// " + ctx.s("template.list_all_footer_2").format(guild))
             msg.append("```")
             await ctx.send('\n'.join(msg))
         else:
@@ -381,14 +381,16 @@ class Template:
     async def check_for_duplicates_by_md5(ctx, template):
         dups = sql.template_get_by_hash(ctx.guild.id, template.md5)
         if len(dups) > 0:
-            msg = [ctx.s("template.duplicate_list_open")]
+            msg = [ctx.s("template.duplicate_list_open"),
+                   "```xl"]
             w = max(map(lambda tx: len(tx.name), dups)) + 2
             for d in dups:
                 name = '"{}"'.format(d.name)
                 canvas_name = canvases.pretty_print[d.canvas]
                 msg.append("{0:<{w}} {1:>15} ({2}, {3})\n".format(name, canvas_name, d.x, d.y, w=w))
+            msg.append("```")
             msg.append(ctx.s("template.duplicate_list_close"))
-            return await utils.yes_no(ctx, ''.join(msg))
+            return await utils.yes_no(ctx, '\n'.join(msg))
 
     @staticmethod
     async def check_for_duplicate_by_name(ctx, template):

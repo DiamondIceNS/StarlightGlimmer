@@ -1,49 +1,50 @@
 STRINGS = {
     # Global messages
     "bot.added_by": "Added By",
-    "bot.alias": "Alias",  # TODO: Translate
+    "bot.alias": "Alias",
     "bot.aliases": "Aliases",
     "bot.canvas": "Canvas",
-    "bot.canvases": "Canvases",  # TODO: Translate
+    "bot.canvases": "Canvases",
     "bot.coordinates": "Coordinates",
     "bot.date_added": "Date Added",
     "bot.date_modified": "Date Modified",
-    "bot.dimensions": "Dimensions",  # TODO: Translate
-    "bot.errors": "Errors",  # TODO: Translate
+    "bot.dimensions": "Dimensions",
+    "bot.errors": "Errors",
     "bot.examples": "Examples",
-    "bot.faction": "Faction",  # TODO: Translate
+    "bot.faction": "Faction",
     "bot.name": "Name",
     "bot.no": "No",
     "bot.or_all_caps": "OR",
-    "bot.page": "Page",  # TODO: Translate
-    "bot.percent": "Percent",  # TODO: Translate
+    "bot.page": "Page",
+    "bot.percent": "Percent",
     "bot.private": "Private",
     "bot.public": "Public",
     "bot.size": "Size",
     "bot.subcommands": "Subcommands",
-    "bot.total": "Total",  # TODO: Translate
+    "bot.total": "Total",
+    "bot.update": "I have updated to version **{0}**! Visit https://github.com/DiamondIceNS/StarlightGlimmer/releases for the full changelog.",
     "bot.usage": "Usage",
-    "bot.visibility": "Visibility",  # TODO: Translate
+    "bot.visibility": "Visibility",
     "bot.yes": "Yes",
 
     # Error messages
+    "error.bad_image": "An error occurred while attempting to open an image. Ensure that the supplied image is not corrupted.",
     "error.bad_png": "This image seems to be corrupted. Try re-saving it with an image editor or using `{0}quantize`.",
+    "error.cannot_fetch_template": "Could not access template URL. (Was the original attachment deleted?)",
     "error.cooldown": "That command is on cooldown. Try again in {0:.01f}s.",
-    "error.non_discord_url": "I can only accept Discord attachment URLs.",
     "error.http": "{0} seems to be having connection issues. Try again later.",
-    "error.why": "But... why?",
-    "error.invalid_color": "That is not a valid color.",  # TODO: Translate
+    "error.invalid_color": "That is not a valid color.",
+    "error.invalid_option": "That is not a valid option. Please try again.",
     "error.jpeg": "Seriously? A JPEG? Gross! Please create a PNG template instead.",
     "error.no_attachment": "That command requires an attachment.",
+    "error.no_dm": "That command only works in guilds.",
     "error.no_self_permission": "I do not have the permission to do that in this channel.",
     "error.no_user_permission": "You do not have permission to use that command.",
     "error.not_png": "That command requires a PNG image.",
-    "error.no_dm": "That command only works in guilds.",
-    "error.bad_image": "An error occurred while attempting to open an image. Ensure that the supplied image is not corrupted.",
-    "error.cannot_fetch_template": "Could not access template URL. (Was the original attachment deleted?)",
-    "error.unknown": "An unknown error occurred. The dev has been notified.",
-    "error.invalid_option": "That is not a valid option. Please try again.",
+    "error.non_discord_url": "I can only accept Discord attachment URLs.",
     "error.timed_out": "Command timed out.",
+    "error.unknown": "An unknown error occurred. The dev has been notified.",
+    "error.why": "But... why?",
 
     # Animotes command messages
     "animotes.opt_in": "You have successfully **opted-in** to emoji conversion.",
@@ -62,19 +63,18 @@ STRINGS = {
     "configuration.alert_channel_set": "Alert channel has been set to {0}.",
     "configuration.autoscan_disabled": "Autoscan has been disabled.",
     "configuration.autoscan_enabled": "Autoscan has been enabled.",
-    "configuration.canvas_check": "This guild's default canvas is **{0}**.\n"
-                                  "To change the default canvas, run this command again with a supported canvas. (Use `{1}help canvas` to see a list.)",
+    "configuration.canvas_check_1": "This guild's default canvas is **{0}**.",
+    "configuration.canvas_check_2": "To change the default canvas, run this command again with a supported canvas. (Use `{1}help canvas` to see a list.)",
     "configuration.canvas_set": "Default canvas has been set to **{0}**.",
-    "configuration.language_check": "This guild's current language is **{1}**.\n"
-                                   "To set a new language, run this command again with one of the following options:\n"
-                                   "```{0}```",
+    "configuration.language_check_1": "This guild's current language is **{0}**.",
+    "configuration.language_check_2": "To set a new language, run this command again with one of the following options:",
     "configuration.language_set": "Language has been set to **English (US)**.",
     "configuration.prefix_set": "Prefix for this guild has been set to **{0}**.",
-    "configuration.role_list": "**Roles List**\n```xl\n"
-                               "'botadmin'      - Can do anything an Administrator can do\n"
-                               "'templateadder' - Can add templates, and remove templates they added themself\n"
-                               "'templateadmin' - Can add and remove any template\n"
-                               "\n// Use '{0}role <type>' to view the current linked role.\n```",
+    "configuration.role_list_header": "Roles List",
+    "configuration.role_list_botadmin": "Can do anything an Administrator can do",
+    "configuration.role_list_footer": "Use '{0}role <type>' to view the current linked role.",
+    "configuration.role_list_templateadder": "Can add templates, and remove templates they added themself",
+    "configuration.role_list_templateadmin": "Can add and remove any template",
     "configuration.role_not_found": "That role could not be found.",
     "configuration.role_bot_admin_check": "Bot admin privileges are currently assigned to `@{0}`.",
     "configuration.role_bot_admin_cleared": "Bot admin privileges successfully cleared.",
@@ -88,45 +88,44 @@ STRINGS = {
     "configuration.role_template_admin_cleared": "Template admin privileges successfully cleared.",
     "configuration.role_template_admin_not_set": "Template admin privileges have not been assigned to a role.",
     "configuration.role_template_admin_set": "Template admin privileges assigned to role `@{0}`.",
-    "bot.update": "I have updated to version **{0}**! Visit https://github.com/DiamondIceNS/StarlightGlimmer/releases for the full changelog.",
 
     # Faction command messages
-    "faction.alias_already_exists": "A faction with that alias already exists.",  # TODO: Translate
-    "faction.already_faction": "This guild is already a faction.",  # TODO: Translate
-    "faction.assembled": "Faction `{}` assembled.",  # TODO: Translate
-    "faction.clear_alias": "Faction alias cleared.",  # TODO: Translate
-    "faction.clear_hide": "Unhid faction `{}`.",  # TODO: Translate
-    "faction.clear_color": "Faction color cleared.",  # TODO: Translate
-    "faction.clear_description": "Faction description cleared.",  # TODO: Translate
-    "faction.clear_emblem": "Faction emblem cleared.",  # TODO: Translate
-    "faction.clear_invite": "Faction invite cleared. NOTE: Invite link is still active and must be removed manually.",  # TODO: Translate
+    "faction.alias_already_exists": "A faction with that alias already exists.",
+    "faction.already_faction": "This guild is already a faction.",
+    "faction.assembled": "Faction `{}` assembled.",
+    "faction.clear_alias": "Faction alias cleared.",
+    "faction.clear_color": "Faction color cleared.",
+    "faction.clear_description": "Faction description cleared.",
+    "faction.clear_emblem": "Faction emblem cleared.",
+    "faction.clear_hide": "Unhid faction `{}`.",
+    "faction.clear_invite": "Faction invite cleared. NOTE: Invite link is still active and must be removed manually.",
     "faction.currently_hidden": "The following factions are currently hidden:",
-    "faction.disbanded": "Faction successfully disbanded.",  # TODO: Translate
+    "faction.disbanded": "Faction successfully disbanded.",
     "faction.err.alias_length": "Faction aliases must be between 1 and 5 characters.",
     "faction.err.description_length": "Faction descriptions must be at most 240 characters.",
     "faction.err.invalid_invite": "That is not a valid invite.",
     "faction.err.invite_not_this_guild": "You must use an invite to this guild.",
     "faction.err.name_length": "Faction names must be between 6 and 32 characters.",
-    "faction.faction_list_footer_1": "// Use '{0}faction <page>' to see that page",  # TODO: Translate
-    "faction.faction_list_footer_2": "// Use '{0}faction info <name>' to see more info on a faction",  # TODO: Translate
-    "faction.list_header": "Faction List",  # TODO: Translate
-    "faction.must_be_a_faction": "This guild needs to become a faction to use that command.",  # TODO: Translate
-    "faction.name_already_exists": "A faction with that name already exists.",  # TODO: Translate
+    "faction.faction_list_footer_1": "Use '{0}faction <page>' to see that page",
+    "faction.faction_list_footer_2": "Use '{0}faction info <name>' to see more info on a faction",
+    "faction.list_header": "Faction List",
+    "faction.must_be_a_faction": "This guild needs to become a faction to use that command.",
+    "faction.name_already_exists": "A faction with that name already exists.",
     "faction.no_alias": "This faction does not have an alias.",
     "faction.no_description": "This faction does not have a description.",
     "faction.no_emblem": "This faction does not have an emblem.",
     "faction.no_invite": "This faction has not set a public invite.",
-    "faction.no_factions": "There doesn't seem to be any guilds yet...",  # TODO: Translate
+    "faction.no_factions": "There doesn't seem to be any guilds yet...",
     "faction.no_factions_hidden": "This guild has not hidden any factions.",
-    "faction.not_a_faction_yet": "This guild has not created a faction yet.",  # TODO: Translate
-    "faction.not_found": "That faction could not be found.",  # TODO: Translate
-    "faction.set_alias": "Faction alias set to `{}`.",  # TODO: Translate
-    "faction.set_hide": "Hid faction `{}`.",  # TODO: Translate
-    "faction.set_color": "Faction color set.",  # TODO: Translate
-    "faction.set_description": "Faction description set.",  # TODO: Translate
-    "faction.set_emblem": "Faction emblem set.",  # TODO: Translate
-    "faction.set_invite": "Faction invite set.",  # TODO: Translate
-    "faction.set_name": "Faction renamed to `{}`.",  # TODO: Translate
+    "faction.not_a_faction_yet": "This guild has not created a faction yet.",
+    "faction.not_found": "That faction could not be found.",
+    "faction.set_alias": "Faction alias set to `{}`.",
+    "faction.set_color": "Faction color set.",
+    "faction.set_description": "Faction description set.",
+    "faction.set_emblem": "Faction emblem set.",
+    "faction.set_invite": "Faction invite set.",
+    "faction.set_hide": "Hid faction `{}`.",
+    "faction.set_name": "Faction renamed to `{}`.",
 
     # General command messages
     "general.help_command_list_header": "Command List",
@@ -139,27 +138,27 @@ STRINGS = {
 
     # Template command messages
     "template.added": "Template '{0}' added!",
-    "template.calculating": "Calculating...",  # TODO: Translate
-    "template.duplicate_list_open": "The following templates already match this image:\n```xl\n",  
-    "template.duplicate_list_close": "```\nCreate a new template anyway?",
-    "template.fetching_data": "Fetching data from {}...",  # TODO: Translate
-    "template.list_all_footer_1": "// Use '{0}template all <page>' to see that page",  # TODO: Translate
-    "template.list_all_footer_2": "// Use '{0}template info -f <faction> <name>' to see more info on a template",  # TODO: Translate
-    "template.list_header": "Template List",  # TODO: Translate
-    "template.list_footer_1": "// Use '{0}template <page>' to see that page",  # TODO: Translate
-    "template.list_footer_2": "// Use '{0}template info <name>' to see more info on a template",  # TODO: Translate
+    "template.calculating": "Calculating...",
+    "template.duplicate_list_open": "The following templates already match this image:",
+    "template.duplicate_list_close": "Create a new template anyway?",
+    "template.fetching_data": "Fetching data from {}...",
+    "template.list_all_footer_1": "Use '{0}template all <page>' to see that page",
+    "template.list_all_footer_2": "Use '{0}template info -f <faction> <name>' to see more info on a template",
+    "template.list_header": "Template List",
+    "template.list_footer_1": "Use '{0}template <page>' to see that page",
+    "template.list_footer_2": "Use '{0}template info <name>' to see more info on a template",
     "template.list_no_templates": "This guild currently has no templates.",
     "template.list_all_no_templates": "There are currently no public templates.",
-    "template.max_templates": "This guild already has the maximum number of templates. Please remove a template before adding another.",  
-    "template.name_exists_ask_replace": "A template with the name '{0}' already exists for {1} at ({2}, {3}). Replace it?",  
-    "template.name_exists_no_permission": "A template with that name already exists. Please choose a different name.",  
-    "template.name_not_found": "Could not find template with name `{0}`.",  
-    "template.name_too_long": "That name is too long. Please use a name under {0} characters.",  
-    "template.no_template_named": "There is no template named '{0}'.",  
-    "template.not_owner": "You do not have permission to modify that template.",  
-    "template.not_quantized": "This image contains colors that are not part of this canvas's palette. Would you like to quantize it?",  
+    "template.max_templates": "This guild already has the maximum number of templates. Please remove a template before adding another.",
+    "template.name_exists_ask_replace": "A template with the name '{0}' already exists for {1} at ({2}, {3}). Replace it?",
+    "template.name_exists_no_permission": "A template with that name already exists. Please choose a different name.",
+    "template.name_not_found": "Could not find template with name `{0}`.",
+    "template.name_too_long": "That name is too long. Please use a name under {0} characters.",
+    "template.no_template_named": "There is no template named '{0}'.",
+    "template.not_owner": "You do not have permission to modify that template.",
+    "template.not_quantized": "This image contains colors that are not part of this canvas's palette. Would you like to quantize it?",
     "template.remove": "Successfully removed '{0}'.",
-    "template.template_report_header": "Template Report",  # TODO: Translate
+    "template.template_report_header": "Template Report",
     "template.updated": "Template '{0}' updated!",
 
     # Command brief help
@@ -297,87 +296,8 @@ STRINGS = {
         A guild can have up to 25 templates at any time.
         Templates must have unique names (max 32 chars, case sensitive). If you attempt to add a new template with the same name as an existing one, it will be replaced if you have permission to remove the old one (see `{p}help remove`).
         I only store URLs to templates. If the message that originally uploaded a template is deleted, its URL will break and the template will be lost. Save backups to your computer just in case.""",
-    "help.template.remove": "This command can only be used if the template being removed was added by you, unless you are a Template Admin, Bot Admin, or have the Administrator permission (see 'role').",  
+    "help.template.remove": "This command can only be used if the template being removed was added by you, unless you are a Template Admin, Bot Admin, or have the Administrator permission (see 'role').",
     "help.unregister": "You only need to unregister once for this to apply to all guilds.",
-
-    # Canvas colors
-    "color.unknown": "Unknown",
-
-    "color.pixelcanvas.0": "White",
-    "color.pixelcanvas.1": "Light Grey",
-    "color.pixelcanvas.2": "Dark Grey",
-    "color.pixelcanvas.3": "Black",
-    "color.pixelcanvas.4": "Pink",
-    "color.pixelcanvas.5": "Red",
-    "color.pixelcanvas.6": "Orange",
-    "color.pixelcanvas.7": "Brown",
-    "color.pixelcanvas.8": "Yellow",
-    "color.pixelcanvas.9": "Light Green",
-    "color.pixelcanvas.10": "Green",
-    "color.pixelcanvas.11": "Cyan",
-    "color.pixelcanvas.12": "Teal",
-    "color.pixelcanvas.13": "Blue",
-    "color.pixelcanvas.14": "Light Purple",
-    "color.pixelcanvas.15": "Purple",
-
-    "color.pixelzio.0": "White",
-    "color.pixelzio.1": "Light Grey",
-    "color.pixelzio.2": "Dark Grey",
-    "color.pixelzio.3": "Black",
-    "color.pixelzio.4": "Pink",
-    "color.pixelzio.5": "Red",
-    "color.pixelzio.6": "Orange",
-    "color.pixelzio.7": "Brown",
-    "color.pixelzio.8": "Yellow",
-    "color.pixelzio.9": "Light Green",
-    "color.pixelzio.10": "Green",
-    "color.pixelzio.11": "Cyan",
-    "color.pixelzio.12": "Teal",
-    "color.pixelzio.13": "Blue",
-    "color.pixelzio.14": "Light Purple",
-    "color.pixelzio.15": "Purple",
-
-    "color.pixelzone.0": "Dark Grey",
-    "color.pixelzone.1": "Black",
-    "color.pixelzone.2": "Light Grey",
-    "color.pixelzone.3": "White",
-    "color.pixelzone.4": "Brown",
-    "color.pixelzone.5": "Pink",
-    "color.pixelzone.6": "Light Purple",
-    "color.pixelzone.7": "Purple",
-    "color.pixelzone.8": "Red",
-    "color.pixelzone.9": "Orange",
-    "color.pixelzone.10": "Yellow",
-    "color.pixelzone.11": "Light Green",
-    "color.pixelzone.12": "Green",
-    "color.pixelzone.13": "Cyan",
-    "color.pixelzone.14": "Teal",
-    "color.pixelzone.15": "Blue",
-
-    "color.pxlssapce.0": "White",
-    "color.pxlssapce.1": "Lightest Grey",
-    "color.pxlssapce.2": "Mid Light Grey",
-    "color.pxlssapce.3": "Mid Dark Grey",
-    "color.pxlssapce.4": "Darkest Grey",
-    "color.pxlssapce.5": "Black",
-    "color.pxlssapce.6": "Pink",
-    "color.pxlssapce.7": "Red",
-    "color.pxlssapce.8": "Maroon",
-    "color.pxlssapce.9": "Beige",
-    "color.pxlssapce.10": "Tan",
-    "color.pxlssapce.11": "Orange",
-    "color.pxlssapce.12": "Light Brown",
-    "color.pxlssapce.13": "Dark Brown",
-    "color.pxlssapce.14": "Yellow",
-    "color.pxlssapce.15": "Light Green",
-    "color.pxlssapce.16": "Mid Green",
-    "color.pxlssapce.17": "Dark Green",
-    "color.pxlssapce.18": "Cyan",
-    "color.pxlssapce.19": "Teal",
-    "color.pxlssapce.20": "Blue",
-    "color.pxlssapce.21": "Lavender",
-    "color.pxlssapce.22": "Magenta",
-    "color.pxlssapce.23": "Purple",
 
     # Command signatures
     "signature.alertchannel": "(subcommand)",
@@ -475,7 +395,9 @@ STRINGS = {
                                ("set https://cdn.discordapp.com/.../emblem.jpg", "Set your faction emblem to the image at the URL"),
                                ("clear", "Clears your faction's emblem")],
     "example.faction.invite": [("", "Print your faction's current invite link"),
-                               ("set", "Creates a new invite link automatically and sets it"),  # TODO
+                               ("set", "Automatically creates a new instant invite to this channel and sets it"),
+                               ("set aAbBcC", "Sets your faction's public invite link to an existing invite with the ID 'aAbBcC'"),
+                               ("set https://discord.gg/<id>", "Sets your faction's public invite link to an existing URL"),
                                ("clear", "Clears your faction's invite link")],
     "example.faction.name": [("", "Print your faction's current name"),
                              ("set \"My Cool New Faction\"", "Sets your faction's name to 'My Cool New Faction'")],
@@ -557,4 +479,82 @@ STRINGS = {
                        ("\"GTFO Faction\"", "Unhides a faction named 'GTFO Faction'"),
                        ("gtfo", "Unhides a faction with the alias 'abc'")],
 
+    # Canvas colors
+    "color.unknown": "Unknown",
+
+    "color.pixelcanvas.0": "White",
+    "color.pixelcanvas.1": "Light Grey",
+    "color.pixelcanvas.2": "Dark Grey",
+    "color.pixelcanvas.3": "Black",
+    "color.pixelcanvas.4": "Pink",
+    "color.pixelcanvas.5": "Red",
+    "color.pixelcanvas.6": "Orange",
+    "color.pixelcanvas.7": "Brown",
+    "color.pixelcanvas.8": "Yellow",
+    "color.pixelcanvas.9": "Light Green",
+    "color.pixelcanvas.10": "Green",
+    "color.pixelcanvas.11": "Cyan",
+    "color.pixelcanvas.12": "Teal",
+    "color.pixelcanvas.13": "Blue",
+    "color.pixelcanvas.14": "Light Purple",
+    "color.pixelcanvas.15": "Purple",
+
+    "color.pixelzio.0": "White",
+    "color.pixelzio.1": "Light Grey",
+    "color.pixelzio.2": "Dark Grey",
+    "color.pixelzio.3": "Black",
+    "color.pixelzio.4": "Pink",
+    "color.pixelzio.5": "Red",
+    "color.pixelzio.6": "Orange",
+    "color.pixelzio.7": "Brown",
+    "color.pixelzio.8": "Yellow",
+    "color.pixelzio.9": "Light Green",
+    "color.pixelzio.10": "Green",
+    "color.pixelzio.11": "Cyan",
+    "color.pixelzio.12": "Teal",
+    "color.pixelzio.13": "Blue",
+    "color.pixelzio.14": "Light Purple",
+    "color.pixelzio.15": "Purple",
+
+    "color.pixelzone.0": "Dark Grey",
+    "color.pixelzone.1": "Black",
+    "color.pixelzone.2": "Light Grey",
+    "color.pixelzone.3": "White",
+    "color.pixelzone.4": "Brown",
+    "color.pixelzone.5": "Pink",
+    "color.pixelzone.6": "Light Purple",
+    "color.pixelzone.7": "Purple",
+    "color.pixelzone.8": "Red",
+    "color.pixelzone.9": "Orange",
+    "color.pixelzone.10": "Yellow",
+    "color.pixelzone.11": "Light Green",
+    "color.pixelzone.12": "Green",
+    "color.pixelzone.13": "Cyan",
+    "color.pixelzone.14": "Teal",
+    "color.pixelzone.15": "Blue",
+
+    "color.pxlssapce.0": "White",
+    "color.pxlssapce.1": "Lightest Grey",
+    "color.pxlssapce.2": "Mid Light Grey",
+    "color.pxlssapce.3": "Mid Dark Grey",
+    "color.pxlssapce.4": "Darkest Grey",
+    "color.pxlssapce.5": "Black",
+    "color.pxlssapce.6": "Pink",
+    "color.pxlssapce.7": "Red",
+    "color.pxlssapce.8": "Maroon",
+    "color.pxlssapce.9": "Beige",
+    "color.pxlssapce.10": "Tan",
+    "color.pxlssapce.11": "Orange",
+    "color.pxlssapce.12": "Light Brown",
+    "color.pxlssapce.13": "Dark Brown",
+    "color.pxlssapce.14": "Yellow",
+    "color.pxlssapce.15": "Light Green",
+    "color.pxlssapce.16": "Mid Green",
+    "color.pxlssapce.17": "Dark Green",
+    "color.pxlssapce.18": "Cyan",
+    "color.pxlssapce.19": "Teal",
+    "color.pxlssapce.20": "Blue",
+    "color.pxlssapce.21": "Lavender",
+    "color.pxlssapce.22": "Magenta",
+    "color.pxlssapce.23": "Purple",
 }

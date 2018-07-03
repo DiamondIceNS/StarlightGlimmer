@@ -66,7 +66,9 @@ class Configuration:
     @commands.guild_only()
     @commands.group(name="canvas", invoke_without_command=True)
     async def canvas(self, ctx):
-        await ctx.send(ctx.s("configuration.canvas_check").format(ctx.canvas_pretty, ctx.prefix))
+        out = [ctx.s("configuration.canvas_check_1").format(ctx.canvas_pretty),
+               ctx.s("configuration.canvas_check_2").format(ctx.prefix)]
+        await ctx.send('\n'.join(out))
 
     @checks.admin_only()
     @commands.guild_only()
@@ -105,12 +107,15 @@ class Configuration:
     @commands.command()
     async def language(self, ctx, option=None):
         if not option:
-            lang_list = ""
-            for i, (code, name) in enumerate(ctx.langs.items(), 1):
-                lang_list = lang_list + "{0} - {1}".format(code, name)
-                if i < len(ctx.langs):
-                    lang_list = lang_list + "\n"
-            await ctx.send(ctx.s("configuration.language_check").format(lang_list, ctx.lang))
+            out = [
+                ctx.s("configuration.language_check_1").format(ctx.langs[ctx.lang]),
+                ctx.s("configuration.language_check_2"),
+                "```"
+            ]
+            for code, name in ctx.langs.items():
+                out.append("{0} - {1}".format(code, name))
+            out.append("```")
+            await ctx.send('\n'.join(out))
             return
         if option.lower() not in ctx.langs:
             return
@@ -122,7 +127,12 @@ class Configuration:
     @commands.guild_only()
     @commands.group(name="role", invoke_without_command=True)
     async def role(self, ctx):
-        await ctx.send(ctx.s("configuration.role_list"))
+        roles = ["botadmin", "templateadder", "templateadmin"]
+        out = [ctx.s("configuration.role_list_header"), "```xl"]
+        max_len = max(map(lambda x: len(x[0]), roles))
+        for r in roles:
+            out.append("{0:<{max_len} - {1}".format(r, ctx.s("configuration.role_list_" + r), max_len=max_len))
+        await ctx.send('\n'.join(out))
 
     @checks.admin_only()
     @commands.guild_only()
