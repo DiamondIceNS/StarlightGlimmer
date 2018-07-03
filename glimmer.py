@@ -50,7 +50,7 @@ async def on_ready():
             if old_version < 1.6 <= VERSION:
                 # Fix legacy templates not having a size
                 for t in sql.template_get_all():
-                    t.size = await render.calculate_size(t)
+                    t.size = await render.calculate_size(await http.get_template(t.url))
                     sql.template_update(t)
 
     log.info("Loading extensions...")
@@ -74,7 +74,8 @@ async def on_ready():
                 if ch:
                     data = await http.get_changelog(VERSION)
                     if data:
-                        e = discord.Embed(title=data['name'], url=data['url'], color=13594340, description=data['body']) \
+                        e = discord.Embed(title=data['name'], url=data['url'], color=13594340,
+                                          description=data['body']) \
                             .set_author(name=data['author']['login']) \
                             .set_thumbnail(url=data['author']['avatar_url']) \
                             .set_footer(text="Released " + data['published_at'])
@@ -143,7 +144,7 @@ async def on_command_error(ctx, error):
     if isinstance(error, commands.BadArgument):
         pass
     elif isinstance(error, commands.CommandInvokeError) \
-            and isinstance(error.original, discord.HTTPException)\
+            and isinstance(error.original, discord.HTTPException) \
             and error.original.code == 50013:
         pass
     elif isinstance(error, commands.CommandOnCooldown):
@@ -172,7 +173,7 @@ async def on_command_error(ctx, error):
             await ctx.send(ctx.s("error.jpeg"), file=f)
         except IOError:
             await ctx.send(ctx.s("error.jpeg"))
-    elif isinstance(error, errors.NoSelfPermissionerror):
+    elif isinstance(error, errors.NoSelfPermissionError):
         await ctx.send(ctx.s("error.no_self_permission"))
     elif isinstance(error, errors.NoUserPermissionError):
         await ctx.send(ctx.s("error.no_user_permission"))
@@ -192,7 +193,8 @@ async def on_command_error(ctx, error):
     # Uncaught error
     else:
         name = ctx.command.qualified_name if ctx.command else "None"
-        await ch_log.log("An error occurred executing `{0}` in server **{1.name}** (ID: `{1.id}`):".format(name, ctx.guild))
+        await ch_log.log(
+            "An error occurred executing `{0}` in server **{1.name}** (ID: `{1.id}`):".format(name, ctx.guild))
         await ch_log.log("```{}```".format(error))
         log.error("An error occurred executing '{}': {}\n{}"
                   .format(name, error, ''.join(traceback.format_exception(None, error, error.__traceback__))))

@@ -17,8 +17,8 @@ from PIL import Image, ImageChops
 from objects import errors
 from objects.chunks import Chunky, BigChunk, ChunkPzi, ChunkPz, PxlsBoard
 from objects.config import Config
+from objects.dbtemplate import DbTemplate
 from objects.logger import Log
-from objects.template import Template as Template_
 from utils import canvases, checks, colors, http, render, sqlite as sql, utils
 
 log = Log(__name__)
@@ -60,7 +60,7 @@ class Template:
                                                  ctx.s("bot.canvas"),
                                                  ctx.s("bot.coordinates"), w1=w1)
             ]
-            for t in ts[(page-1)*10:page*10]:
+            for t in ts[(page - 1) * 10:page * 10]:
                 coords = "({}, {})".format(t.x, t.y)
                 name = '"{}"'.format(t.name)
                 canvas_name = canvases.pretty_print[t.canvas]
@@ -76,7 +76,7 @@ class Template:
     @commands.guild_only()
     @commands.cooldown(1, 5, BucketType.guild)
     @template.command(name='all')
-    async def template_all(self, ctx, page: int = 1):  # TODO: Add brief, help, and signature strings to lang files
+    async def template_all(self, ctx, page: int = 1):
         gs = [x for x in sql.guild_get_all_factions() if x.id not in sql.faction_hides_get_all(ctx.guild.id)]
         ts = [x for x in sql.template_get_all() if x.gid in [y.id for y in gs]]
         guild = sql.guild_get_prefix_by_id(ctx.guild.id)
@@ -154,31 +154,27 @@ class Template:
         await self.add_template(ctx, "pxlsspace", name, x, y, url)
 
     @commands.guild_only()
-    #@commands.cooldown(1, 300, BucketType.guild)  # TODO: Cooldown
+    @commands.cooldown(1, 60, BucketType.guild)
     @template.group(name='check')
     async def template_check(self, ctx):
         pass  # TODO: Check all logic + custom cooldown
 
     @commands.guild_only()
-    # @commands.cooldown(1, 300, BucketType.guild)  # TODO: Cooldown
     @template_check.command(name='pixelcanvas', aliases=['pc'])
     async def template_check_pixelcanvas(self, ctx):
         await self.check_canvas(ctx, "pixelcanvas", BigChunk, http.fetch_chunks_pixelcanvas)
 
     @commands.guild_only()
-    # @commands.cooldown(1, 300, BucketType.guild)  # TODO: Cooldown
     @template_check.command(name='pixelzio', aliases=['pzi'])
     async def template_check_pixelzio(self, ctx):
         await self.check_canvas(ctx, "pixelzio", ChunkPzi, http.fetch_chunks_pixelzio)
 
     @commands.guild_only()
-    # @commands.cooldown(1, 300, BucketType.guild)  # TODO: Cooldown
     @template_check.command(name='pixelzone', aliases=['pz'])
     async def template_check_pixelzone(self, ctx):
         await self.check_canvas(ctx, "pixelzone", ChunkPz, http.fetch_chunks_pixelzone)
 
     @commands.guild_only()
-    # @commands.cooldown(1, 300, BucketType.guild)  # TODO: Cooldown
     @template_check.command(name='pxlsspace', aliases=['ps'])
     async def template_check_pxlsspace(self, ctx):
         await self.check_canvas(ctx, "pxlsspace", PxlsBoard, http.fetch_pxlsspace)
@@ -272,11 +268,11 @@ class Template:
     async def build_template(ctx, name, x, y, url, canvas):
         try:
             with await http.get_template(url) as data:
+                size = await render.calculate_size(data)
                 md5 = hashlib.md5(data.getvalue()).hexdigest()
                 with Image.open(data).convert("RGBA") as tmp:
                     w, h = tmp.size
                     quantized = await Template.check_colors(tmp, colors.by_name[canvas])
-                    size = await render.calculate_size(tmp)
                 if not quantized:
                     if not await utils.yes_no(ctx, ctx.s("template.not_quantized")):
                         return
@@ -291,16 +287,16 @@ class Template:
                     url = new_msg.attachments[0].url
                     with await http.get_template(url) as data2:
                         md5 = hashlib.md5(data2.getvalue()).hexdigest()
-                        size = await render.calculate_size(Image.open(data2))
                 created = int(time.time())
-                return Template_(ctx.guild.id, name, url, canvas, x, y, w, h, size, created, created, md5, ctx.author.id)
+                return DbTemplate(ctx.guild.id, name, url, canvas, x, y, w, h, size, created, created, md5,
+                                  ctx.author.id)
         except aiohttp.client_exceptions.InvalidURL:
             raise errors.UrlError
         except IOError:
             raise errors.PilImageError
 
     @staticmethod
-    def build_template_report(ctx, ts: List[Template_]):
+    def build_template_report(ctx, ts: List[DbTemplate]):
         name = ctx.s("bot.name")
         tot = ctx.s("bot.total")
         err = ctx.s("bot.errors")
@@ -327,7 +323,7 @@ class Template:
         return '\n'.join(out)
 
     @staticmethod
-    async def calculate_errors(ts: List[Template_], chunks: Set[Chunky]):
+    async def calculate_errors(ts: List[DbTemplate], chunks: Set[Chunky]):
         cls = type(next(iter(chunks)))
         for t in ts:
             empty_bcs, shape = cls.get_intersecting(t.x, t.y, t.width, t.height)
@@ -400,7 +396,7 @@ class Template:
                 await ctx.send(ctx.s("template.name_exists_no_permission"))
                 return False
             print(dup.x)
-            q = ctx.s("template.name_exists_ask_replace")\
+            q = ctx.s("template.name_exists_ask_replace") \
                 .format(dup.name, canvases.pretty_print[dup.canvas], dup.x, dup.y)
             return await utils.yes_no(ctx, q)
 

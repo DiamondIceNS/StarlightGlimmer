@@ -35,7 +35,7 @@ class General:
         await ctx.send("https://github.com/DiamondIceNS/StarlightGlimmer")
 
     @commands.command(aliases=['h', 'commands'])
-    async def help(self, ctx, *commands: str):
+    async def help(self, ctx, *cmds: str):
         """Shows this message."""
         bot = ctx.bot
 
@@ -43,13 +43,13 @@ class General:
             return ctx.bot._mentions_transforms.get(obj.group(0), '')
 
         # help by itself just lists our own commands.
-        if len(commands) == 0:
+        if len(cmds) == 0:
             out = await self.bot.formatter.format_help_for(ctx, self.bot)
 
-        elif len(commands) == 1:
+        elif len(cmds) == 1:
             # try to see if it is a cog name
             # name = _mention_pattern.sub(repl, commands[0])  # TODO: Filter @everyone here?
-            name = commands[0]
+            name = cmds[0]
             command = bot.all_commands.get(name)
             if command is None:
                 await ctx.send(bot.command_not_found.format(name))
@@ -59,12 +59,12 @@ class General:
 
         else:
             # name = _mention_pattern.sub(repl, commands[0])
-            name = commands[0]
+            name = cmds[0]
             command = bot.all_commands.get(name)
             if command is None:
                 await ctx.send(bot.command_not_found.format(name))
                 return
-            for key in commands[1:]:
+            for key in cmds[1:]:
                 try:
                     # key = _mention_pattern.sub(repl, key)
                     command = command.all_commands.get(key)

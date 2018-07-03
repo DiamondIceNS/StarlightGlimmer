@@ -200,7 +200,7 @@ class Faction:
                 url = "https://discord.gg/" + url
         else:
             if not ctx.channel.permissions_for(ctx.guild.me).create_instant_invite:
-                raise errors.NoSelfPermissionerror
+                raise errors.NoSelfPermissionError
             invite = await ctx.channel.create_invite(reason="Invite for faction info page")
             url = invite.url
         sql.guild_faction_set(ctx.guild.id, invite=url)
@@ -227,10 +227,7 @@ class Faction:
 
     @commands.command(name="factionlist", aliases=['fl'])
     async def factionlist(self, ctx, page: int = 1):
-        fs = sql.guild_get_all_factions()
-        b_fs = sql.faction_hides_get_all(ctx.guild.id)
-        fs = [x for x in fs if x.id not in b_fs]
-
+        fs = [x for x in sql.guild_get_all_factions() if x.id not in sql.faction_hides_get_all(ctx.guild.id)]
         if len(fs) > 0:
             pages = 1 + len(fs) // 10
             page = min(max(page, 1), pages)
@@ -301,7 +298,7 @@ class Faction:
     @commands.command(name="unhide")
     async def unhide(self, ctx, other=None):
         if other is None:
-            fs = sql.guild_get_hidden_factions(ctx.guild.id)
+            fs = [x for x in sql.guild_get_all_factions() if x.id not in sql.faction_hides_get_all(ctx.guild.id)]
             if len(fs) == 0:
                 await ctx.send(ctx.s("faction.no_factions_hidden"))
                 return
@@ -311,8 +308,8 @@ class Faction:
                 "{0:<34}  {1:<5}".format(ctx.s("bot.name"), ctx.s("bot.alias"))
             ]
             for f in fs:
-                alias = '"{}"'.format(f['faction_alias']) if f['faction_alias'] else ""
-                out.append("{0:<34}  {1:<5}".format('"{}"'.format(f['faction_name']), alias))
+                alias = '"{}"'.format(f.faction_alias) if f.faction_alias else ""
+                out.append("{0:<34}  {1:<5}".format('"{}"'.format(f.faction_name), alias))
             out.append('```')
             await ctx.send('\n'.join(out))
             return

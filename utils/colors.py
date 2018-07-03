@@ -1,5 +1,3 @@
-from collections import OrderedDict
-
 pixelcanvas = [
     (255, 255, 255),  # White
     (228, 228, 228),  # Light Grey
@@ -18,25 +16,6 @@ pixelcanvas = [
     (207, 110, 228),  # Light Purple
     (130,   0, 128)   # Purple
 ]
-
-# pixelcanvas = OrderedDict([
-#     ("White",        (255, 255, 255)),
-#     ("Light Grey",   (228, 228, 228)),
-#     ("Dark Grey",    (136, 136, 136)),  # Dark Grey
-#     ("Black",        ( 34,  34,  34)),  # Black
-#     ("Pink",         (255, 167, 209)),  # Pink
-#     ("Red",          (229,   0,   0)),  # Red
-#     ("Orange",       (229, 149,   0)),  # Orange
-#     ("Brown",        (160, 106,  66)),  # Brown
-#     ("Yellow",       (229, 217,   0)),  # Yellow
-#     ("Light Green",  (148, 224,  68)),  # Light Green
-#     ("Green",        (  2, 190,   1)),  # Green
-#     ("Cyan",         (  0, 211, 221)),  # Cyan
-#     ("Teal",         (  0, 131, 199)),  # Teal
-#     ("Blue",         (  0,   0, 234)),  # Blue
-#     ("Light Purple", (207, 110, 228)),  # Light Purple
-#     ("Purple",       (130,   0, 128))   # Purple
-# ])
 
 pixelzio = [
     (255, 255, 255),  # White

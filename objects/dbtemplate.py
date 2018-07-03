@@ -1,5 +1,6 @@
-class Template:
-    def __init__(self, gid, name, url, canvas, x, y, width, height, size, date_created, date_updated, md5, owner_id, private=False):
+class DbTemplate:
+    def __init__(self, gid, name, url, canvas, x, y, width, height, size, date_created, date_updated, md5, owner_id,
+                 private=False):
         self.gid = gid
         self.name = name
         self.url = url

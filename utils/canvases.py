@@ -1,12 +1,8 @@
 pretty_print = {
     'pixelcanvas': "Pixelcanvas.io",
-    'pc': "Pixelcanvas.io",
     'pixelzio': "Pixelz.io",
-    'pzi': "Pixelz.io",
     'pixelzone': "Pixelzone.io",
-    'pz': "Pixelzone.io",
     'pxlsspace': "Pxls.space",
-    'ps': "Pxls.space"
 }
 
 url_templates = {

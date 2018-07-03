@@ -24,7 +24,7 @@ class GlimContext(commands.Context):
 
     @property
     def canvas_pretty(self):
-        return canvases.pretty_print(self.canvas)
+        return canvases.pretty_print[self.canvas]
 
     @property
     def lang(self):

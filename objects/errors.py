@@ -23,7 +23,7 @@ class NoAttachmentError(commands.CommandError):
     pass
 
 
-class NoSelfPermissionerror(commands.CommandError):
+class NoSelfPermissionError(commands.CommandError):
     pass
 
 

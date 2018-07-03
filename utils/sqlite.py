@@ -5,7 +5,7 @@ from typing import List, Optional
 
 from objects.config import Config
 from objects.dbguild import DbGuild
-from objects.template import Template
+from objects.dbtemplate import DbTemplate
 
 if not os.path.exists('data'):
     os.makedirs('data')
@@ -233,11 +233,6 @@ def faction_hides_remove(hider, hidden):
     conn.commit()
 
 
-def faction_hides_is_hidden(hider, hidden) -> bool:
-    c.execute("SELECT * FROM faction_hides WHERE hider=? AND hidden=?", (hider, hidden))
-    return bool(c.fetchone())
-
-
 # ========================
 #      Guilds queries
 # ========================
@@ -336,12 +331,6 @@ def guild_get_canvas_by_id(gid) -> str:
     return ca[0] if ca else None
 
 
-def guild_get_hidden_factions(gid):  # TODO: replace this
-    c.execute("SELECT g.faction_name, g.faction_alias FROM guilds g INNER JOIN faction_hides fb ON g.id = fb.hidden WHERE fb.hider=?",
-              (gid,))
-    return c.fetchall()
-
-
 def guild_get_language_by_id(gid) -> str:
     c.execute("""SELECT language FROM guilds WHERE id=?""", (gid,))
     g = c.fetchone()
@@ -416,7 +405,8 @@ def menu_locks_get_all():
 # ===========================
 
 def template_add(template):
-    c.execute('INSERT INTO templates(guild_id, name, url, canvas, x, y, w, h, size, date_added, date_modified, md5, owner, private)'
+    c.execute('INSERT INTO templates(guild_id, name, url, canvas, x, y, w, h, size, date_added, date_modified, md5, '
+              'owner, private)'
               'VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', template.to_tuple())
     conn.commit()
 
@@ -436,20 +426,7 @@ def template_get_all():
     c.execute('SELECT * FROM templates ORDER BY guild_id DESC, canvas ASC, name ASC')
     templates = []
     for t in c.fetchall():
-        templates.append(Template(*t))
-    return templates
-
-
-def template_get_all_public():
-    c.execute('SELECT t.guild_id, t.name, t.url, t.canvas, t.x, t.y, t.w, t.h, t.size, t.date_added, t.date_modified,'
-              't.md5, t.owner, t.private, g.name AS gname '
-              'FROM templates AS t '
-              'INNER JOIN guilds as g ON g.id = t.guild_id '
-              'WHERE t.private=0 '
-              'ORDER BY t.guild_id ASC, t.canvas ASC, t.name ASC')
-    templates = []
-    for t in c.fetchall():
-        templates.append(Template(*(t[:-1])))
+        templates.append(DbTemplate(*t))
     return templates
 
 
@@ -457,7 +434,7 @@ def template_get_all_by_guild_id(gid):
     c.execute('SELECT * FROM templates WHERE guild_id=? ORDER BY canvas ASC, name ASC', (gid,))
     templates = []
     for t in c.fetchall():
-        templates.append(Template(*t))
+        templates.append(DbTemplate(*t))
     return templates
 
 
@@ -465,7 +442,7 @@ def template_get_all_public_by_guild_id(gid):
     c.execute('SELECT * FROM templates WHERE guild_id=? AND private=0 ORDER BY canvas ASC, name ASC', (gid,))
     templates = []
     for t in c.fetchall():
-        templates.append(Template(*t))
+        templates.append(DbTemplate(*t))
     return templates
 
 
@@ -473,19 +450,20 @@ def template_get_by_hash(gid, md5):
     c.execute('SELECT * FROM templates WHERE guild_id=? AND md5=?', (gid, md5))
     templates = []
     for t in c.fetchall():
-        templates.append(Template(*t))
+        templates.append(DbTemplate(*t))
     return templates
 
 
 def template_get_by_name(gid, name):
     c.execute('SELECT * FROM templates WHERE guild_id=? AND name=?', (gid, name))
     t = c.fetchone()
-    return Template(*t) if t else None
+    return DbTemplate(*t) if t else None
 
 
 def template_update(template):
     c.execute('UPDATE templates '
-              'SET url = ?, canvas=?, x=?, y=?, w=?, h=?, size=?, date_added=?, date_modified=?, md5=?, owner=?, private=?'
+              'SET url = ?, canvas=?, x=?, y=?, w=?, h=?, size=?, date_added=?, date_modified=?, md5=?, owner=?, '
+              'private=?'
               'WHERE guild_id=? AND name=?', template.to_tuple()[2:] + (template.gid, template.name))
     conn.commit()
 

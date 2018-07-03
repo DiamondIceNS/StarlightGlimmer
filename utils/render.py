@@ -5,16 +5,14 @@ from objects.chunks import BigChunk, ChunkPz, ChunkPzi, PxlsBoard
 from objects.config import Config
 from objects.coords import Coords
 from objects.logger import Log
-from objects.template import Template
 from utils import colors, http
 
 cfg = Config()
 log = Log(__name__)
 
 
-async def calculate_size(template):  # TODO: UGLY!!!
-    if type(template) is Template:
-        template = Image.open(await http.get_template(template.url)).convert("RGBA")
+async def calculate_size(data):
+    template = Image.open(data).convert('RGBA')
     alpha = Image.new('RGBA', template.size, (0, 0, 0, 0))
     white = Image.new('RGBA', template.size, (255, 255, 255, 255))
     white = Image.composite(white, alpha, template)

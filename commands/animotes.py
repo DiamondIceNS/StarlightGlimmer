@@ -3,7 +3,7 @@ import re
 import discord
 from discord.ext import commands
 
-from utils import checks, sqlite as sql
+from utils import sqlite as sql
 from objects.channel_logger import ChannelLogger
 from objects.logger import Log
 
@@ -32,14 +32,6 @@ class Animotes:
         self.ch_log = ChannelLogger(bot)
         self.log = Log(__name__)
 
-    async def on_message(self, message):
-        if not message.author.bot and sql.animotes_users_is_registered(message.author.id):
-            channel = message.channel
-            content = emote_corrector(self, message)
-            if content:
-                await message.delete()
-                await channel.send(content=content)
-
     @commands.command()
     async def register(self, ctx):
         sql.animotes_users_add(ctx.author.id)
@@ -50,13 +42,23 @@ class Animotes:
         sql.animotes_users_delete(ctx.author.id)
         await ctx.send(ctx.s("animotes.opt_out"))
 
+    @staticmethod
+    async def on_message(message):
+        if not message.author.bot and sql.animotes_users_is_registered(message.author.id):
+            channel = message.channel
+            content = emote_corrector(message)
+            if content:
+                await message.delete()
+                await channel.send(content=content)
 
-def emote_corrector(self, message):
+
+# noinspection PyTypeChecker
+def emote_corrector(message):
     r = re.compile(r'(?<![a<]):[\w~]+:')
     found = r.findall(message.content)
     emotes = []
     for em in found:
-        temp = discord.utils.get(self.guild.emojis, name=em[1:-1])
+        temp = discord.utils.get(message.guild.emojis, name=em[1:-1])
         try:
             if temp.animated:
                 emotes.append((em, str(temp)))
