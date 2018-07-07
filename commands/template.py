@@ -34,20 +34,19 @@ class Template:
     @commands.group(name='template', invoke_without_command=True, aliases=['t'])
     async def template(self, ctx, *args):
         gid = ctx.guild.id
-        guild = sql.guild_get_prefix_by_id(gid)
         iter_args = iter(args)
         page = next(iter_args, 1)
         if page == "-f":
             faction = sql.guild_get_by_faction_name_or_alias(next(iter_args, None))
             if not faction:
-                await ctx.send(ctx.s("faction.not_found"))
-                return
+                raise errors.FactionNotFound
             gid = faction.id
             page = next(iter_args, 1)
         try:
             page = int(page)
         except ValueError:
             page = 1
+
         ts = sql.template_get_all_by_guild_id(gid)
         if len(ts) > 0:
             pages = 1 + len(ts) // 10
@@ -66,8 +65,8 @@ class Template:
                 canvas_name = canvases.pretty_print[t.canvas]
                 msg.append("{0:<{w1}}  {1:<14}  {2}".format(name, canvas_name, coords, w1=w1))
             msg.append("")
-            msg.append("// " + ctx.s("template.list_footer_1").format(guild))
-            msg.append("// " + ctx.s("template.list_footer_2").format(guild))
+            msg.append("// " + ctx.s("template.list_footer_1").format(ctx.gprefix))
+            msg.append("// " + ctx.s("template.list_footer_2").format(ctx.gprefix))
             msg.append("```")
             await ctx.send('\n'.join(msg))
         else:
@@ -79,7 +78,6 @@ class Template:
     async def template_all(self, ctx, page: int = 1):
         gs = [x for x in sql.guild_get_all_factions() if x.id not in sql.faction_hides_get_all(ctx.guild.id)]
         ts = [x for x in sql.template_get_all() if x.gid in [y.id for y in gs]]
-        guild = sql.guild_get_prefix_by_id(ctx.guild.id)
 
         def by_faction_name(template):
             for g in gs:
@@ -111,8 +109,8 @@ class Template:
                 canvas_name = canvases.pretty_print[t.canvas]
                 msg.append("{0:<{w1}}  {1:<34}  {2:<14}  {3}".format(name, faction, canvas_name, coords, w1=w1))
             msg.append("")
-            msg.append("// " + ctx.s("template.list_all_footer_1").format(guild))
-            msg.append("// " + ctx.s("template.list_all_footer_2").format(guild))
+            msg.append("// " + ctx.s("template.list_all_footer_1").format(ctx.gprefix))
+            msg.append("// " + ctx.s("template.list_all_footer_2").format(ctx.gprefix))
             msg.append("```")
             await ctx.send('\n'.join(msg))
         else:
@@ -183,23 +181,18 @@ class Template:
     @commands.cooldown(1, 5, BucketType.guild)
     @template.command(name='info')
     async def template_info(self, ctx, *args):
-        if len(args) < 1:
-            return
-        if args[0] == "-f":
-            if len(args) < 3:
-                return
-            g = sql.guild_get_by_faction_name_or_alias(args[1])
-            if not g:
-                await ctx.send(ctx.s("faction.not_found"))
-                return
-            name = args[2]
-            t = sql.template_get_by_name(g.id, name)
-        else:
-            name = args[0]
-            t = sql.template_get_by_name(ctx.guild.id, name)
+        gid = ctx.guild.id
+        iter_args = iter(args)
+        name = next(iter_args, 1)
+        if name == "-f":
+            faction = sql.guild_get_by_faction_name_or_alias(next(iter_args, None))
+            if not faction:
+                raise errors.FactionNotFound
+            gid = faction.id
+            name = next(iter_args, 1)
+        t = sql.template_get_by_name(gid, name)
         if not t:
-            await ctx.send(ctx.s("template.name_not_found").format(name))
-            return
+            raise errors.TemplateNotFound
 
         canvas_url = canvases.url_templates[t.canvas].format(*t.center())
         canvas_name = canvases.pretty_print[t.canvas]
@@ -231,8 +224,7 @@ class Template:
     async def template_remove(self, ctx, name):
         t = sql.template_get_by_name(ctx.guild.id, name)
         if not t:
-            await ctx.send(ctx.s("template.no_template_named").format(name))
-            return
+            raise errors.TemplateNotFound
         if t.owner_id != ctx.author.id and not utils.is_template_admin(ctx) and not utils.is_admin(ctx):
             await ctx.send(ctx.s("template.not_owner"))
             return
@@ -343,7 +335,8 @@ class Template:
 
     @staticmethod
     async def check_canvas(ctx, canvas, chunk_type, fetch):
-        ts = [x for x in sql.template_get_all_by_guild_id(ctx.guild.id) if x.canvas == canvas]
+        ts = [x for x in sql.template_get_all_by_guild_id(ctx.guild.id) if x.canvas == canvas] if canvas \
+            else sql.template_get_all_by_guild_id(ctx.guild.id)
         if len(ts) > 0:
             chunks = set()
             for t in ts:

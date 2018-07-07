@@ -254,7 +254,7 @@ class Faction:
     async def hide(self, ctx, other):
         other_fac = sql.guild_get_by_faction_name_or_alias(other)
         if not other_fac:
-            await ctx.send(ctx.s("faction.not_found"))
+            await ctx.send(ctx.s("error.faction_not_found"))
             return
         sql.faction_hides_add(ctx.guild.id, other_fac.id)
         await ctx.send(ctx.s("faction.set_hide").format(other_fac.faction_name))
@@ -263,7 +263,7 @@ class Faction:
     async def factioninfo(self, ctx, other=None):
         g = sql.guild_get_by_faction_name_or_alias(other) if other else sql.guild_get_by_id(ctx.guild.id)
         if not g:
-            await ctx.send(ctx.s("faction.not_found"))
+            await ctx.send(ctx.s("error.faction_not_found"))
             return
         if not g.faction_name:
             await ctx.send(ctx.s("faction.not_a_faction_yet"))
@@ -315,7 +315,7 @@ class Faction:
             return
         other_fac = sql.guild_get_by_faction_name_or_alias(other)
         if not other_fac:
-            await ctx.send(ctx.s("faction.not_found"))
+            await ctx.send(ctx.s("error.faction_not_found"))
             return
         sql.faction_hides_remove(ctx.guild.id, other_fac.id)
         await ctx.send(ctx.s("faction.clear_hide").format(other_fac.faction_name))

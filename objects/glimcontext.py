@@ -27,6 +27,10 @@ class GlimContext(commands.Context):
         return canvases.pretty_print[self.canvas]
 
     @property
+    def gprefix(self):
+        return sql.guild_get_prefix_by_id(self.guild.id)
+
+    @property
     def lang(self):
         return sql.guild_get_language_by_id(self.guild.id)
 

@@ -36,7 +36,7 @@ class Canvas:
         if a == "-f":
             f = sql.guild_get_by_faction_name_or_alias(next(iter_args, None))
             if not f:
-                await ctx.send(ctx.s("faction.not_found"))
+                await ctx.send(ctx.s("error.faction_not_found"))
                 return
             name = next(iter_args, None)
             zoom = next(iter_args, 1)
@@ -194,7 +194,7 @@ class Canvas:
             if a == "-f":
                 faction = sql.guild_get_by_faction_name_or_alias(next(iter_args, None))
                 if not faction:
-                    await ctx.send(ctx.s("faction.not_found"))
+                    await ctx.send(ctx.s("error.faction_not_found"))
                     return
             if a == "-c":
                 try:
@@ -395,7 +395,7 @@ async def _quantize(ctx, args, canvas, palette):
             return
         f = sql.guild_get_by_faction_name_or_alias(args[1])
         if not f:
-            await ctx.send(ctx.s("faction.not_found"))
+            await ctx.send(ctx.s("error.faction_not_found"))
             return
         name = args[2]
         t = sql.template_get_by_name(f.id, name)

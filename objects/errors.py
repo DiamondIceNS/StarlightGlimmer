@@ -6,6 +6,10 @@ class BadArgumentErrorWithMessage(commands.CommandError):
         self.message = message
 
 
+class FactionNotFound(commands.CommandError):
+    pass
+
+
 class HttpGeneralError(commands.CommandError):
     pass
 
@@ -44,6 +48,10 @@ class PilImageError(commands.CommandError):
 
 
 class TemplateHttpError(commands.CommandError):
+    pass
+
+
+class TemplateNotFound(commands.CommandError):
     pass
 
 

@@ -33,6 +33,7 @@ STRINGS = {
     "error.bad_png": "This image seems to be corrupted. Try re-saving it with an image editor or using `{0}quantize`.",
     "error.cannot_fetch_template": "Could not access template URL. (Was the original attachment deleted?)",
     "error.cooldown": "That command is on cooldown. Try again in {0:.01f}s.",
+    "error.faction_not_found": "That faction could not be found.",  # TODO: Moved
     "error.http": "There was an error retrieving data from a remote location. Try again later.",
     "error.http_canvas": "{0} seems to be having connection issues. Try again later.",
     "error.invalid_color": "That is not a valid color.",
@@ -44,6 +45,7 @@ STRINGS = {
     "error.no_user_permission": "You do not have permission to use that command.",
     "error.not_png": "That command requires a PNG image.",
     "error.non_discord_url": "I can only accept Discord attachment URLs.",
+    "error.template_not_found": "That template could not be found.",
     "error.timed_out": "Command timed out.",
     "error.unknown": "An unknown error occurred. The dev has been notified.",
     "error.why": "But... why?",
@@ -120,7 +122,6 @@ STRINGS = {
     "faction.no_factions": "There doesn't seem to be any guilds yet...",
     "faction.no_factions_hidden": "This guild has not hidden any factions.",
     "faction.not_a_faction_yet": "This guild has not created a faction yet.",
-    "faction.not_found": "That faction could not be found.",
     "faction.set_alias": "Faction alias set to `{}`.",
     "faction.set_color": "Faction color set.",
     "faction.set_description": "Faction description set.",

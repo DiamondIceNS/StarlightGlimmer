@@ -63,14 +63,14 @@ async def on_ready():
     log.info("Performing guilds check...")
     for g in bot.guilds:
         log.info("'{0.name}' (ID: {0.id})".format(g))
-        row = sql.guild_get_by_id(g.id)
-        if row:
-            prefix = row.prefix if row.prefix else cfg.prefix
-            if g.name != row.name:
-                await ch_log.log("Guild **{1}** is now known as **{0.name}** `(ID:{0.id})`".format(g, row.name))
+        db_g = sql.guild_get_by_id(g.id)
+        if db_g:
+            prefix = db_g.prefix if db_g.prefix else cfg.prefix
+            if g.name != db_g.name:
+                await ch_log.log("Guild **{1}** is now known as **{0.name}** `(ID:{0.id})`".format(g, db_g.name))
                 sql.guild_update(g.id, name=g.name)
             if is_new_version:
-                ch = next((x for x in g.channels if x.id == row.alert_channel), None)
+                ch = next((x for x in g.channels if x.id == db_g.alert_channel), None)
                 if ch:
                     data = await http.get_changelog(VERSION)
                     if data:
@@ -159,6 +159,8 @@ async def on_command_error(ctx, error):
     # Check errors
     elif isinstance(error, errors.BadArgumentErrorWithMessage):
         await ctx.send(error.message)
+    elif isinstance(error, errors.FactionNotFound):
+        await ctx.send(ctx.s("error.faction_not_found"))
     elif isinstance(error, errors.IdempotentActionError):
         try:
             f = discord.File("assets/y_tho.png", "y_tho.png")
@@ -183,6 +185,8 @@ async def on_command_error(ctx, error):
         await ctx.send(ctx.s("error.bad_image"))
     elif isinstance(error, errors.TemplateHttpError):
         await ctx.send(ctx.s("error.cannot_fetch_template"))
+    elif isinstance(error, errors.TemplateNotFound):
+        await ctx.send(ctx.s("error.template_not_found"))
     elif isinstance(error, errors.UrlError):
         await ctx.send(ctx.s("error.non_discord_url"))
     elif isinstance(error, errors.HttpCanvasError):
