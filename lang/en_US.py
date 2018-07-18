@@ -408,10 +408,10 @@ STRINGS = {
     "example.factioninfo": [("\"That Faction\"", "Gets info about a faction named 'That Faction'"),
                             ("abc", "Gets info about a faction with the alias 'abc'")],
     "example.gridify": [("#8", "(with an attachment) Gridify an image magnified 8 times"),
-                        ("MyTemplate #16", "Gridify a template named 'MyTemplate' magnified 8 times"),
-                        ("-c 080808 MyTemplate #10", "Gridify a template named 'MyTemplate' magnified 8 times using hex 0x080808 as the grid color")],
+                        ("MyTemplate #16", "Gridify a template named 'MyTemplate' magnified 16 times"),
+                        ("-c 080808 MyTemplate #10", "Gridify a template named 'MyTemplate' magnified 10 times using hex 0x080808 as the grid color")],
     "example.hide": [("\"GTFO Faction\"", "Hides a faction named 'GTFO Faction'"),
-                     ("gtfo", "Hides a faction with the alias 'abc'")],
+                     ("gtfo", "Hides a faction with the alias 'gtfo'")],
     "example.language": [("", "View my current language and available language options"),
                          ("en-us", "Set my language to English (US)")],
     "example.prefix": [("", "View my current prefix"),
@@ -481,7 +481,7 @@ STRINGS = {
     "example.template.remove": [("MyTemplate", "Remove a template named 'MyTemplate'")],
     "example.unhide": [("", "Lists all currently hidden factions"),
                        ("\"GTFO Faction\"", "Unhides a faction named 'GTFO Faction'"),
-                       ("gtfo", "Unhides a faction with the alias 'abc'")],
+                       ("gtfo", "Unhides a faction with the alias 'gtfo'")],
 
     # Canvas colors
     "color.unknown": "Unknown",

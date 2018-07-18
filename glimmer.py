@@ -232,7 +232,7 @@ async def on_message(message):
 
 
 async def print_welcome_message(guild):
-    channels = [x for x in guild.channels if x.permissions_for(guild.me).send_messages and type(x) is TextChannel]
+    channels = (x for x in guild.channels if x.permissions_for(guild.me).send_messages and type(x) is TextChannel)
     c = next((x for x in channels if x.name == "general"), next(channels, None))
     if c:
         await c.send("Hi! I'm {0}. For a full list of commands, pull up my help page with `{1}help`. "
