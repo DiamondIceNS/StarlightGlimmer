@@ -10,12 +10,14 @@ from utils.lzstring import LZString
 
 
 class Chunky(abc.ABC):
-    size = None
-
     def __init__(self, x, y):
         self.x = x
         self.y = y
         self._image = None
+
+    @property
+    @abc.abstractmethod
+    def height(self): pass
 
     @property
     def image(self):
@@ -43,6 +45,10 @@ class Chunky(abc.ABC):
     @abc.abstractmethod
     def get_intersecting(x, y, dx, dy): pass
 
+    @property
+    @abc.abstractmethod
+    def width(self): pass
+
     def __eq__(self, other):
         if type(other) is BigChunk or type(other is ChunkPz):
             return self.y == other.y and self.x == other.x
@@ -54,7 +60,10 @@ class Chunky(abc.ABC):
 
 class BigChunk(Chunky):
     palette = [x for sub in colors.pixelcanvas for x in sub] * 16
-    size = 960
+
+    @property
+    def height(self):
+        return 960
 
     @property
     def p_x(self):
@@ -67,6 +76,10 @@ class BigChunk(Chunky):
     @property
     def url(self):
         return "http://pixelcanvas.io/api/bigchunk/{0}.{1}.bmp".format(self.x * 15, self.y * 15)
+
+    @property
+    def width(self):
+        return 960
 
     def is_in_bounds(self):
         return -1043 <= self.x < 1043 and -1043 <= self.y < 1043
@@ -98,7 +111,9 @@ class BigChunk(Chunky):
 
 
 class ChunkPzi(Chunky):
-    size = 500
+    @property
+    def height(self):
+        return 500
 
     @property
     def p_x(self):
@@ -111,6 +126,10 @@ class ChunkPzi(Chunky):
     @property
     def url(self):
         return "http://pixelz.io/api/{0}_{1}/img".format(self.p_x, self.p_y)
+
+    @property
+    def width(self):
+        return 500
 
     def is_in_bounds(self):
         return -1200 <= self.x < 1200 and -1200 <= self.y < 1200
@@ -134,7 +153,10 @@ class ChunkPzi(Chunky):
 
 class ChunkPz(Chunky):
     palette = [x for sub in colors.pixelzone for x in sub] * 16
-    size = 512
+
+    @property
+    def height(self):
+        return 512
 
     @property
     def p_x(self):
@@ -147,6 +169,10 @@ class ChunkPz(Chunky):
     @property
     def url(self):
         return "42[\"getChunkData\", {{\"cx\": {0}, \"cy\": {1}}}]".format(self.x, self.y)
+
+    @property
+    def width(self):
+        return 512
 
     def is_in_bounds(self):
         return 0 <= self.x < 16 and 0 <= self.y < 16

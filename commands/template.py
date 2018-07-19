@@ -5,7 +5,7 @@ import io
 import itertools
 import re
 import time
-from typing import List, Set
+from typing import List
 
 import aiohttp
 import discord
@@ -15,7 +15,7 @@ from discord.ext.commands import BucketType
 from PIL import Image, ImageChops
 
 from objects import errors
-from objects.chunks import Chunky, BigChunk, ChunkPzi, ChunkPz, PxlsBoard
+from objects.chunks import BigChunk, ChunkPzi, ChunkPz, PxlsBoard
 from objects.config import Config
 from objects.dbtemplate import DbTemplate
 from objects.logger import Log
@@ -70,7 +70,7 @@ class Template:
             msg.append("```")
             await ctx.send('\n'.join(msg))
         else:
-            await ctx.send(ctx.s("template.list_no_templates"))
+            await ctx.send(ctx.s("template.err.no_templates"))
 
     @commands.guild_only()
     @commands.cooldown(1, 5, BucketType.guild)
@@ -114,7 +114,7 @@ class Template:
             msg.append("```")
             await ctx.send('\n'.join(msg))
         else:
-            await ctx.send(ctx.s("template.list_all_no_templates"))
+            await ctx.send(ctx.s("template.err.no_public_templates"))
 
     @commands.guild_only()
     @commands.cooldown(1, 5, BucketType.guild)
@@ -155,27 +155,70 @@ class Template:
     @commands.cooldown(1, 60, BucketType.guild)
     @template.group(name='check')
     async def template_check(self, ctx):
-        pass  # TODO: Check all logic + custom cooldown
+        if not ctx.invoked_subcommand or ctx.invoked_subcommand.name == "check":
+            ts = sql.template_get_all_by_guild_id(ctx.guild.id)
+
+            if len(ts) < 1:
+                ctx.command.parent.reset_cooldown(ctx)
+                raise errors.NoTemplatesError(False)
+
+            msg = None
+            ts = sorted(ts, key=lambda tx: tx.name)
+            ts = sorted(ts, key=lambda tx: tx.canvas)
+            for canvas, canvas_ts in itertools.groupby(ts, lambda tx: tx.canvas):
+                ct = list(canvas_ts)
+                msg = await _check_canvas(ctx, ct, canvas, msg=msg)
+
+            await msg.delete()
+            await _build_template_report(ctx, ts)
 
     @commands.guild_only()
     @template_check.command(name='pixelcanvas', aliases=['pc'])
     async def template_check_pixelcanvas(self, ctx):
-        await self.check_canvas(ctx, "pixelcanvas", BigChunk, http.fetch_chunks_pixelcanvas)
+        ts = [x for x in sql.template_get_all_by_guild_id(ctx.guild.id) if x.canvas == 'pixelcanvas']
+        if len(ts) <= 0:
+            ctx.command.parent.reset_cooldown(ctx)
+            raise errors.NoTemplatesError(True)
+        ts = sorted(ts, key=lambda tx: tx.name)
+        msg = await _check_canvas(ctx, ts, "pixelcanvas")
+        await msg.delete()
+        await _build_template_report(ctx, ts)
 
     @commands.guild_only()
     @template_check.command(name='pixelzio', aliases=['pzi'])
     async def template_check_pixelzio(self, ctx):
-        await self.check_canvas(ctx, "pixelzio", ChunkPzi, http.fetch_chunks_pixelzio)
+        ts = [x for x in sql.template_get_all_by_guild_id(ctx.guild.id) if x.canvas == 'pixelzio']
+        if len(ts) <= 0:
+            ctx.command.parent.reset_cooldown(ctx)
+            raise errors.NoTemplatesError(True)
+        ts = sorted(ts, key=lambda tx: tx.name)
+        msg = await _check_canvas(ctx, ts, "pixelzio")
+        await msg.delete()
+        await _build_template_report(ctx, ts)
 
     @commands.guild_only()
     @template_check.command(name='pixelzone', aliases=['pz'])
     async def template_check_pixelzone(self, ctx):
-        await self.check_canvas(ctx, "pixelzone", ChunkPz, http.fetch_chunks_pixelzone)
+        ts = [x for x in sql.template_get_all_by_guild_id(ctx.guild.id) if x.canvas == 'pixelzone']
+        if len(ts) <= 0:
+            ctx.command.parent.reset_cooldown(ctx)
+            raise errors.NoTemplatesError(True)
+        ts = sorted(ts, key=lambda tx: tx.name)
+        msg = await _check_canvas(ctx, ts, "pixelzone")
+        await msg.delete()
+        await _build_template_report(ctx, ts)
 
     @commands.guild_only()
     @template_check.command(name='pxlsspace', aliases=['ps'])
     async def template_check_pxlsspace(self, ctx):
-        await self.check_canvas(ctx, "pxlsspace", PxlsBoard, http.fetch_pxlsspace)
+        ts = [x for x in sql.template_get_all_by_guild_id(ctx.guild.id) if x.canvas == 'pxlsspace']
+        if len(ts) <= 0:
+            ctx.command.parent.reset_cooldown(ctx)
+            raise errors.NoTemplatesError(True)
+        ts = sorted(ts, key=lambda tx: tx.name)
+        msg = await _check_canvas(ctx, ts, "pxlsspace")
+        await msg.delete()
+        await _build_template_report(ctx, ts)
 
     @commands.guild_only()
     @commands.cooldown(1, 5, BucketType.guild)
@@ -226,7 +269,7 @@ class Template:
         if not t:
             raise errors.TemplateNotFound
         if t.owner_id != ctx.author.id and not utils.is_template_admin(ctx) and not utils.is_admin(ctx):
-            await ctx.send(ctx.s("template.not_owner"))
+            await ctx.send(ctx.s("template.err.not_owner"))
             return
         sql.template_delete(t.gid, t.name)
         await ctx.send(ctx.s("template.remove").format(name))
@@ -234,7 +277,7 @@ class Template:
     @staticmethod
     async def add_template(ctx, canvas, name, x, y, url):
         if len(name) > cfg.max_template_name_length:
-            await ctx.send(ctx.s("template.name_too_long").format(cfg.max_template_name_length))
+            await ctx.send(ctx.s("template.err.name_too_long").format(cfg.max_template_name_length))
             return
         if sql.template_count_by_guild_id(ctx.guild.id) >= cfg.max_templates_per_guild:
             await ctx.send(ctx.s("template.max_templates"))
@@ -288,71 +331,6 @@ class Template:
             raise errors.PilImageError
 
     @staticmethod
-    def build_template_report(ctx, ts: List[DbTemplate]):
-        name = ctx.s("bot.name")
-        tot = ctx.s("bot.total")
-        err = ctx.s("bot.errors")
-        perc = ctx.s("bot.percent")
-
-        ts = sorted(ts, key=lambda tx: tx.name)
-        w1 = max(max(map(lambda tx: len(tx.name), ts)) + 2, len(name))
-        w2 = max(max(map(lambda tx: len(str(tx.height * tx.width)), ts)), len(tot))
-        w3 = max(max(map(lambda tx: len(str(tx.errors)), ts)), len(err))
-        w4 = max(len(perc), 6)
-
-        out = [
-            "**{}**".format(ctx.s("template.template_report_header")),
-            "```xl",
-            "{0:<{w1}}  {1:>{w2}}  {2:>{w3}}  {3:>{w4}}".format(name, tot, err, perc, w1=w1, w2=w2, w3=w3, w4=w4)
-        ]
-        for t in ts:
-            tot = t.size
-            name = '"{}"'.format(t.name)
-            perc = "{:>6.2f}%".format(100 * (tot - t.errors) / tot)
-            out.append('{0:<{w1}}  {1:>{w2}}  {2:>{w3}}  {3:>{w4}}'
-                       .format(name, tot, t.errors, perc, w1=w1, w2=w2, w3=w3, w4=w4))
-        out.append("```")
-        return '\n'.join(out)
-
-    @staticmethod
-    async def calculate_errors(ts: List[DbTemplate], chunks: Set[Chunky]):
-        cls = type(next(iter(chunks)))
-        for t in ts:
-            empty_bcs, shape = cls.get_intersecting(t.x, t.y, t.width, t.height)
-            tmp = Image.new("RGBA", tuple([cls.size * x for x in shape]))
-            for i, ch in enumerate(empty_bcs):
-                ch = next((x for x in chunks if x == ch))
-                tmp.paste(ch.image, ((i % shape[0]) * cls.size, (i // shape[0]) * cls.size))
-
-            x, y = t.x - empty_bcs[0].p_x, t.y - empty_bcs[0].p_y
-            tmp = tmp.crop((x, y, x + t.width, y + t.height))
-            template = Image.open(await http.get_template(t.url)).convert('RGBA')
-            alpha = Image.new('RGBA', template.size, (255, 255, 255, 0))
-            template = Image.composite(template, alpha, template)
-            tmp = Image.composite(tmp, alpha, template)
-            tmp = ImageChops.difference(tmp.convert('RGB'), template.convert('RGB'))
-            t.errors = np.array(tmp).any(axis=-1).sum()
-
-    @staticmethod
-    async def check_canvas(ctx, canvas, chunk_type, fetch):
-        ts = [x for x in sql.template_get_all_by_guild_id(ctx.guild.id) if x.canvas == canvas] if canvas \
-            else sql.template_get_all_by_guild_id(ctx.guild.id)
-        if len(ts) > 0:
-            chunks = set()
-            for t in ts:
-                empty_bcs, shape = chunk_type.get_intersecting(t.x, t.y, t.width, t.height)
-                chunks.update(empty_bcs)
-
-            msg = await ctx.send(ctx.s("template.fetching_data").format(canvases.pretty_print[canvas]))
-            await fetch(chunks)
-
-            await msg.edit(content=ctx.s("template.calculating"))
-            await Template.calculate_errors(ts, chunks)
-
-            await msg.edit(content=Template.build_template_report(ctx, ts))
-        # TODO: No templates
-
-    @staticmethod
     async def check_colors(img, palette):
         for py in range(img.height):
             await asyncio.sleep(0)
@@ -386,7 +364,7 @@ class Template:
         dup = sql.template_get_by_name(ctx.guild.id, template.name)
         if dup:
             if template.owner_id != ctx.author.id and not utils.is_admin(ctx):
-                await ctx.send(ctx.s("template.name_exists_no_permission"))
+                await ctx.send(ctx.s("template.err.name_exists"))
                 return False
             print(dup.x)
             q = ctx.s("template.name_exists_ask_replace") \
@@ -401,6 +379,72 @@ class Template:
             raise errors.UrlError
         if len(ctx.message.attachments) > 0:
             return ctx.message.attachments[0].url
+
+
+async def _build_template_report(ctx, ts: List[DbTemplate]):
+    name = ctx.s("bot.name")
+    tot = ctx.s("bot.total")
+    err = ctx.s("bot.errors")
+    perc = ctx.s("bot.percent")
+
+    w1 = max(max(map(lambda tx: len(tx.name), ts)) + 2, len(name))
+    w2 = max(max(map(lambda tx: len(str(tx.height * tx.width)), ts)), len(tot))
+    w3 = max(max(map(lambda tx: len(str(tx.errors)), ts)), len(err))
+    w4 = max(len(perc), 6)
+
+    out = [
+        "**{}**".format(ctx.s("template.template_report_header")),
+        "```xl",
+        "{0:<{w1}}  {1:>{w2}}  {2:>{w3}}  {3:>{w4}}".format(name, tot, err, perc, w1=w1, w2=w2, w3=w3, w4=w4)
+    ]
+    for t in ts:
+        tot = t.size
+        name = '"{}"'.format(t.name)
+        perc = "{:>6.2f}%".format(100 * (tot - t.errors) / tot)
+        out.append('{0:<{w1}}  {1:>{w2}}  {2:>{w3}}  {3:>{w4}}'
+                   .format(name, tot, t.errors, perc, w1=w1, w2=w2, w3=w3, w4=w4))
+    out.append("```")
+    await ctx.send(content='\n'.join(out))
+
+
+async def _check_canvas(ctx, templates, canvas, msg=None):
+    chunk_classes = {
+        'pixelcanvas': BigChunk,
+        'pixelzio': ChunkPzi,
+        'pixelzone': ChunkPz,
+        'pxlsspace': PxlsBoard
+    }
+
+    chunks = set()
+    for t in templates:
+        empty_bcs, shape = chunk_classes[canvas].get_intersecting(t.x, t.y, t.width, t.height)
+        chunks.update(empty_bcs)
+
+    if msg is not None:
+        await msg.edit(content=ctx.s("template.fetching_data").format(canvases.pretty_print[canvas]))
+    else:
+        msg = await ctx.send(ctx.s("template.fetching_data").format(canvases.pretty_print[canvas]))
+    await http.fetch_chunks(chunks)
+
+    await msg.edit(content=ctx.s("template.calculating"))
+    example_chunk = next(iter(chunks))
+    for t in templates:
+        empty_bcs, shape = example_chunk.get_intersecting(t.x, t.y, t.width, t.height)
+        tmp = Image.new("RGBA", (example_chunk.width * shape[0], example_chunk.height * shape[1]))
+        for i, ch in enumerate(empty_bcs):
+            ch = next((x for x in chunks if x == ch))
+            tmp.paste(ch.image, ((i % shape[0]) * ch.width, (i // shape[0]) * ch.height))
+
+        x, y = t.x - empty_bcs[0].p_x, t.y - empty_bcs[0].p_y
+        tmp = tmp.crop((x, y, x + t.width, y + t.height))
+        template = Image.open(await http.get_template(t.url)).convert('RGBA')
+        alpha = Image.new('RGBA', template.size, (255, 255, 255, 0))
+        template = Image.composite(template, alpha, template)
+        tmp = Image.composite(tmp, alpha, template)
+        tmp = ImageChops.difference(tmp.convert('RGB'), template.convert('RGB'))
+        t.errors = np.array(tmp).any(axis=-1).sum()
+
+    return msg
 
 
 def setup(bot):

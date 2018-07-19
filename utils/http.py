@@ -12,7 +12,19 @@ from objects import errors
 from objects.chunks import BigChunk, ChunkPzi, ChunkPz, PxlsBoard
 
 
-async def fetch_chunks_pixelcanvas(bigchunks: Iterable[BigChunk]):
+async def fetch_chunks(chunks: Iterable):
+    c = next(iter(chunks))
+    if type(c) is BigChunk:
+        await _fetch_chunks_pixelcanvas(chunks)
+    elif type(c) is ChunkPzi:
+        await _fetch_chunks_pixelzio(chunks)
+    elif type(c) is ChunkPz:
+        await _fetch_chunks_pixelzone(chunks)
+    else:
+        await _fetch_pxlsspace(chunks)
+
+
+async def _fetch_chunks_pixelcanvas(bigchunks: Iterable[BigChunk]):
     async with aiohttp.ClientSession() as session:
         for bc in bigchunks:
             await asyncio.sleep(0)
@@ -35,7 +47,7 @@ async def fetch_chunks_pixelcanvas(bigchunks: Iterable[BigChunk]):
             bc.load(data)
 
 
-async def fetch_chunks_pixelzio(chunks: Iterable[ChunkPzi]):
+async def _fetch_chunks_pixelzio(chunks: Iterable[ChunkPzi]):
     async with cfscrape.create_scraper_async() as session:
         for ch in chunks:
             await asyncio.sleep(0)
@@ -45,7 +57,7 @@ async def fetch_chunks_pixelzio(chunks: Iterable[ChunkPzi]):
                 ch.load(await resp.read())
 
 
-async def fetch_chunks_pixelzone(chunks: Iterable[ChunkPz]):
+async def _fetch_chunks_pixelzone(chunks: Iterable[ChunkPz]):
     socket_url = "{0}://pixelzone.io/socket.io/?EIO=3&transport={1}"
     pkts_expected = 0
     async with aiohttp.ClientSession() as session:
@@ -75,7 +87,8 @@ async def fetch_chunks_pixelzone(chunks: Iterable[ChunkPz]):
                     break
 
 
-async def fetch_pxlsspace(board: PxlsBoard):
+async def _fetch_pxlsspace(chunks: Iterable[PxlsBoard]):
+    board = next(iter(chunks))
     async with aiohttp.ClientSession() as session:
         async with session.get("http://pxls.space/info") as resp:
             info = json.loads(await resp.read())

@@ -177,6 +177,11 @@ async def on_command_error(ctx, error):
             await ctx.send(ctx.s("error.jpeg"))
     elif isinstance(error, errors.NoSelfPermissionError):
         await ctx.send(ctx.s("error.no_self_permission"))
+    elif isinstance(error, errors.NoTemplatesError):
+        if error.is_canvas_specific:
+            await ctx.send(ctx.s("error.no_templates_for_canvas"))
+        else:
+            await ctx.send(ctx.s("error.no_templates"))
     elif isinstance(error, errors.NoUserPermissionError):
         await ctx.send(ctx.s("error.no_user_permission"))
     elif isinstance(error, errors.NotPngError):

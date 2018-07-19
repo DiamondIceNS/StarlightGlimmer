@@ -131,7 +131,7 @@ async def fetch_pixelcanvas(x, y, dx, dy):
     bigchunks, shape = BigChunk.get_intersecting(x, y, dx, dy)
     fetched = Image.new('RGB', tuple([960 * x for x in shape]), colors.pixelcanvas[1])
 
-    await http.fetch_chunks_pixelcanvas(bigchunks)
+    await http.fetch_chunks(bigchunks)
 
     for i, bc in enumerate(bigchunks):
         fetched.paste(bc.image, ((i % shape[0]) * 960, (i // shape[0]) * 960))
@@ -144,7 +144,7 @@ async def fetch_pixelzio(x, y, dx, dy):
     chunks, shape = ChunkPzi.get_intersecting(x, y, dx, dy)
     fetched = Image.new('RGB', tuple([500 * x for x in shape]), colors.pixelzio[1])
 
-    await http.fetch_chunks_pixelzio(chunks)
+    await http.fetch_chunks(chunks)
 
     for i, ch in enumerate(chunks):
         fetched.paste(ch.image, ((i % shape[0]) * 500, (i // shape[0]) * 500))
@@ -156,7 +156,7 @@ async def fetch_pixelzone(x, y, dx, dy):
     chunks, shape = ChunkPz.get_intersecting(x, y, dx, dy)
     fetched = Image.new('RGB', tuple([512 * x for x in shape]), colors.pixelzone[2])
 
-    await http.fetch_chunks_pixelzone(chunks)
+    await http.fetch_chunks(chunks)
 
     for i, ch in enumerate(chunks):
         fetched.paste(ch.image, ((i % shape[0]) * 512, (i // shape[0]) * 512))
@@ -167,7 +167,7 @@ async def fetch_pixelzone(x, y, dx, dy):
 async def fetch_pxlsspace(x, y, dx, dy):
     board = PxlsBoard()
     fetched = Image.new('RGB', (dx, dy), colors.pxlsspace[1])
-    await http.fetch_pxlsspace(board)
+    await http.fetch_chunks([board])
     fetched.paste(board.image, (-x, -y, board.width - x, board.height - y))
     return fetched
 

@@ -31,6 +31,11 @@ class NoSelfPermissionError(commands.CommandError):
     pass
 
 
+class NoTemplatesError(commands.CommandError):
+    def __init__(self, is_canvas_specific=False):
+        self.is_canvas_specific = is_canvas_specific
+
+
 class NoUserPermissionError(commands.CommandError):
     pass
 
