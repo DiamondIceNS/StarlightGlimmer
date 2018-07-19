@@ -415,7 +415,7 @@ async def _quantize(ctx, args, canvas, palette):
             await att.save(data)
 
     if data:
-        template, bad_pixels = await canvas.quantize(data, palette)
+        template, bad_pixels = await render.quantize(data, palette)
 
         with io.BytesIO() as bio:
             template.save(bio, format="PNG")

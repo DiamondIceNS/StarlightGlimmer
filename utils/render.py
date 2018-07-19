@@ -88,7 +88,6 @@ async def preview(x, y, zoom, fetch):
 
 
 async def quantize(data, palette):
-    # TODO: Transparency broken
     with data:
         template = Image.open(data).convert('RGBA')
 
@@ -107,6 +106,9 @@ async def quantize(data, palette):
         d = d.point(lut).convert('L').point(lut).convert('1')
         d = Image.composite(d, black, mask)
         bad_pixels = np.array(d).sum()
+
+    alpha = Image.new('RGBA', template.size, (0, 0, 0, 0))
+    template = Image.composite(template.convert('RGBA'), alpha, mask)
 
     return template, bad_pixels
 
