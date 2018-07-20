@@ -274,6 +274,10 @@ class Template:
         date_added = datetime.date.fromtimestamp(t.date_created).strftime("%d %b, %Y")
         date_modified = datetime.date.fromtimestamp(t.date_updated).strftime("%d %b, %Y")
 
+        if size == 0:
+            t.size = await render.calculate_size(await http.get_template(t.url))
+            sql.template_update(t)
+
         e = discord.Embed(title=t.name, url=canvas_url, color=13594340) \
             .set_image(url=t.url) \
             .add_field(name=ctx.s("bot.canvas"), value=canvas_name, inline=True) \
@@ -427,6 +431,9 @@ async def _build_template_report(ctx, ts: List[DbTemplate]):
     ]
     for t in ts:
         tot = t.size
+        if tot == 0:
+            t.size = await render.calculate_size(await http.get_template(t.url))
+            sql.template_update(t)
         name = '"{}"'.format(t.name)
         perc = "{:>6.2f}%".format(100 * (tot - t.errors) / tot)
         out.append('{0:<{w1}}  {1:>{w2}}  {2:>{w3}}  {3:>{w4}}'
