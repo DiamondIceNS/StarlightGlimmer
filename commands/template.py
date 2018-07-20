@@ -344,7 +344,7 @@ class Template:
                     if not await utils.yes_no(ctx, ctx.s("template.not_quantized")):
                         return
 
-                    template, bad_pixels = await canvas.quantize(data, colors.by_name[canvas])
+                    template, bad_pixels = await render.quantize(data, colors.by_name[canvas])
                     with io.BytesIO() as bio:
                         template.save(bio, format="PNG")
                         bio.seek(0)

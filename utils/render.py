@@ -108,9 +108,9 @@ async def quantize(data, palette):
         bad_pixels = np.array(d).sum()
 
     alpha = Image.new('RGBA', template.size, (0, 0, 0, 0))
-    template = Image.composite(template.convert('RGBA'), alpha, mask)
+    q = Image.composite(q.convert('RGBA'), alpha, mask)
 
-    return template, bad_pixels
+    return q, bad_pixels
 
 
 async def gridify(data, color, zoom):

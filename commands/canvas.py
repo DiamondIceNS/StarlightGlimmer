@@ -70,13 +70,13 @@ class Canvas:
                 = await render.diff(t.x, t.y, data, zoom, fetchers[t.canvas], colors.by_name[t.canvas])
 
             done = tot - err
-            perc = int(10000 * (tot - err) / tot)
-            if perc == 0 and done > 0:
+            perc = done / tot
+            if perc < 0.00005 and done > 0:
                 perc = ">0.00%"
-            elif perc == 100 and err > 0:
+            elif perc >= 0.99995 and err > 0:
                 perc = "<100.00%"
             else:
-                perc = "{:.2f}%".format(perc / 100)
+                perc = "{:.2f}%".format(perc * 100)
             out = ctx.s("canvas.diff") if bad == 0 else ctx.s("canvas.diff_bad_color")
             out = out.format(done, tot, err, perc, bad=bad)
 
@@ -323,13 +323,13 @@ async def _diff(ctx, args, canvas, fetch, palette):
         diff_img, tot, err, bad, err_list = await render.diff(x, y, data, zoom, fetch, palette)
 
         done = tot - err
-        perc = int(10000 * (tot - err) / tot)
-        if perc == 0 and done > 0:
+        perc = done / tot
+        if perc < 0.00005 and done > 0:
             perc = ">0.00%"
-        elif perc == 100 and err > 0:
+        elif perc >= 0.99995 and err > 0:
             perc = "<100.00%"
         else:
-            perc = "{:.2f}%".format(perc / 100)
+            perc = "{:.2f}%".format(perc * 100)
         out = ctx.s("canvas.diff") if bad == 0 else ctx.s("canvas.diff_bad_color")
         out = out.format(done, tot, err, perc, bad=bad)
 
@@ -388,20 +388,16 @@ async def _preview(ctx, args, fetch):
 
 
 async def _quantize(ctx, args, canvas, palette):
-    if len(args) < 1:
-        return
-    if args[0] == "-f":
-        if len(args) < 3:
-            return
-        f = sql.guild_get_by_faction_name_or_alias(args[1])
-        if not f:
-            await ctx.send(ctx.s("error.faction_not_found"))
-            return
-        name = args[2]
-        t = sql.template_get_by_name(f.id, name)
-    else:
-        name = args[0]
-        t = sql.template_get_by_name(ctx.guild.id, name)
+    gid = ctx.guild.id
+    iter_args = iter(args)
+    name = next(iter_args, None)
+    if name == "-f":
+        faction = sql.guild_get_by_faction_name_or_alias(next(iter_args, None))
+        if not faction:
+            raise errors.FactionNotFound
+        gid = faction.id
+        name = next(iter_args, None)
+    t = sql.template_get_by_name(gid, name)
 
     data = None
     if t:

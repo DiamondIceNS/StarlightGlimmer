@@ -30,17 +30,17 @@ async def autoscan(ctx):
         view = ' '.join(m_pzi.groups(default='1'))
     elif m_pz:
         cmd = dget(dget(ctx.bot.commands, name='preview').commands, name='pixelzone')
-        view = m_pz.group(1) + ' ' + m_pz.group(2) + ' ' + (m_pz.group(4) or m_pz.group(3) or '1')
+        view = '{} {} {}'.format(m_pz.group(1), m_pz.group(2), m_pz.group(4) or m_pz.group(3) or '1')
     elif m_ps:
         cmd = dget(dget(ctx.bot.commands, name='preview').commands, name='pxlsspace')
-        view = m_ps.group(1) + ' ' + m_ps.group(2) + ' ' + (m_ps.group(4) or m_ps.group(3) or '1')
+        view = '{} {} {}'.format(m_ps.group(1), m_ps.group(2), m_ps.group(4) or m_ps.group(3) or '1')
     elif m_pre_def:
         cmd = dget(dget(ctx.bot.commands, name='preview').commands, name=canvas)
-        view = ' '.join(m_pc.groups(default='1'))
+        view = ' '.join(m_pre_def.groups(default='1'))
     elif m_dif_def and len(ctx.message.attachments) > 0 and ctx.message.attachments[0].filename[-4:].lower() == ".png":
         cmd = dget(dget(ctx.bot.commands, name='diff').commands, name=canvas)
-        view = (m_dif_def.group(1) or "") + ' ' + m_dif_def.group(2) + ' ' + m_dif_def.group(3) + ' ' \
-            + (m_dif_def.group(4) or 1)
+        view = '{} {} {} {}'.format(m_dif_def.group(1) or "", m_dif_def.group(2), m_dif_def.group(3),
+                                    m_dif_def.group(4) or 1)
 
     if cmd:
         ctx.command = cmd

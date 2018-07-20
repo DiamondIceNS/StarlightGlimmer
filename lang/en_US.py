@@ -71,7 +71,7 @@ STRINGS = {
     "configuration.autoscan_disabled": "Autoscan has been disabled.",
     "configuration.autoscan_enabled": "Autoscan has been enabled.",
     "configuration.canvas_check_1": "This guild's default canvas is **{0}**.",
-    "configuration.canvas_check_2": "To change the default canvas, run this command again with a supported canvas. (Use `{1}help canvas` to see a list.)",
+    "configuration.canvas_check_2": "To change the default canvas, run this command again with a supported canvas. (Use `{0}help canvas` to see a list.)",
     "configuration.canvas_set": "Default canvas has been set to **{0}**.",
     "configuration.language_check_1": "This guild's current language is **{0}**.",
     "configuration.language_check_2": "To set a new language, run this command again with one of the following options:",

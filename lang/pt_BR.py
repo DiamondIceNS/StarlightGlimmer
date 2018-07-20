@@ -70,7 +70,7 @@ STRINGS = {
     "configuration.autoscan_disabled": "O Autoscan foi desativado.",
     "configuration.autoscan_enabled": "Autoscan foi ativado.",
     "configuration.canvas_check_1": "O canvas padrão desta guild é **{0}**.",
-    "configuration.canvas_check_2": "Para alterar o canvas padrão, execute este comando novamente com um canvas suportado. (Use `{1}help canvas` para ver uma lista.)",
+    "configuration.canvas_check_2": "Para alterar o canvas padrão, execute este comando novamente com um canvas suportado. (Use `{0}help canvas` para ver uma lista.)",
     "configuration.canvas_set": "O canvas padrão foi definido para **{0}**.",
     "configuration.language_check_1": "A linguagem atual desta guild é **{0}**.",
     "configuration.language_check_2": "Para definir um novo idioma, execute este comando novamente com uma das seguintes opções:",
