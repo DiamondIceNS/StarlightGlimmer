@@ -50,8 +50,11 @@ async def on_ready():
             if old_version < 1.6 <= VERSION:
                 # Fix legacy templates not having a size
                 for t in sql.template_get_all():
-                    t.size = await render.calculate_size(await http.get_template(t.url))
-                    sql.template_update(t)
+                    try:
+                        t.size = await render.calculate_size(await http.get_template(t.url))
+                        sql.template_update(t)
+                    except errors.TemplateHttpError:
+                        log.error("Error retrieving template {0.name}. Skipping...".format(t))
 
     log.info("Loading extensions...")
     for extension in extensions:
