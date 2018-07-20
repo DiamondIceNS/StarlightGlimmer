@@ -1,5 +1,6 @@
-import discord
 import time
+
+import discord.errors
 
 from objects.logger import Log
 from objects.config import Config

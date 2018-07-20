@@ -1,29 +1,34 @@
-import discord
 import traceback
+
+import discord
 from discord import TextChannel
 from discord.ext import commands
 
-from objects.glimcontext import GlimContext
-from utils import canvases, checks, sqlite as sql, utils
+from objects import errors
 from objects.channel_logger import ChannelLogger
 from objects.config import Config
+from objects.glimcontext import GlimContext
 from objects.help_formatter import GlimmerHelpFormatter
 from objects.logger import Log
+from utils import canvases, http, render, sqlite as sql, utils
 from utils.version import VERSION
 
 
-def get_prefix(bot, msg):
-    return sql.guild_get_prefix_by_id(msg.guild.id)
+def get_prefix(bot_, msg: discord.Message):
+    return [sql.guild_get_prefix_by_id(msg.guild.id), bot_.user.mention + " "] \
+        if msg.guild else [cfg.prefix, bot_.user.mention + " "]
 
 
 cfg = Config()
 log = Log(''.join(cfg.name.split()))
 bot = commands.Bot(command_prefix=get_prefix, formatter=GlimmerHelpFormatter())
+bot.remove_command('help')
 ch_log = ChannelLogger(bot)
 extensions = [
     "commands.animotes",
     "commands.canvas",
     "commands.configuration",
+    "commands.faction",
     "commands.general",
     "commands.template",
 ]
@@ -37,10 +42,16 @@ async def on_ready():
         sql.version_init(VERSION)
         is_new_version = False
     else:
-        is_new_version = sql.version_get() != VERSION and sql.version_get() is not None
+        old_version = sql.version_get()
+        is_new_version = old_version != VERSION and old_version is not None
         if is_new_version:
             log.info("Database is a previous version. Updating...")
             sql.version_update(VERSION)
+            if old_version < 1.6 <= VERSION:
+                # Fix legacy templates not having a size
+                for t in sql.template_get_all():
+                    t.size = await render.calculate_size(await http.get_template(t.url))
+                    sql.template_update(t)
 
     log.info("Loading extensions...")
     for extension in extensions:
@@ -52,16 +63,25 @@ async def on_ready():
     log.info("Performing guilds check...")
     for g in bot.guilds:
         log.info("'{0.name}' (ID: {0.id})".format(g))
-        row = sql.guild_get_by_id(g.id)
-        if row:
-            prefix = row['prefix'] if row['prefix'] else cfg.prefix
-            if g.name != row['name']:
-                await ch_log.log("Guild **{1}** is now known as **{0.name}** `(ID:{0.id})`".format(g, row['name']))
+        db_g = sql.guild_get_by_id(g.id)
+        if db_g:
+            prefix = db_g.prefix if db_g.prefix else cfg.prefix
+            if g.name != db_g.name:
+                await ch_log.log("Guild **{1}** is now known as **{0.name}** `(ID:{0.id})`".format(g, db_g.name))
                 sql.guild_update(g.id, name=g.name)
             if is_new_version:
-                ch = next((x for x in g.channels if x.id == row['alert_channel']), None)
+                ch = next((x for x in g.channels if x.id == db_g.alert_channel), None)
                 if ch:
-                    await ch.send(GlimContext.get_str_from_guild(g, "bot.alert_update").format(VERSION, prefix))
+                    data = await http.get_changelog(VERSION)
+                    if data:
+                        e = discord.Embed(title=data['name'], url=data['url'], color=13594340,
+                                          description=data['body']) \
+                            .set_author(name=data['author']['login']) \
+                            .set_thumbnail(url=data['author']['avatar_url']) \
+                            .set_footer(text="Released " + data['published_at'])
+                        await ch.send(GlimContext.get_from_guild(g, "bot.update").format(VERSION, prefix), embed=e)
+                    else:
+                        await ch.send(GlimContext.get_from_guild(g, "bot.update_no_changelog").format(VERSION, prefix))
                     log.info("- Sent update message")
                 else:
                     log.info("- Could not send update message: alert channel not found.")
@@ -75,10 +95,10 @@ async def on_ready():
     db_guilds = sql.guild_get_all()
     if len(bot.guilds) != len(db_guilds):
         for g in db_guilds:
-            if not any(x for x in bot.guilds if x.id == g['id']):
-                log.info("Kicked from guild '{0}' (ID: {1}) between sessions".format(g['name'], g['id']))
-                await ch_log.log("Kicked from guild **{0}** (ID: `{1}`)".format(g['name'], g['id']))
-                sql.guild_delete(g['id'])
+            if not any(x for x in bot.guilds if x.id == g.id):
+                log.info("Kicked from guild '{0}' (ID: {1}) between sessions".format(g.name, g.id))
+                await ch_log.log("Kicked from guild **{0}** (ID: `{1}`)".format(g.name, g.id))
+                sql.guild_delete(g.id)
 
     log.info('I am ready!')
     await ch_log.log("I am ready!")
@@ -122,62 +142,72 @@ async def on_command_preprocess(ctx):
 async def on_command_error(ctx, error):
     # Command errors
     if isinstance(error, commands.BadArgument):
-        return
-    if isinstance(error, commands.CommandInvokeError):
-        if isinstance(error.original, discord.HTTPException) and error.original.code == 50013:
-            return
-    if isinstance(error, commands.CommandOnCooldown):
-        await ctx.send(ctx.get_str("bot.error.command_on_cooldown").format(error.retry_after))
-        return
-    if isinstance(error, commands.CommandNotFound):
-        return
-    if isinstance(error, commands.MissingRequiredArgument):
-        return
-    if isinstance(error, commands.NoPrivateMessage):
-        await ctx.send(ctx.get_str("bot.error.no_private_message"))
-        return
+        pass
+    elif isinstance(error, commands.CommandInvokeError) \
+            and isinstance(error.original, discord.HTTPException) \
+            and error.original.code == 50013:
+        pass
+    elif isinstance(error, commands.CommandOnCooldown):
+        await ctx.send(ctx.s("error.cooldown").format(error.retry_after))
+    elif isinstance(error, commands.CommandNotFound):
+        pass
+    elif isinstance(error, commands.MissingRequiredArgument):
+        pass
+    elif isinstance(error, commands.NoPrivateMessage):
+        await ctx.send(ctx.s("error.no_dm"))
 
     # Check errors
-    if isinstance(error, checks.IdempotentActionError):
+    elif isinstance(error, errors.BadArgumentErrorWithMessage):
+        await ctx.send(error.message)
+    elif isinstance(error, errors.FactionNotFound):
+        await ctx.send(ctx.s("error.faction_not_found"))
+    elif isinstance(error, errors.IdempotentActionError):
         try:
             f = discord.File("assets/y_tho.png", "y_tho.png")
-            await ctx.send(ctx.get_str("bot.why"), file=f)
+            await ctx.send(ctx.s("error.why"), file=f)
         except IOError:
-            await ctx.send(ctx.get_str("bot.why"))
-        return
-    if isinstance(error, checks.NoJpegsError):
+            await ctx.send(ctx.s("error.why"))
+    elif isinstance(error, errors.NoAttachmentError):
+        await ctx.send(ctx.s("error.no_attachment"))
+    elif isinstance(error, errors.NoJpegsError):
         try:
             f = discord.File("assets/disdain_for_jpegs.gif", "disdain_for_jpegs.gif")
-            await ctx.send(ctx.get_str("bot.error.jpeg"), file=f)
+            await ctx.send(ctx.s("error.jpeg"), file=f)
         except IOError:
-            await ctx.send(ctx.get_str("bot.error.jpeg"))
-        return
-    if isinstance(error, checks.NoPermissionError):
-        await ctx.send(ctx.get_str("bot.error.no_permission"))
-        return
-    if isinstance(error, checks.NotPngError):
-        await ctx.send(ctx.get_str("bot.error.no_png"))
-        return
-    if isinstance(error, checks.PilImageError):
-        await ctx.send(ctx.get_str("bot.error.pil_open_exception"))
-        return
-    if isinstance(error, checks.TemplateHttpError):
-        await ctx.send(ctx.get_str("bot.error.template_http_error"))
-        return
-    if isinstance(error, checks.UrlError):
-        await ctx.send(ctx.get_str("bot.error.url_error"))
-        return
-    if isinstance(error, checks.HttpPayloadError):
-        await ctx.send(ctx.get_str("bot.error.http_payload_error").format(canvases.pretty_print[error.canvas]))
-        return
+            await ctx.send(ctx.s("error.jpeg"))
+    elif isinstance(error, errors.NoSelfPermissionError):
+        await ctx.send(ctx.s("error.no_self_permission"))
+    elif isinstance(error, errors.NoTemplatesError):
+        if error.is_canvas_specific:
+            await ctx.send(ctx.s("error.no_templates_for_canvas"))
+        else:
+            await ctx.send(ctx.s("error.no_templates"))
+    elif isinstance(error, errors.NoUserPermissionError):
+        await ctx.send(ctx.s("error.no_user_permission"))
+    elif isinstance(error, errors.NotPngError):
+        await ctx.send(ctx.s("error.not_png"))
+    elif isinstance(error, errors.PilImageError):
+        await ctx.send(ctx.s("error.bad_image"))
+    elif isinstance(error, errors.TemplateHttpError):
+        await ctx.send(ctx.s("error.cannot_fetch_template"))
+    elif isinstance(error, errors.TemplateNotFound):
+        await ctx.send(ctx.s("error.template_not_found"))
+    elif isinstance(error, errors.UrlError):
+        await ctx.send(ctx.s("error.non_discord_url"))
+    elif isinstance(error, errors.HttpCanvasError):
+        await ctx.send(ctx.s("error.http_canvas").format(canvases.pretty_print[error.canvas]))
+    elif isinstance(error, errors.HttpGeneralError):
+        await ctx.send(ctx.s("error.http"))
 
     # Uncaught error
-    name = ctx.command.qualified_name if ctx.command else "None"
-    await ch_log.log("An error occurred executing `{0}` in server **{1.name}** (ID: `{1.id}`):".format(name, ctx.guild))
-    await ch_log.log("```{}```".format(error))
-    log.error("An error occurred executing '{}': {}\n{}"
-              .format(name, error, ''.join(traceback.format_exception(None, error, error.__traceback__))))
-    await ctx.send(ctx.get_str("bot.error.unhandled_command_error"))
+    else:
+        name = ctx.command.qualified_name if ctx.command else "None"
+        await ch_log.log(
+            "An error occurred executing `{0}` in server **{1.name}** (ID: `{1.id}`):".format(name, ctx.guild))
+        await ch_log.log("```{}```".format(error))
+        log.error("An error occurred executing '{}': {}\n{}"
+                  .format(name, error, ''.join(traceback.format_exception(None, error, error.__traceback__))))
+        await ctx.send(ctx.s("error.unknown"))
 
 
 @bot.event
@@ -207,7 +237,7 @@ async def on_message(message):
 
 
 async def print_welcome_message(guild):
-    channels = [x for x in guild.channels if x.permissions_for(guild.me).send_messages and type(x) is TextChannel]
+    channels = (x for x in guild.channels if x.permissions_for(guild.me).send_messages and type(x) is TextChannel)
     c = next((x for x in channels if x.name == "general"), next(channels, None))
     if c:
         await c.send("Hi! I'm {0}. For a full list of commands, pull up my help page with `{1}help`. "

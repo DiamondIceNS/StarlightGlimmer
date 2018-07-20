@@ -1,7 +1,8 @@
 from discord.ext import commands
 from discord.utils import get as dget
-from utils import canvases, sqlite as sql
+
 from lang import en_US, pt_BR
+from utils import canvases, sqlite as sql
 
 
 class GlimContext(commands.Context):
@@ -26,33 +27,36 @@ class GlimContext(commands.Context):
         return canvases.pretty_print[self.canvas]
 
     @property
+    def gprefix(self):
+        return sql.guild_get_prefix_by_id(self.guild.id)
+
+    @property
     def lang(self):
         return sql.guild_get_language_by_id(self.guild.id)
 
     @staticmethod
-    def get_str_from_guild(guild, str_id):
+    def get_from_guild(guild, str_id):
         language = sql.guild_get_language_by_id(guild.id).lower()
         if language == "en-us":
-            return en_US.STRINGS[str_id]
+            return en_US.STRINGS.get(str_id, None)
         if language == "pt-br":
-            return en_US.STRINGS[str_id]
+            return en_US.STRINGS.get(str_id, None)
 
-    def get_str(self, str_id):
+    def s(self, str_id):
         language = sql.guild_get_language_by_id(self.guild.id).lower()
-
         if language == "en-us":
-            return en_US.STRINGS[str_id]
+            return en_US.STRINGS.get(str_id, None)
         if language == "pt-br":
-            return pt_BR.STRINGS[str_id]
+            return pt_BR.STRINGS.get(str_id, None)
 
     async def invoke_default(self, cmd: str):
         default_canvas = self.canvas
         cmds = cmd.split('.')
         self.command = dget(self.bot.commands, name=cmds[0])
+        self.view.index = 0
+        self.view.preview = 0
+        self.view.get_word()
         if len(cmds) > 1:
-            self.view.index = 0
-            self.view.preview = 0
-            self.view.get_word()
             for c in cmds[1:]:
                 self.command = dget(self.command.commands, name=c)
                 self.view.skip_ws()
