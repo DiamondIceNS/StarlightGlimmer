@@ -129,6 +129,14 @@ async def gridify(data, color, zoom):
         return template
 
 
+def zoom(data, zoom):
+    with data:
+        template = Image.open(data).convert('RGBA')
+        log.debug("(Dim:{0}x{1} | Zoom:{2})".format(template.width, template.height, zoom))
+        template = template.resize((template.width * zoom, template.height * zoom), Image.NEAREST)
+        return template
+
+
 async def fetch_pixelcanvas(x, y, dx, dy):
     bigchunks, shape = BigChunk.get_intersecting(x, y, dx, dy)
     fetched = Image.new('RGB', tuple([960 * x for x in shape]), colors.pixelcanvas[1])

@@ -59,6 +59,7 @@ STRINGS = {
     # Canvas command messages
     "canvas.diff": "{0}/{1} | {2} errors | {3} complete",
     "canvas.diff_bad_color": "{0}/{1} | {2} errors | {bad} bad color | {3} complete",
+    "canvas.diff_error_list": "({}, {}) is {}, should be {}",
     "canvas.invalid_input": "Invalid input: does not match any template name or supported coordinates format.",
     "canvas.large_template": "(Processing large template, this might take a few seconds...)",
     "canvas.quantize": "Fixed {0} pixels.",
@@ -272,7 +273,7 @@ STRINGS = {
         """Images must be in PNG format.
         Error pixels will be marked in red. Pixels that do not match the canvas palette ('bad color') will be marked in blue (see `{p}help quantize`).
         You cannot zoom an image to contain more than 4 million pixels.
-        Use the `-l` flag to print out the specific coordinates of the first 15 error pixels.""",
+        Use the `-e` flag to print out the specific coordinates of the first 15 error pixels.""",
     "help.faction.create":
         """Factions must have unique names (6 to 32 chars, case sensitive) and, if at all, unique aliases (1 to 5 chars, case insensitive).
         A guild can only have one faction at any given time.""",
@@ -300,6 +301,7 @@ STRINGS = {
         A guild can have up to 25 templates at any time.
         Templates must have unique names (max 32 chars, case sensitive). If you attempt to add a new template with the same name as an existing one, it will be replaced if you have permission to remove the old one (see `{p}help remove`).
         I only store URLs to templates. If the message that originally uploaded a template is deleted, its URL will break and the template will be lost. Save backups to your computer just in case.""",
+    "help.template.info": "Use the `-r` flag to return just the raw image without extra info. You can also add a zoom factor when using this option.",
     "help.template.remove": "This command can only be used if the template being removed was added by you, unless you are a Template Admin, Bot Admin, or have the Administrator permission (see 'role').",
     "help.unregister": "You only need to unregister once for this to apply to all guilds.",
 
@@ -308,11 +310,11 @@ STRINGS = {
     "signature.alertchannel.set": "<channel>",
     "signature.assemble": "<name> (alias)",
     "signature.canvas": "(subcommand)",
-    "signature.diff": ["(subcommand) (-l) <coordinates> (zoom)", "(-l) (-f faction) <template> (zoom)"],
-    "signature.diff.pixelcanvas": "(-l) <coordinates> (zoom)",
-    "signature.diff.pixelzio": "(-l) <coordinates> (zoom)",
-    "signature.diff.pixelzone": "(-l) <coordinates> (zoom)",
-    "signature.diff.pxlsspace": "(-l) <coordinates> (zoom)",
+    "signature.diff": ["(subcommand) (-e) <coordinates> (zoom)", "(-e) (-f faction) <template> (zoom)"],
+    "signature.diff.pixelcanvas": "(-e) <coordinates> (zoom)",
+    "signature.diff.pixelzio": "(-e) <coordinates> (zoom)",
+    "signature.diff.pixelzone": "(-e) <coordinates> (zoom)",
+    "signature.diff.pxlsspace": "(-e) <coordinates> (zoom)",
     "signature.ditherchart": "(subcommand)",
     "signature.faction": "(subcommand)",
     "signature.faction.name": "(subcommand)",
@@ -356,7 +358,7 @@ STRINGS = {
     "signature.template.add.pixelzone": "<name> <x> <y> (url)",
     "signature.template.add.pxlsspace": "<name> <x> <y> (url)",
     "signature.template.check": "(subcommand)",
-    "signature.template.info": "(-f faction) <template>",
+    "signature.template.info": "(-r) (-f faction) <template> (zoom)",
     "signature.template.remove": "<template>",
     "signature.unhide": "(faction)",
 
@@ -370,10 +372,10 @@ STRINGS = {
                        ("pc", "Set the default canvas to Pixelcanvas.io")],
     "example.diff": [("pc 100 100", "(with an attachment) Check an image against Pixelcanvas.io at (100, 100)"),
                      ("520 -94 7", "(with an attachment) Check an image against the default canvas at (520, -94) and magnify the result 7 times"),
-                     ("-l -256 345", "(with an attachment) Check an image against the default canvas at (-256, 345) and print a short list of specific error pixels"),
+                     ("-e -256 345", "(with an attachment) Check an image against the default canvas at (-256, 345) and print a short list of specific error pixels"),
                      ("\"My Template\"", "Check a template named 'My Template'"),
                      ("-f CoolFaction CoolTemplate", "Check a template named 'CoolTemplate' belonging to the faction 'CoolFaction'"),
-                     ("-l -f CoolFaction CoolTemplate", "Check a template named 'CoolTemplate' belonging to the faction 'CoolFaction' and print a short list of specific error pixels")],
+                     ("-e -f CoolFaction CoolTemplate", "Check a template named 'CoolTemplate' belonging to the faction 'CoolFaction' and print a short list of specific error pixels")],
     "example.diff.pixelcanvas": [("100 100", "(with an attachment) Check an image against Pixelcanvas.io at (100, 100)"),
                                  ("100 100 7", "(with an attachment) Check an image against Pixelcanvas.io at (100, 100) and magnify the result 7 times")],
     "example.diff.pixelzio": [("100 100", "(with an attachment) Check an image against Pixelz.io at (100, 100)"),
@@ -477,7 +479,9 @@ STRINGS = {
     "example.template.check": [("", "Check completion status of all this guild's templates"),
                                ("pc", "Check completion status of all this guild's Pixelcanvas.io templates")],
     "example.template.info": [("MyTemplate", "Get info on a template named 'MyTemplate'"),
-                              ("-f CoolFaction CoolTemplate", "Get info on a template named 'CoolTemplate' belonging to a faction named 'CoolFaction'")],
+                              ("-f CoolFaction CoolTemplate", "Get info on a template named 'CoolTemplate' belonging to a faction named 'CoolFaction'"),
+                              ("-r RawTemplate 5", "Get just the image for template named 'RawTemplate' magnified 5 times"),
+                              ("-r -f CoolFaction CoolRawTemplate 4", "Get just the image for a template named 'CoolRawTemplate' belonging to a faction named 'CoolFaction' magnified 4 times")],
     "example.template.remove": [("MyTemplate", "Remove a template named 'MyTemplate'")],
     "example.unhide": [("", "Lists all currently hidden factions"),
                        ("\"GTFO Faction\"", "Unhides a faction named 'GTFO Faction'"),

@@ -3,6 +3,7 @@ import datetime
 import hashlib
 import io
 import itertools
+import math
 import re
 import time
 from typing import List
@@ -227,6 +228,10 @@ class Template:
         gid = ctx.guild.id
         iter_args = iter(args)
         name = next(iter_args, 1)
+        image_only = False
+        if name == "-r":
+            image_only = True
+            name = next(iter_args, 1)
         if name == "-f":
             faction = sql.guild_get_by_faction_name_or_alias(next(iter_args, None))
             if not faction:
@@ -236,6 +241,27 @@ class Template:
         t = sql.template_get_by_name(gid, name)
         if not t:
             raise errors.TemplateNotFound
+
+        if image_only:
+            zoom = next(iter_args, 1)
+            try:
+                if type(zoom) is not int:
+                    if zoom.startswith("#"):
+                        zoom = zoom[1:]
+                    zoom = int(zoom)
+            except ValueError:
+                zoom = 1
+            max_zoom = int(math.sqrt(4000000 // (t.width * t.height)))
+            zoom = max(1, min(zoom, max_zoom))
+
+            img = render.zoom(await http.get_template(t.url), zoom)
+
+            with io.BytesIO() as bio:
+                img.save(bio, format="PNG")
+                bio.seek(0)
+                f = discord.File(bio, t.name + ".png")
+                await ctx.send(file=f)
+            return
 
         canvas_url = canvases.url_templates[t.canvas].format(*t.center())
         canvas_name = canvases.pretty_print[t.canvas]

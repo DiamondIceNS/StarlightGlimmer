@@ -291,7 +291,7 @@ async def _diff(ctx, args, canvas, fetch, palette):
         list_pixels = False
         iter_args = iter(args)
         a = next(iter_args, None)
-        if a == "-l":
+        if a == "-e":
             list_pixels = True
             a = next(iter_args, None)
         if a and ',' in a:
@@ -345,7 +345,7 @@ async def _diff(ctx, args, canvas, fetch, palette):
                 err_x, err_y, current, target = p
                 current = ctx.s("color.{}.{}".format(canvas, current))
                 target = ctx.s("color.{}.{}".format(canvas, target))
-                out.append("({}, {}) is {}, should be {}".format(err_x + x, err_y + y, current, target))
+                out.append(ctx.s("canvas.diff_error_list").format(err_x + x, err_y + y, current, target))
             if err > 15:
                 out.append("...")
             out.append("```")
