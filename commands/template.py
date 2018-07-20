@@ -108,18 +108,12 @@ class Template:
                 faction = '"{}"'.format(f)
                 name = '"{}"'.format(t.name)
                 canvas_name = canvases.pretty_print[t.canvas]
-<<<<<<< HEAD
-                msg.append("{0:<{w1}}  {1:<14}  {2}\n".format(name, canvas_name, coords, w1=w1))
-            msg.append(ctx.get_str("template.list_close").format(ctx.prefix))
-            await ctx.send(''.join(msg))
-=======
                 msg.append("{0:<{w1}}  {1:<34}  {2:<14}  {3}".format(name, faction, canvas_name, coords, w1=w1))
             msg.append("")
             msg.append("// " + ctx.s("template.list_all_footer_1").format(ctx.gprefix))
             msg.append("// " + ctx.s("template.list_all_footer_2").format(ctx.gprefix))
             msg.append("```")
             await ctx.send('\n'.join(msg))
->>>>>>> 1.6
         else:
             await ctx.send(ctx.s("template.err.no_public_templates"))
 
