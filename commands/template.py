@@ -49,29 +49,29 @@ class Template:
             page = 1
 
         ts = sql.template_get_all_by_guild_id(gid)
-        if len(ts) > 0:
-            pages = 1 + len(ts) // 10
-            page = min(max(page, 1), pages)
-            w1 = max(max(map(lambda tx: len(tx.name), ts)) + 2, len(ctx.s("bot.name")))
-            msg = [
-                "**{}** - {} {}/{}".format(ctx.s("template.list_header"), ctx.s("bot.page"), page, pages),
-                "```xl",
-                "{0:<{w1}}  {1:<14}  {2}".format(ctx.s("bot.name"),
-                                                 ctx.s("bot.canvas"),
-                                                 ctx.s("bot.coordinates"), w1=w1)
-            ]
-            for t in ts[(page - 1) * 10:page * 10]:
-                coords = "({}, {})".format(t.x, t.y)
-                name = '"{}"'.format(t.name)
-                canvas_name = canvases.pretty_print[t.canvas]
-                msg.append("{0:<{w1}}  {1:<14}  {2}".format(name, canvas_name, coords, w1=w1))
-            msg.append("")
-            msg.append("// " + ctx.s("template.list_footer_1").format(ctx.gprefix))
-            msg.append("// " + ctx.s("template.list_footer_2").format(ctx.gprefix))
-            msg.append("```")
-            await ctx.send('\n'.join(msg))
-        else:
-            await ctx.send(ctx.s("template.err.no_templates"))
+        if len(ts) < 1:
+            raise errors.NoTemplatesError()
+
+        pages = 1 + len(ts) // 10
+        page = min(max(page, 1), pages)
+        w1 = max(max(map(lambda tx: len(tx.name), ts)) + 2, len(ctx.s("bot.name")))
+        msg = [
+            "**{}** - {} {}/{}".format(ctx.s("template.list_header"), ctx.s("bot.page"), page, pages),
+            "```xl",
+            "{0:<{w1}}  {1:<14}  {2}".format(ctx.s("bot.name"),
+                                             ctx.s("bot.canvas"),
+                                             ctx.s("bot.coordinates"), w1=w1)
+        ]
+        for t in ts[(page - 1) * 10:page * 10]:
+            coords = "({}, {})".format(t.x, t.y)
+            name = '"{}"'.format(t.name)
+            canvas_name = canvases.pretty_print[t.canvas]
+            msg.append("{0:<{w1}}  {1:<14}  {2}".format(name, canvas_name, coords, w1=w1))
+        msg.append("")
+        msg.append("// " + ctx.s("template.list_footer_1").format(ctx.gprefix))
+        msg.append("// " + ctx.s("template.list_footer_2").format(ctx.gprefix))
+        msg.append("```")
+        await ctx.send('\n'.join(msg))
 
     @commands.guild_only()
     @commands.cooldown(1, 5, BucketType.guild)
