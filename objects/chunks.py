@@ -132,7 +132,7 @@ class ChunkPzi(Chunky):
         return 500
 
     def is_in_bounds(self):
-        return -1200 <= self.x < 1200 and -1200 <= self.y < 1200
+        return -12 <= self.x < 12 and -12 <= self.y < 12
 
     def load(self, data):
         with io.BytesIO(data) as bio:

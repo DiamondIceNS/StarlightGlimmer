@@ -278,9 +278,11 @@ class Faction:
         for c in canvas_list:
             canvases_pretty.append(canvases.pretty_print[c])
         canvases_pretty.sort()
+        canvas_list = '\n'.join(canvases_pretty)
 
-        e = discord.Embed(color=g.faction_color) \
-            .add_field(name=ctx.s("bot.canvases"), value='\n'.join(canvases_pretty))
+        e = discord.Embed(color=g.faction_color)
+        if canvas_list:
+            e.add_field(name=ctx.s("bot.canvases"), value='\n'.join(canvases_pretty))
         if g.faction_invite:
             icon_url = self.bot.get_guild(g.id).icon_url
             e.set_author(name=g.faction_name, url=g.faction_invite, icon_url=icon_url)

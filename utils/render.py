@@ -24,8 +24,8 @@ async def diff(x, y, data, zoom, fetch, palette):
         template = Image.open(data).convert('RGBA')
 
     with template:
-        diff_img = await fetch(x, y, template.width, template.height)
         log.debug("(X:{0} | Y:{1} | Dim:{2}x{3} | Z:{4})".format(x, y, template.width, template.height, zoom))
+        diff_img = await fetch(x, y, template.width, template.height)
 
         black = Image.new('1', template.size, 0)
         white = Image.new('1', template.size, 1)
@@ -144,7 +144,8 @@ async def fetch_pixelcanvas(x, y, dx, dy):
     await http.fetch_chunks(bigchunks)
 
     for i, bc in enumerate(bigchunks):
-        fetched.paste(bc.image, ((i % shape[0]) * 960, (i // shape[0]) * 960))
+        if bc.is_in_bounds():
+            fetched.paste(bc.image, ((i % shape[0]) * 960, (i // shape[0]) * 960))
 
     x, y = x - (x + 448) // 960 * 960 + 448, y - (y + 448) // 960 * 960 + 448
     return fetched.crop((x, y, x + dx, y + dy))
@@ -157,7 +158,8 @@ async def fetch_pixelzio(x, y, dx, dy):
     await http.fetch_chunks(chunks)
 
     for i, ch in enumerate(chunks):
-        fetched.paste(ch.image, ((i % shape[0]) * 500, (i // shape[0]) * 500))
+        if ch.is_in_bounds():
+            fetched.paste(ch.image, ((i % shape[0]) * 500, (i // shape[0]) * 500))
 
     return fetched.crop((x % 500, y % 500, (x % 500) + dx, (y % 500) + dy))
 
@@ -169,7 +171,8 @@ async def fetch_pixelzone(x, y, dx, dy):
     await http.fetch_chunks(chunks)
 
     for i, ch in enumerate(chunks):
-        fetched.paste(ch.image, ((i % shape[0]) * 512, (i // shape[0]) * 512))
+        if ch.is_in_bounds():
+            fetched.paste(ch.image, ((i % shape[0]) * 512, (i // shape[0]) * 512))
 
     return fetched.crop((x % 512, y % 512, (x % 512) + dx, (y % 512) + dy))
 

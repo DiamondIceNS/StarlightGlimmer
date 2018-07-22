@@ -60,9 +60,18 @@ async def _fetch_chunks_pixelzio(chunks: Iterable[ChunkPzi]):
 async def _fetch_chunks_pixelzone(chunks: Iterable[ChunkPz]):
     socket_url = "{0}://pixelzone.io/socket.io/?EIO=3&transport={1}"
     pkts_expected = 0
+    sid = None
     async with aiohttp.ClientSession() as session:
-        async with session.get(socket_url.format("http", "polling")) as r:
-            sid = json.loads(str((await r.read())[4:-4], "utf-8"))['sid']
+        attempts = 0
+        while attempts < 3:
+            try:
+                async with session.get(socket_url.format("http", "polling")) as r:
+                    sid = json.loads(str((await r.read())[4:-4], "utf-8"))['sid']
+                    break
+            except aiohttp.client_exceptions.ClientOSError:
+                attempts += 1
+    if not sid:
+        raise errors.HttpCanvasError('pixelzone')
     async with websockets.connect(socket_url.format("ws", "websocket&sid=") + sid) as ws:
         await ws.send("2probe")
         await ws.recv()
