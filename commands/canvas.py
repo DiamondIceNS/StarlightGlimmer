@@ -55,6 +55,7 @@ class Canvas:
             zoom = 1
 
         if t:
+            log.debug("(T:{} | GID:{})".format(t.name, t.gid))
             data = await http.get_template(t.url)
             max_zoom = int(math.sqrt(4000000 // (t.width * t.height)))
             zoom = max(1, min(zoom, max_zoom))
@@ -215,6 +216,7 @@ class Canvas:
 
         t = sql.template_get_by_name(faction.id, name) if faction else sql.template_get_by_name(ctx.guild.id, name)
         if t:
+            log.debug("(T:{} | GID:{})".format(t.name, t.gid))
             data = await http.get_template(t.url)
             max_zoom = int(math.sqrt(4000000 // (t.width * t.height)))
             zoom = max(1, min(parse_zoom(next(iter_args, 1)), max_zoom))
@@ -394,6 +396,7 @@ async def _quantize(ctx, args, canvas, palette):
 
     data = None
     if t:
+        log.debug("(T:{} | GID:{})".format(t.name, t.gid))
         if t.canvas == canvas:
             raise errors.IdempotentActionError
         data = await http.get_template(t.url)

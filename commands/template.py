@@ -298,6 +298,7 @@ class Template:
         t = sql.template_get_by_name(ctx.guild.id, name)
         if not t:
             raise errors.TemplateNotFound
+        log.debug("(T:{})".format(t.name, t.gid))
         if t.owner_id != ctx.author.id and not utils.is_template_admin(ctx) and not utils.is_admin(ctx):
             await ctx.send(ctx.s("template.err.not_owner"))
             return
@@ -310,7 +311,7 @@ class Template:
             await ctx.send(ctx.s("template.err.name_too_long").format(cfg.max_template_name_length))
             return
         if sql.template_count_by_guild_id(ctx.guild.id) >= cfg.max_templates_per_guild:
-            await ctx.send(ctx.s("template.max_templates"))
+            await ctx.send(ctx.s("template.err.max_templates"))
             return
         url = await Template.select_url(ctx, url)
         if url is None:
@@ -319,6 +320,7 @@ class Template:
         t = await Template.build_template(ctx, name, x, y, url, canvas)
         if not t:
             return
+        log.debug("(T:{} | X:{} | Y:{} | Dim:{})".format(t.name, t.x, t.y, t.size))
         chk = await Template.check_for_duplicate_by_name(ctx, t)
         if chk is not None:
             if not chk or await Template.check_for_duplicates_by_md5(ctx, t) is False:

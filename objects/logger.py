@@ -27,6 +27,7 @@ class Log:
         else:
             self.debug("[{0}] {1.name}#{1.discriminator} used '{2}' in DM (UID:{1.id})"
                        .format(invocation_type, ctx.author, ctx.command.qualified_name, ctx.guild))
+        self.debug(ctx.message.content)
 
     def debug(self, msg):
         if cfg.debug:
