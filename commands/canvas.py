@@ -189,56 +189,49 @@ class Canvas:
         faction = None
         color = 8421504
         iter_args = iter(args)
-        a = next(iter_args, None)
-        while a in ["-f", "-c"]:
-            if a == "-f":
+        name = next(iter_args, None)
+        while name in ["-f", "-c"]:
+            if name == "-f":
                 faction = sql.guild_get_by_faction_name_or_alias(next(iter_args, None))
                 if not faction:
                     await ctx.send(ctx.s("error.faction_not_found"))
                     return
-            if a == "-c":
+            if name == "-c":
                 try:
                     color = abs(int(next(iter_args, None), 16) % 16777215)
+                    name = next(iter_args, None)
                 except ValueError:
                     await ctx.send(ctx.s("error.invalid_color"))
                     return
-            a = next(iter_args, None)
-        name = a
-        zoom = next(iter_args, None)
 
-        if faction:
-            t = sql.template_get_by_name(faction.id, name)
-        else:
-            t = sql.template_get_by_name(ctx.guild.id, name)
+        def parse_zoom(z):
+            try:
+                if type(z) is not int:
+                    if z.startswith("#"):
+                        z = z[1:]
+                    return int(z)
+            except ValueError:
+                return 1
 
-        template = None
+        t = sql.template_get_by_name(faction.id, name) if faction else sql.template_get_by_name(ctx.guild.id, name)
         if t:
             data = await http.get_template(t.url)
             max_zoom = int(math.sqrt(4000000 // (t.width * t.height)))
-            try:
-                zoom = max(1, min(int(zoom[1:]) if zoom and zoom.startswith("#") else 1, max_zoom))
-            except ValueError:
-                zoom = 1
+            zoom = max(1, min(parse_zoom(next(iter_args, 1)), max_zoom))
             template = await render.gridify(data, color, zoom)
         else:
             att = await utils.verify_attachment(ctx)
-            if att:
-                data = io.BytesIO()
-                await att.save(data)
-                zoom = args[0] if len(args) >= 1 else "#1"
-                max_zoom = int(math.sqrt(4000000 // (att.width * att.height)))
-                try:
-                    zoom = max(1, min(int(zoom[1:]) if zoom and zoom.startswith("#") else 1, max_zoom))
-                except ValueError:
-                    zoom = 1
-                template = await render.gridify(data, color, zoom)
+            data = io.BytesIO()
+            await att.save(data)
+            max_zoom = int(math.sqrt(4000000 // (att.width * att.height)))
+            zoom = max(1, min(parse_zoom(name), max_zoom))
+            template = await render.gridify(data, color, zoom)
 
-        if template:
-            with io.BytesIO() as bio:
-                template.save(bio, format="PNG")
-                bio.seek(0)
-                f = discord.File(bio, "gridded.png")
-                await ctx.send(file=f)
+        with io.BytesIO() as bio:
+            template.save(bio, format="PNG")
+            bio.seek(0)
+            f = discord.File(bio, "gridded.png")
+            await ctx.send(file=f)
 
     # ======================
     #       DITHERCHART
