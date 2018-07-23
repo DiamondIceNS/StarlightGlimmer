@@ -188,7 +188,7 @@ class Canvas:
     @commands.command(name="gridify", aliases=["g"])
     async def gridify(self, ctx, *args):
         faction = None
-        color = 8421504
+        color = 0x808080
         iter_args = iter(args)
         name = next(iter_args, None)
         while name in ["-f", "-c"]:
@@ -199,7 +199,7 @@ class Canvas:
                     return
             if name == "-c":
                 try:
-                    color = abs(int(next(iter_args, None), 16) % 16777215)
+                    color = abs(int(next(iter_args, None), 16) % 0xFFFFFF)
                     name = next(iter_args, None)
                 except ValueError:
                     await ctx.send(ctx.s("error.invalid_color"))

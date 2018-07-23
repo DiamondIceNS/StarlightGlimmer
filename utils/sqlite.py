@@ -283,7 +283,7 @@ def guild_faction_set(gid, name=None, alias=None, desc=None, color=None, emblem=
         c.execute('UPDATE guilds SET faction_alias=? WHERE id=?', (alias, gid))
     if desc:
         c.execute('UPDATE guilds SET faction_desc=? WHERE id=?', (desc, gid))
-    if color:
+    if color is not None:
         c.execute('UPDATE guilds SET faction_color=? WHERE id=?', (color, gid))
     if emblem:
         c.execute('UPDATE guilds SET faction_emblem=? WHERE id=?', (emblem, gid))

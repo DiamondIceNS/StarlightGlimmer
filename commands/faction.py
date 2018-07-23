@@ -104,11 +104,10 @@ class Faction:
     @faction_color.command(name="set")
     async def faction_color_set(self, ctx, color: str):
         try:
-            color = int(color, 0)
+            color = abs(int(color, 16) % 0xFFFFFF)
         except ValueError:
             await ctx.send(ctx.s("error.invalid_color"))
             return
-        color = abs(color % 16777215)
         sql.guild_faction_set(ctx.guild.id, color=color)
         await ctx.send(ctx.s("faction.set_color"))
 
