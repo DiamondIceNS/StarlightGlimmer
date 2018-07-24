@@ -94,7 +94,7 @@ class Faction:
                 img.save(bio, format="PNG")
                 bio.seek(0)
                 f = discord.File(bio, "color.png")
-                await ctx.send('0x' + format(color, 'X'), file=f)
+                await ctx.send('0x{0:06X}'.format(color), file=f)
 
     @faction_color.command(name="clear")
     async def faction_color_clear(self, ctx):
@@ -289,7 +289,7 @@ class Faction:
             e.set_author(name=g.faction_name)
         e.description = g.faction_desc if g.faction_desc else ""
         if g.faction_alias:
-            e.description += "\n**{}:** {}".format(ctx.s("bot.alias"), g.faction_alias)
+            e.description = "**{}:** {}\n".format(ctx.s("bot.alias"), g.faction_alias) + e.description
         if g.faction_emblem:
             e.set_thumbnail(url=g.faction_emblem)
 
