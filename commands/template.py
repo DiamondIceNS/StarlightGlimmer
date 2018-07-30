@@ -223,7 +223,7 @@ class Template:
 
     @commands.guild_only()
     @commands.cooldown(1, 5, BucketType.guild)
-    @template.command(name='info')
+    @template.command(name='info', aliases=['i'])
     async def template_info(self, ctx, *args):
         gid = ctx.guild.id
         iter_args = iter(args)
@@ -268,7 +268,7 @@ class Template:
         coords = "({}, {})".format(t.x, t.y)
         dimensions = "{} x {}".format(t.width, t.height)
         size = t.size
-        visibility = ctx.s("bot.private") if bool(t.private) else ctx.s("bot.private")
+        visibility = ctx.s("bot.private") if bool(t.private) else ctx.s("bot.public")
         owner = self.bot.get_user(t.owner_id)
         added_by = owner.name + "#" + owner.discriminator
         date_added = datetime.date.fromtimestamp(t.date_created).strftime("%d %b, %Y")
