@@ -59,7 +59,7 @@ async def diff(x, y, data, zoom, fetch, palette):
                 f_color = palette.index(diff_img.getpixel(tuple(p)))
             except ValueError:
                 f_color = -1
-            error_list.append((*p, t_color, f_color))
+            error_list.append((*p, f_color, t_color))
 
         diff_img = diff_img.convert('L').convert('RGB')
         diff_img = Image.composite(Image.new('RGB', template.size, (255, 0, 0)), diff_img, error_mask)

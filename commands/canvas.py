@@ -30,7 +30,7 @@ class Canvas:
         list_pixels = False
         iter_args = iter(args)
         a = next(iter_args, None)
-        if a == "-l":
+        if a == "-e":
             list_pixels = True
             a = next(iter_args, None)
         if a == "-f":
