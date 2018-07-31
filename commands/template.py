@@ -226,6 +226,7 @@ class Template:
     @template.command(name='info', aliases=['i'])
     async def template_info(self, ctx, *args):
         gid = ctx.guild.id
+        faction = None
         iter_args = iter(args)
         name = next(iter_args, 1)
         image_only = False
@@ -238,6 +239,8 @@ class Template:
                 raise errors.FactionNotFound
             gid = faction.id
             name = next(iter_args, 1)
+        else:
+            faction = sql.guild_get_by_id(gid)
         t = sql.template_get_by_name(gid, name)
         if not t:
             raise errors.TemplateNotFound
@@ -263,7 +266,6 @@ class Template:
                 await ctx.send(file=f)
             return
 
-        canvas_url = canvases.url_templates[t.canvas].format(*t.center())
         canvas_name = canvases.pretty_print[t.canvas]
         coords = "({}, {})".format(t.x, t.y)
         dimensions = "{} x {}".format(t.width, t.height)
@@ -273,12 +275,15 @@ class Template:
         added_by = owner.name + "#" + owner.discriminator
         date_added = datetime.date.fromtimestamp(t.date_created).strftime("%d %b, %Y")
         date_modified = datetime.date.fromtimestamp(t.date_updated).strftime("%d %b, %Y")
+        color = faction.faction_color
+        description = "[__{}__]({})".format(ctx.s("template.link_to_canvas"),
+                                            canvases.url_templates[t.canvas].format(*t.center()))
 
         if size == 0:
             t.size = await render.calculate_size(await http.get_template(t.url))
             sql.template_update(t)
 
-        e = discord.Embed(title=t.name, url=canvas_url, color=13594340) \
+        e = discord.Embed(title=t.name, color=color, description=description) \
             .set_image(url=t.url) \
             .add_field(name=ctx.s("bot.canvas"), value=canvas_name, inline=True) \
             .add_field(name=ctx.s("bot.coordinates"), value=coords, inline=True) \
@@ -288,6 +293,10 @@ class Template:
             .add_field(name=ctx.s("bot.added_by"), value=added_by, inline=True) \
             .add_field(name=ctx.s("bot.date_added"), value=date_added, inline=True) \
             .add_field(name=ctx.s("bot.date_modified"), value=date_modified, inline=True)
+
+        if faction.id != ctx.guild.id and faction.faction_name:
+            e = e.set_author(name=faction.faction_name, icon_url=faction.faction_emblem)
+
         await ctx.send(embed=e)
 
     @commands.guild_only()

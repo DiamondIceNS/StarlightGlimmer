@@ -155,6 +155,7 @@ STRINGS = {
     "template.err.no_public_templates": "There are currently no public templates.",
     "template.err.not_owner": "You do not have permission to modify that template.",
     "template.fetching_data": "Fetching data from {}...",
+    "template.link_to_canvas": "Link to canvas",
     "template.list_all_footer_1": "Use '{0}template all <page>' to see that page",
     "template.list_all_footer_2": "Use '{0}template info -f <faction> <name>' to see more info on a template",
     "template.list_header": "Template List",

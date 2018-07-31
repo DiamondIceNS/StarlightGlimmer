@@ -153,6 +153,7 @@ STRINGS = {
     "template.err.no_public_templates": "Atualmente não há templates públicos.",
     "template.err.not_owner": "Você não tem permissão para modificar esse template.",
     "template.fetching_data": "Buscando dados de{}...",
+    "template.link_to_canvas": "Link para o canvas",
     "template.list_all_footer_1": "Use '{0}template all <page>' para ver essa página",
     "template.list_all_footer_2": "Use '{0}template info -f <faction> <name>' para ver mais informações em um template",
     "template.list_header": "Lista de templates",
