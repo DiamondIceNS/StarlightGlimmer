@@ -20,7 +20,7 @@ class Faction:
 
     @checks.admin_only()
     @commands.command(name="assemble")
-    async def assemble(self, ctx, name, alias=None):
+    async def assemble(self, ctx, name, alias=""):
         if sql.guild_is_faction(ctx.guild.id):
             await ctx.send(ctx.s("faction.already_faction"))
             return

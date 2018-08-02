@@ -207,10 +207,14 @@ class Canvas:
 
         def parse_zoom(z):
             try:
-                if type(z) is not int:
+                if type(z) is int:
+                    return z
+                if type(z) is str:
                     if z.startswith("#"):
                         z = z[1:]
                     return int(z)
+                if type(z) is None:
+                    return 1
             except ValueError:
                 return 1
 

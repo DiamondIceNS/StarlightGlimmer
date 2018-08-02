@@ -128,10 +128,11 @@ class Configuration:
     @commands.group(name="role", invoke_without_command=True)
     async def role(self, ctx):
         roles = ["botadmin", "templateadder", "templateadmin"]
-        out = [ctx.s("configuration.role_list_header"), "```xl"]
-        max_len = max(map(lambda x: len(x[0]), roles))
+        out = ["**{}**".format(ctx.s("configuration.role_list_header")), "```xl"]
+        max_len = max(map(lambda x: len(x), roles))
         for r in roles:
-            out.append("{0:<{max_len} - {1}".format(r, ctx.s("configuration.role_list_" + r), max_len=max_len))
+            out.append("{0:<{max_len}} - {1}".format(r, ctx.s("configuration.role_list_" + r), max_len=max_len))
+        out.append("```")
         await ctx.send('\n'.join(out))
 
     @checks.admin_only()
