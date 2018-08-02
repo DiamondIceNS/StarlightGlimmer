@@ -376,6 +376,7 @@ async def _preview(ctx, args, fetch):
                 zoom = int(zoom)
         except ValueError:
             zoom = 1
+        zoom = max(min(zoom, 16), -8)
 
         preview_img = await render.preview(x, y, zoom, fetch)
 
