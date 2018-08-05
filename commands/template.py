@@ -226,7 +226,6 @@ class Template:
     @template.command(name='info', aliases=['i'])
     async def template_info(self, ctx, *args):
         gid = ctx.guild.id
-        faction = None
         iter_args = iter(args)
         name = next(iter_args, 1)
         image_only = False
@@ -295,7 +294,7 @@ class Template:
             .add_field(name=ctx.s("bot.date_modified"), value=date_modified, inline=True)
 
         if faction.id != ctx.guild.id and faction.faction_name:
-            e = e.set_author(name=faction.faction_name, icon_url=faction.faction_emblem)
+            e = e.set_author(name=faction.faction_name, icon_url=faction.faction_emblem or discord.Embed.Empty)
 
         await ctx.send(embed=e)
 
