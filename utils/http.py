@@ -8,8 +8,11 @@ import cfscrape
 import websockets
 from typing import Iterable
 
-from objects import errors
+from objects import errors, logger
 from objects.chunks import BigChunk, ChunkPzi, ChunkPz, PxlsBoard
+
+
+log = logger.Log(__name__)
 
 
 async def fetch_chunks(chunks: Iterable):
@@ -85,15 +88,20 @@ async def _fetch_chunks_pixelzone(chunks: Iterable[ChunkPz]):
             pkts_expected += 1
         if pkts_expected > 0:
             pkts_loaded = 0
-            async for msg in ws:
-                d = json.loads(msg[msg.find('['):])
-                if d[0] == "chunkData":
-                    data = d[1]
-                    ch = next((x for x in chunks if x.x == data['cx'] and x.y == data['cy']))
-                    ch.load(data['data'])
-                    pkts_loaded += 1
-                if pkts_loaded == pkts_expected:
-                    break
+            try:
+                async for msg in ws:
+                    d = json.loads(msg[msg.find('['):])
+                    if type(d[0]) == int:
+                        await log.error(d)
+                    if d[0] == "chunkData":
+                        data = d[1]
+                        ch = next((x for x in chunks if x.x == data['cx'] and x.y == data['cy']))
+                        ch.load(data['data'])
+                        pkts_loaded += 1
+                    if pkts_loaded == pkts_expected:
+                        break
+            except websockets.ConnectionClosed:
+                raise errors.HttpCanvasError('pixelzone')
 
 
 async def _fetch_pxlsspace(chunks: Iterable[PxlsBoard]):
