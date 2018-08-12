@@ -62,8 +62,10 @@ async def _fetch_chunks_pixelzio(chunks: Iterable[ChunkPzi]):
 
 async def _fetch_chunks_pixelzone(chunks: Iterable[ChunkPz]):
     socket_url = "{0}://pixelzone.io/socket.io/?EIO=3&transport={1}"
-    pkts_expected = 0
     sid = None
+    chunks = [x for x in chunks if x.is_in_bounds()]
+    if len(chunks) == 0:
+        return
     async with aiohttp.ClientSession() as session:
         attempts = 0
         while attempts < 3:
@@ -80,28 +82,23 @@ async def _fetch_chunks_pixelzone(chunks: Iterable[ChunkPz]):
         await ws.recv()
         await ws.send("5")
         await ws.recv()
-        for ch in chunks:
-            await asyncio.sleep(0)
-            if not ch.is_in_bounds():
-                continue
-            await ws.send(ch.url)
-            pkts_expected += 1
-        if pkts_expected > 0:
-            pkts_loaded = 0
-            try:
+        try:
+            for ch in chunks:
+                await ws.send(ch.url)
                 async for msg in ws:
                     d = json.loads(msg[msg.find('['):])
-                    if type(d[0]) == int:
-                        await log.error(d)
+                    if type(d) == int:
+                        continue
                     if d[0] == "chunkData":
                         data = d[1]
                         ch = next((x for x in chunks if x.x == data['cx'] and x.y == data['cy']))
                         ch.load(data['data'])
-                        pkts_loaded += 1
-                    if pkts_loaded == pkts_expected:
+                        await ws.send("2probe")
                         break
-            except websockets.ConnectionClosed:
-                raise errors.HttpCanvasError('pixelzone')
+        except websockets.ConnectionClosed:
+            raise errors.HttpCanvasError('pixelzone')
+        finally:
+            await ws.send("1")
 
 
 async def _fetch_pxlsspace(chunks: Iterable[PxlsBoard]):
