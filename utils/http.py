@@ -85,24 +85,20 @@ async def _fetch_chunks_pixelzone(chunks: Iterable[ChunkPz]):
         try:
             for ch in chunks:
                 data = {}
-                while len(data) < 1:
-                    await ws.send(ch.url)
-                    async for msg in ws:
-                        d = json.loads(msg[msg.find('['):])
-                        if type(d) == int:
-                            continue
-                        if d[0] == "chunkData":
-                            data = d[1]
-                            print(data)
-                            await ws.send("2probe")
+                await ws.send(ch.url)
+                async for msg in ws:
+                    d = json.loads(msg[msg.find('['):])
+                    if type(d) == int:
+                        continue
+                    if d[0] == "chunkData":
+                        data = d[1]
+                        break
                 ch = next((x for x in chunks if x.x == data['cx'] and x.y == data['cy']))
                 ch.load(data['data'])
-                break
         except websockets.ConnectionClosed as e:
-            print(e.reason)
             raise errors.HttpCanvasError('pixelzone')
-        # finally:
-            # await ws.send("1")
+        finally:
+            await ws.send("1")
 
 
 async def _fetch_pxlsspace(chunks: Iterable[PxlsBoard]):
