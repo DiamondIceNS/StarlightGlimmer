@@ -95,10 +95,9 @@ async def _fetch_chunks_pixelzone(chunks: Iterable[ChunkPz]):
                         break
                 ch = next((x for x in chunks if x.x == data['cx'] and x.y == data['cy']))
                 ch.load(data['data'])
+            await ws.send("1")
         except websockets.ConnectionClosed as e:
             raise errors.HttpCanvasError('pixelzone')
-        finally:
-            await ws.send("1")
 
 
 async def _fetch_pxlsspace(chunks: Iterable[PxlsBoard]):
