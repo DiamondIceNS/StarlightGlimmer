@@ -90,12 +90,11 @@ async def _fetch_chunks_pixelzone(chunks: Iterable[ChunkPz]):
                     d = json.loads(msg[msg.find('['):])
                     if type(d) == int:
                         continue
-                    if d[0] == "chunkData":
+                    if d[0] == "c":
                         data = d[1]
                         break
                 ch = next((x for x in chunks if x.x == data['cx'] and x.y == data['cy']))
                 ch.load(data['data'])
-            await ws.send("1")
         except websockets.ConnectionClosed as e:
             raise errors.HttpCanvasError('pixelzone')
 

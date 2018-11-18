@@ -168,7 +168,7 @@ class ChunkPz(Chunky):
 
     @property
     def url(self):
-        return "42[\"getChunkData\", {{\"cx\": {0}, \"cy\": {1}}}]".format(self.x, self.y)
+        return "42[\"r\", {{\"cx\": {0}, \"cy\": {1}}}]".format(self.x, self.y)
 
     @property
     def width(self):
