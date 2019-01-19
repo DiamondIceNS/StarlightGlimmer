@@ -10,8 +10,10 @@ from typing import Iterable
 
 from objects import errors, logger
 from objects.chunks import BigChunk, ChunkPzi, ChunkPz, PxlsBoard
+from objects.config import Config
 
 
+cfg = Config()
 log = logger.Log(__name__)
 
 
@@ -70,18 +72,19 @@ async def _fetch_chunks_pixelzone(chunks: Iterable[ChunkPz]):
         attempts = 0
         while attempts < 3:
             try:
-                async with session.get(socket_url.format("http", "polling")) as r:
+                async with session.get(socket_url.format("http", "polling"), headers={'User-Agent': 'Python/3.6 aiohttp/3.2.0'}) as r:
                     sid = json.loads(str((await r.read())[4:-4], "utf-8"))['sid']
                     break
             except aiohttp.client_exceptions.ClientOSError:
                 attempts += 1
     if not sid:
         raise errors.HttpCanvasError('pixelzone')
-    async with websockets.connect(socket_url.format("ws", "websocket&sid=") + sid) as ws:
+    async with websockets.connect(socket_url.format("ws", "websocket&sid=") + sid, extra_headers={'User-Agent': 'Python/3.6 aiohttp/3.2.0'}) as ws:
         await ws.send("2probe")
         await ws.recv()
         await ws.send("5")
         await ws.recv()
+        await ws.send("42['useAPI', '{}'".format(cfg.pz_api_key))
         try:
             for ch in chunks:
                 data = {}

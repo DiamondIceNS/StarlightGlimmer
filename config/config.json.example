@@ -3,6 +3,7 @@
     "prefix": "g!",
     "name": "Starlight Glimmer",
     "invite": "your-invite-link-here",
+    "pixelzone_api_key": null,
 
     "preview_height": 240,
     "preview_width": 400,
