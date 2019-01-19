@@ -11,5 +11,8 @@
     "max_template_name_length": 32,
 
     "logging_channel_id": 0,
-    "debug": false
+    "debug": false,
+    "channel_log_guild_renames": false,
+    "channel_log_guild_joins": false,
+    "channel_log_guild_kicks": false
 }

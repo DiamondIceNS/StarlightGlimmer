@@ -41,6 +41,9 @@ class Config:
 
         self.logging_channel_id = data.get('logging_channel_id', None)
         self.debug = data.get('debug', False)
+        self.channel_log_guild_renames = data.get('channel_log_guild_renames', False)
+        self.channel_log_guild_joins = data.get('channel_log_guild_joins', False)
+        self.channel_log_guild_kicks = data.get('channel_log_guild_kicks', False)
 
         if self.token is None:
             log.critical("No bot token was specified!")

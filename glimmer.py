@@ -70,7 +70,8 @@ async def on_ready():
         if db_g:
             prefix = db_g.prefix if db_g.prefix else cfg.prefix
             if g.name != db_g.name:
-                await ch_log.log("Guild **{1}** is now known as **{0.name}** `(ID:{0.id})`".format(g, db_g.name))
+                if cfg.channel_log_guild_renames:
+                    await ch_log.log("Guild **{1}** is now known as **{0.name}** `(ID:{0.id})`".format(g, db_g.name))
                 sql.guild_update(g.id, name=g.name)
             if is_new_version:
                 ch = next((x for x in g.channels if x.id == db_g.alert_channel), None)
@@ -90,7 +91,8 @@ async def on_ready():
                     log.info("- Could not send update message: alert channel not found.")
         else:
             j = g.me.joined_at
-            await ch_log.log("Joined guild **{0.name}** (ID: `{0.id}`)".format(g, j.isoformat(' ')))
+            if cfg.channel_log_guild_joins:
+                await ch_log.log("Joined guild **{0.name}** (ID: `{0.id}`)".format(g, j.isoformat(' ')))
             log.info("Joined guild '{0.name}' (ID: {0.id}) between sessions at {1}".format(g, j.timestamp()))
             sql.guild_add(g.id, g.name, int(j.timestamp()))
             await print_welcome_message(g)
@@ -100,7 +102,8 @@ async def on_ready():
         for g in db_guilds:
             if not any(x for x in bot.guilds if x.id == g.id):
                 log.info("Kicked from guild '{0}' (ID: {1}) between sessions".format(g.name, g.id))
-                await ch_log.log("Kicked from guild **{0}** (ID: `{1}`)".format(g.name, g.id))
+                if cfg.channel_log_guild_kicks:
+                    await ch_log.log("Kicked from guild **{0}** (ID: `{1}`)".format(g.name, g.id))
                 sql.guild_delete(g.id)
 
     log.info('I am ready!')
@@ -111,7 +114,8 @@ async def on_ready():
 @bot.event
 async def on_guild_join(guild):
     log.info("Joined new guild '{0.name}' (ID: {0.id})".format(guild))
-    await ch_log.log("Joined new guild **{0.name}** (ID: `{0.id}`)".format(guild))
+    if cfg.channel_log_guild_joins:
+        await ch_log.log("Joined new guild **{0.name}** (ID: `{0.id}`)".format(guild))
     sql.guild_add(guild.id, guild.name, int(guild.me.joined_at.timestamp()))
     await print_welcome_message(guild)
 
@@ -119,7 +123,8 @@ async def on_guild_join(guild):
 @bot.event
 async def on_guild_remove(guild):
     log.info("Kicked from guild '{0.name}' (ID: {0.id})".format(guild))
-    await ch_log.log("Kicked from guild **{0.name}** (ID: `{0.id}`)".format(guild))
+    if cfg.channel_log_guild_kicks:
+        await ch_log.log("Kicked from guild **{0.name}** (ID: `{0.id}`)".format(guild))
     sql.guild_delete(guild.id)
 
 
@@ -127,7 +132,8 @@ async def on_guild_remove(guild):
 async def on_guild_update(before, after):
     if before.name != after.name:
         log.info("Guild {0.name} is now known as {1.name} (ID: {1.id})")
-        await ch_log.log("Guild **{0.name}** is now known as **{1.name}** (ID: `{1.id}`)".format(before, after))
+        if cfg.channel_log_guild_renames:
+            await ch_log.log("Guild **{0.name}** is now known as **{1.name}** (ID: `{1.id}`)".format(before, after))
         sql.guild_update(after.id, name=after.name)
 
 
