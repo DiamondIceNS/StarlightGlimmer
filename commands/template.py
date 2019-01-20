@@ -469,7 +469,8 @@ async def _check_canvas(ctx, templates, canvas, msg=None):
         tmp = Image.new("RGBA", (example_chunk.width * shape[0], example_chunk.height * shape[1]))
         for i, ch in enumerate(empty_bcs):
             ch = next((x for x in chunks if x == ch))
-            tmp.paste(ch.image, ((i % shape[0]) * ch.width, (i // shape[0]) * ch.height))
+            if ch.is_in_bounds():
+                tmp.paste(ch.image, ((i % shape[0]) * ch.width, (i // shape[0]) * ch.height))
 
         x, y = t.x - empty_bcs[0].p_x, t.y - empty_bcs[0].p_y
         tmp = tmp.crop((x, y, x + t.width, y + t.height))
