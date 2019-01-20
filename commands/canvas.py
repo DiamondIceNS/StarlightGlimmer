@@ -34,7 +34,11 @@ class Canvas:
             list_pixels = True
             a = next(iter_args, None)
         if a == "-f":
-            f = sql.guild_get_by_faction_name_or_alias(next(iter_args, None))
+            fac = next(iter_args, None)
+            if fac is None:
+                await ctx.send(ctx.s("error.missing_arg_faction"))
+                return
+            f = sql.guild_get_by_faction_name_or_alias(fac)
             if not f:
                 await ctx.send(ctx.s("error.faction_not_found"))
                 return
@@ -133,7 +137,11 @@ class Canvas:
             preview_template_region = True
             a = next(iter_args, None)
         if a == "-f":
-            f = sql.guild_get_by_faction_name_or_alias(next(iter_args, None))
+            fac = next(iter_args, None)
+            if fac is None:
+                await ctx.send(ctx.s("error.missing_arg_faction"))
+                return
+            f = sql.guild_get_by_faction_name_or_alias(fac)
             if not f:
                 await ctx.send(ctx.s("error.faction_not_found"))
                 return
@@ -231,7 +239,11 @@ class Canvas:
         name = next(iter_args, None)
         while name in ["-f", "-c"]:
             if name == "-f":
-                faction = sql.guild_get_by_faction_name_or_alias(next(iter_args, None))
+                fac = next(iter_args, None)
+                if fac is None:
+                    await ctx.send(ctx.s("error.missing_arg_faction"))
+                    return
+                f = sql.guild_get_by_faction_name_or_alias(fac)
                 if not faction:
                     await ctx.send(ctx.s("error.faction_not_found"))
                     return
@@ -251,10 +263,10 @@ class Canvas:
                     if z.startswith("#"):
                         z = z[1:]
                     return int(z)
-                if type(z) is None:
-                    return 1
+                if z is None:
+                    return 8
             except ValueError:
-                return 1
+                return 8
 
         t = sql.template_get_by_name(faction.id, name) if faction else sql.template_get_by_name(ctx.guild.id, name)
         if t:
@@ -454,7 +466,11 @@ async def _quantize(ctx, args, canvas, palette):
     iter_args = iter(args)
     name = next(iter_args, None)
     if name == "-f":
-        faction = sql.guild_get_by_faction_name_or_alias(next(iter_args, None))
+        fac = next(iter_args, None)
+        if fac is None:
+            await ctx.send(ctx.s("error.missing_arg_faction"))
+            return
+        faction = sql.guild_get_by_faction_name_or_alias(fac)
         if not faction:
             raise errors.FactionNotFound
         gid = faction.id

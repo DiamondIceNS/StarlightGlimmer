@@ -67,12 +67,12 @@ async def _fetch_chunks_pixelzone(chunks: Iterable[ChunkPz]):
     if not sid:
         raise errors.HttpCanvasError('pixelzone')
     async with websockets.connect(socket_url.format("ws", "websocket&sid=") + sid, extra_headers={'User-Agent': 'Python/3.6 aiohttp/3.2.0'}) as ws:
-        await ws.send("2probe")
-        await ws.recv()
-        await ws.send("5")
-        await ws.recv()
-        await ws.send("42['useAPI', '{}'".format(cfg.pz_api_key))
         try:
+            await ws.send("2probe")
+            await ws.recv()
+            await ws.send("5")
+            await ws.recv()
+            await ws.send("42['useAPI', '{}'".format(cfg.pz_api_key))
             for ch in chunks:
                 data = {}
                 await ws.send(ch.url)

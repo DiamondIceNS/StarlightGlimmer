@@ -38,7 +38,11 @@ class Template:
         iter_args = iter(args)
         page = next(iter_args, 1)
         if page == "-f":
-            faction = sql.guild_get_by_faction_name_or_alias(next(iter_args, None))
+            fac = next(iter_args, None)
+            if fac is None:
+                await ctx.send(ctx.s("error.missing_arg_faction"))
+                return
+            faction = sql.guild_get_by_faction_name_or_alias(fac)
             if not faction:
                 raise errors.FactionNotFound
             gid = faction.id
@@ -214,7 +218,11 @@ class Template:
             image_only = True
             name = next(iter_args, 1)
         if name == "-f":
-            faction = sql.guild_get_by_faction_name_or_alias(next(iter_args, None))
+            fac = next(iter_args, None)
+            if fac is None:
+                await ctx.send(ctx.s("error.missing_arg_faction"))
+                return
+            faction = sql.guild_get_by_faction_name_or_alias(fac)
             if not faction:
                 raise errors.FactionNotFound
             gid = faction.id
@@ -252,7 +260,10 @@ class Template:
         size = t.size
         visibility = ctx.s("bot.private") if bool(t.private) else ctx.s("bot.public")
         owner = self.bot.get_user(t.owner_id)
-        added_by = owner.name + "#" + owner.discriminator
+        if owner is None:
+            added_by = ctx.s("error.account_deleted")
+        else:
+            added_by = owner.name + "#" + owner.discriminator
         date_added = datetime.date.fromtimestamp(t.date_created).strftime("%d %b, %Y")
         date_modified = datetime.date.fromtimestamp(t.date_updated).strftime("%d %b, %Y")
         color = faction.faction_color

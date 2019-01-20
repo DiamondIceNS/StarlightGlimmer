@@ -29,6 +29,7 @@ STRINGS = {
     "bot.yes": "Sim",
 
     # Error messages
+    "error.account_deleted": "[[Account deleted]]",  # TODO
     "error.bad_image": "Ocorreu um erro ao tentar abrir uma imagem. Assegure-se de que a imagem fornecida não esteja corrompida.",
     "error.bad_png": "Esta imagem parece estar corrompida. Tente salvá-la novamente com um editor de imagens ou usando`{0}quantize`.",
     "error.cannot_fetch_template": "Não foi possível acessar o URL da template. (O anexo original foi excluído?)",
@@ -39,6 +40,7 @@ STRINGS = {
     "error.invalid_color": "Essa não é uma cor válida.",
     "error.invalid_option": "Essa não é uma opção válida. Por favor, tente novamente.",
     "error.jpeg": "Ta de sacanagem? Um JPEG? Que nojo! Por favor, crie um modelo PNG.",
+    "error.missing_arg_faction": "Missing argument: The `-f` flag must be followed by a faction name or alias.",  # TODO
     "error.no_attachment": "Esse comando requer um anexo.",
     "error.no_dm": "Esse comando só funciona em guildas.",
     "error.no_self_permission": "Eu não tenho permissão para fazer isso neste canal.",
