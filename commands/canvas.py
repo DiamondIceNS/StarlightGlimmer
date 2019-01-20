@@ -283,6 +283,38 @@ class Canvas:
                 return
         await ctx.send(ctx.s("canvas.repeat_not_found"))
 
+    # ======================
+    #         ONLINE
+    # ======================
+
+    @commands.cooldown(1, 5, BucketType.guild)
+    @commands.group(name="online", aliases=["o"], invoke_without_command=True)
+    async def online(self, ctx):
+        await ctx.invoke_default("online")
+
+    @online.command(name="pixelcanvas", aliases=["pc"])
+    async def online_pixelcanvas(self, ctx):
+        ct = await http.fetch_online_pixelcanvas()
+        await ctx.send(ctx.s("canvas.online").format(ct, "Pixelcanvas"))
+
+    @online.command(name="pixelzio", aliases=["pzi"])
+    async def online_pixelzio(self, ctx):
+        pass # Do nothing
+
+    @online.command(name="pixelzone", aliases=["pz"])
+    async def online_pixelzone(self, ctx):
+        async with ctx.typing():
+            msg = await ctx.send(ctx.s("canvas.online_await"))
+            ct = await http.fetch_online_pixelzone()
+            await msg.edit(content=ctx.s("canvas.online").format(ct, "Pixelzone"))
+
+    @online.command(name="pxlsspace", aliases=["ps"])
+    async def online_pxlsspace(self, ctx):
+        async with ctx.typing():
+            msg = await ctx.send(ctx.s("canvas.online_await"))
+            ct = await http.fetch_online_pxlsspace()
+            await msg.edit(content=ctx.s("canvas.online").format(ct, "Pxls.space"))
+
 
 async def _diff(ctx, args, canvas, fetch, palette):
     async with ctx.typing():

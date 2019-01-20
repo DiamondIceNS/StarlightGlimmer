@@ -61,6 +61,8 @@ STRINGS = {
     "canvas.diff_error_list": "({}, {}) é {}, deveria ser {}",
     "canvas.invalid_input": "Entrada inválida: não corresponde a nenhum nome de template ou formato de coordenadas suportadas.",
     "canvas.large_template": "(Processando um template grande, da um tempo ai...)",
+    "canvas.online": "There are {0} players online on {1}.",  # TODO
+    "canvas.online_await": "Waiting for next player count update...",  # TODO
     "canvas.quantize": "Convertidos {0} pixels.",
     "canvas.repeat_not_found": "Não foi possível encontrar um comando válido para repetir.",
 
@@ -216,6 +218,10 @@ STRINGS = {
     "brief.info": "Obter informações sobre uma facção.",
     "brief.invite": "Obtém meu link de convite.",
     "brief.language": "Define meu idioma.",
+    "brief.online": "Shows how many players are currently online.",  # TODO
+    "brief.online.pixelcanvas": "Shows how many players are currently online on Pixelcanvas.io.",  # TODO
+    "brief.online.pixelzone": "Shows how many players are currently online on Pixelzone.io.",  # TODO
+    "brief.online.pxlsspace": "Shows how many players are currently online on Pxls.space.",  # TODO
     "brief.ping": "Pong!",
     "brief.prefix": "Define o meu prefixo de comando para esta guild.",
     "brief.preview": "Visualiza a tela em uma determinada coordenada.",
@@ -332,6 +338,7 @@ STRINGS = {
     "signature.hide": "<facção>",
     "signature.info": "<facção>",
     "signature.language": "(código)",
+    "signature.online": "(subcomando)",
     "signature.prefix": "<prefixo>",
     "signature.preview": "(subcomando) <coordenadas> #(zoom)",
     "signature.preview.pixelcanvas": "<coordenadas> #(zoom)",
@@ -416,6 +423,7 @@ STRINGS = {
                      ("gtfo", "Esconde uma facção com a sigla 'gtfo'")],
     "example.language": [("", "Ver meu idioma atual e opções de idiomas disponíveis"),
                          ("en-us", "Definir meu idioma para inglês (EUA)")],
+    "example.online": ["pc", "Gets the number of players currently online on Pixelcanvas.io"],  # TODO
     "example.prefix": [("", "Ver meu prefixo atual"),
                        ("#", "Definir o meu prefixo de comando para '#'")],
     "example.preview": [("pc 900 900", "Visualize o Pixelcanvas.io centralizada em (900, 900)"),

@@ -113,6 +113,58 @@ async def _fetch_pxlsspace(chunks: Iterable[PxlsBoard]):
             board.load(await resp.read())
 
 
+async def fetch_online_pixelcanvas():
+    async with aiohttp.ClientSession() as sess:
+        async with sess.get("http://pixelcanvas.io/api/online") as resp:
+            if resp.status != 200:
+                raise errors.HttpGeneralError
+            data = json.loads(await resp.read())
+            return data['online']
+
+
+async def fetch_online_pixelzone():
+    socket_url = "{0}://pixelzone.io/socket.io/?EIO=3&transport={1}"
+    sid = None
+    async with aiohttp.ClientSession() as session:
+        attempts = 0
+        while attempts < 3:
+            try:
+                async with session.get(socket_url.format("http", "polling"),
+                                       headers={'User-Agent': 'Python/3.6 aiohttp/3.2.0'}) as r:
+                    sid = json.loads(str((await r.read())[4:-4], "utf-8"))['sid']
+                    break
+            except aiohttp.client_exceptions.ClientOSError:
+                attempts += 1
+    if not sid:
+        raise errors.HttpCanvasError('pixelzone')
+    async with websockets.connect(socket_url.format("ws", "websocket&sid=") + sid,
+                                  extra_headers={'User-Agent': 'Python/3.6 aiohttp/3.2.0'}) as ws:
+        await ws.send("2probe")
+        await ws.recv()
+        await ws.send("5")
+        await ws.recv()
+        await ws.send("42['useAPI', '{}'".format(cfg.pz_api_key))
+        try:
+            async for msg in ws:
+                d = json.loads(msg[msg.find('['):])
+                if type(d) == int:
+                    continue
+                if d[0] == "g":
+                    data = d[1]
+                    break
+        except websockets.ConnectionClosed as e:
+            raise errors.HttpCanvasError('pixelzone')
+    return data
+
+
+async def fetch_online_pxlsspace():
+    async with websockets.connect("wss://pxls.space/ws") as ws:
+        async for msg in ws:
+            d = json.loads(msg)
+            if d['type'] == 'users':
+                return d['count']
+
+
 async def get_changelog(version):
     url = "https://api.github.com/repos/DiamondIceNS/StarlightGlimmer/releases"
     async with aiohttp.ClientSession() as sess:
