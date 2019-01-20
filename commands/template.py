@@ -16,7 +16,7 @@ from discord.ext.commands import BucketType
 from PIL import Image, ImageChops
 
 from objects import errors
-from objects.chunks import BigChunk, ChunkPzi, ChunkPz, PxlsBoard
+from objects.chunks import BigChunk, ChunkPz, PxlsBoard
 from objects.config import Config
 from objects.dbtemplate import DbTemplate
 from objects.logger import Log
@@ -134,13 +134,6 @@ class Template:
     @commands.guild_only()
     @commands.cooldown(1, 5, BucketType.guild)
     @checks.template_adder_only()
-    @template_add.command(name="pixelzio", aliases=['pzi'])
-    async def template_add_pixelzio(self, ctx, name: str, x: int, y: int, url=None):
-        await self.add_template(ctx, "pixelzio", name, x, y, url)
-
-    @commands.guild_only()
-    @commands.cooldown(1, 5, BucketType.guild)
-    @checks.template_adder_only()
     @template_add.command(name="pixelzone", aliases=['pz'])
     async def template_add_pixelzone(self, ctx, name: str, x: int, y: int, url=None):
         await self.add_template(ctx, "pixelzone", name, x, y, url)
@@ -182,18 +175,6 @@ class Template:
             raise errors.NoTemplatesError(True)
         ts = sorted(ts, key=lambda tx: tx.name)
         msg = await _check_canvas(ctx, ts, "pixelcanvas")
-        await msg.delete()
-        await _build_template_report(ctx, ts)
-
-    @commands.guild_only()
-    @template_check.command(name='pixelzio', aliases=['pzi'])
-    async def template_check_pixelzio(self, ctx):
-        ts = [x for x in sql.template_get_all_by_guild_id(ctx.guild.id) if x.canvas == 'pixelzio']
-        if len(ts) <= 0:
-            ctx.command.parent.reset_cooldown(ctx)
-            raise errors.NoTemplatesError(True)
-        ts = sorted(ts, key=lambda tx: tx.name)
-        msg = await _check_canvas(ctx, ts, "pixelzio")
         await msg.delete()
         await _build_template_report(ctx, ts)
 
@@ -455,7 +436,6 @@ async def _build_template_report(ctx, ts: List[DbTemplate]):
 async def _check_canvas(ctx, templates, canvas, msg=None):
     chunk_classes = {
         'pixelcanvas': BigChunk,
-        'pixelzio': ChunkPzi,
         'pixelzone': ChunkPz,
         'pxlsspace': PxlsBoard
     }

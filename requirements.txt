@@ -1,6 +1,5 @@
 git+https://github.com/Rapptz/discord.py@rewrite
 git+https://github.com/marcel-dancak/lz-string-python
-git+https://github.com/lucasgadams/cloudflare-scrape@cf_async
 aiohttp==3.2.0
 lz4==1.1.0
 numpy==1.14.4

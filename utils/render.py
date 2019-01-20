@@ -1,7 +1,7 @@
 import numpy as np
 from PIL import Image, ImageChops, ImageDraw
 
-from objects.chunks import BigChunk, ChunkPz, ChunkPzi, PxlsBoard
+from objects.chunks import BigChunk, ChunkPz, PxlsBoard
 from objects.config import Config
 from objects.coords import Coords
 from objects.logger import Log
@@ -149,19 +149,6 @@ async def fetch_pixelcanvas(x, y, dx, dy):
 
     x, y = x - (x + 448) // 960 * 960 + 448, y - (y + 448) // 960 * 960 + 448
     return fetched.crop((x, y, x + dx, y + dy))
-
-
-async def fetch_pixelzio(x, y, dx, dy):
-    chunks, shape = ChunkPzi.get_intersecting(x, y, dx, dy)
-    fetched = Image.new('RGB', tuple([500 * x for x in shape]), colors.pixelzio[1])
-
-    await http.fetch_chunks(chunks)
-
-    for i, ch in enumerate(chunks):
-        if ch.is_in_bounds():
-            fetched.paste(ch.image, ((i % shape[0]) * 500, (i // shape[0]) * 500))
-
-    return fetched.crop((x % 500, y % 500, (x % 500) + dx, (y % 500) + dy))
 
 
 async def fetch_pixelzone(x, y, dx, dy):

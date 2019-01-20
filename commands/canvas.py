@@ -62,7 +62,6 @@ class Canvas:
 
             fetchers = {
                 'pixelcanvas': render.fetch_pixelcanvas,
-                'pixelzio': render.fetch_pixelzio,
                 'pixelzone': render.fetch_pixelzone,
                 'pxlsspace': render.fetch_pxlsspace
             }
@@ -108,11 +107,6 @@ class Canvas:
         await _diff(ctx, args, "pixelcanvas", render.fetch_pixelcanvas, colors.pixelcanvas)
 
     @commands.cooldown(1, 5, BucketType.guild)
-    @diff.command(name="pixelzio", aliases=["pzi"])
-    async def diff_pixelzio(self, ctx, *args):
-        await _diff(ctx, args, "pixelzio", render.fetch_pixelzio, colors.pixelzio)
-
-    @commands.cooldown(1, 5, BucketType.guild)
     @diff.command(name="pixelzone", aliases=["pz"])
     async def diff_pixelzone(self, ctx, *args):
         await _diff(ctx, args, "pixelzone", render.fetch_pixelzone, colors.pixelzone)
@@ -137,11 +131,6 @@ class Canvas:
         await _preview(ctx, args, render.fetch_pixelcanvas)
 
     @commands.cooldown(1, 5, BucketType.guild)
-    @preview.command(name="pixelzio", aliases=["pzi"])
-    async def preview_pixelzio(self, ctx, *args):
-        await _preview(ctx, args, render.fetch_pixelzio)
-
-    @commands.cooldown(1, 5, BucketType.guild)
     @preview.command(name="pixelzone", aliases=["pz"])
     async def preview_pixelzone(self, ctx, *args):
         await _preview(ctx, args, render.fetch_pixelzone)
@@ -164,11 +153,6 @@ class Canvas:
     @quantize.command(name="pixelcanvas", aliases=["pc"])
     async def quantize_pixelcanvas(self, ctx, *args):
         await _quantize(ctx, args, "pixelcanvas", colors.pixelcanvas)
-
-    @commands.cooldown(1, 5, BucketType.guild)
-    @quantize.command(name="pixelzio", aliases=["pzi"])
-    async def quantize_pixelzio(self, ctx, *args):
-        await _quantize(ctx, args, "pixelzio", colors.pixelzio)
 
     @commands.cooldown(1, 5, BucketType.guild)
     @quantize.command(name="pixelzone", aliases=["pz"])
@@ -251,10 +235,6 @@ class Canvas:
     async def ditherchart_pixelcanvas(self, ctx):
         await ctx.send(file=discord.File("assets/dither_chart_pixelcanvas.png", "dither_chart_pixelcanvas.png"))
 
-    @ditherchart.command(name="pixelzio", aliases=["pzi"])
-    async def ditherchart_pixelzio(self, ctx):
-        await ctx.send(file=discord.File("assets/dither_chart_pixelzio.png", "dither_chart_pixelzio.png"))
-
     @ditherchart.command(name="pixelzone", aliases=["pz"])
     async def ditherchart_pixelzone(self, ctx):
         await ctx.send(file=discord.File("assets/dither_chart_pixelzone.png", "dither_chart_pixelzone.png"))
@@ -296,10 +276,6 @@ class Canvas:
     async def online_pixelcanvas(self, ctx):
         ct = await http.fetch_online_pixelcanvas()
         await ctx.send(ctx.s("canvas.online").format(ct, "Pixelcanvas"))
-
-    @online.command(name="pixelzio", aliases=["pzi"])
-    async def online_pixelzio(self, ctx):
-        pass # Do nothing
 
     @online.command(name="pixelzone", aliases=["pz"])
     async def online_pixelzone(self, ctx):

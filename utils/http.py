@@ -4,12 +4,11 @@ import json
 from time import time
 
 import aiohttp
-import cfscrape
 import websockets
 from typing import Iterable
 
 from objects import errors, logger
-from objects.chunks import BigChunk, ChunkPzi, ChunkPz, PxlsBoard
+from objects.chunks import BigChunk, ChunkPz, PxlsBoard
 from objects.config import Config
 
 
@@ -21,8 +20,6 @@ async def fetch_chunks(chunks: Iterable):
     c = next(iter(chunks))
     if type(c) is BigChunk:
         await _fetch_chunks_pixelcanvas(chunks)
-    elif type(c) is ChunkPzi:
-        await _fetch_chunks_pixelzio(chunks)
     elif type(c) is ChunkPz:
         await _fetch_chunks_pixelzone(chunks)
     else:
@@ -50,16 +47,6 @@ async def _fetch_chunks_pixelcanvas(bigchunks: Iterable[BigChunk]):
             if not data:
                 raise errors.HttpCanvasError('pixelcanvas')
             bc.load(data)
-
-
-async def _fetch_chunks_pixelzio(chunks: Iterable[ChunkPzi]):
-    async with cfscrape.create_scraper_async() as session:
-        for ch in chunks:
-            await asyncio.sleep(0)
-            if not ch.is_in_bounds():
-                continue
-            async with session.get(ch.url) as resp:
-                ch.load(await resp.read())
 
 
 async def _fetch_chunks_pixelzone(chunks: Iterable[ChunkPz]):

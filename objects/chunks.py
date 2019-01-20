@@ -110,47 +110,6 @@ class BigChunk(Chunky):
         return bigchunks, (dx - x + 1, dy - y + 1)
 
 
-class ChunkPzi(Chunky):
-    @property
-    def height(self):
-        return 500
-
-    @property
-    def p_x(self):
-        return self.x * 500
-
-    @property
-    def p_y(self):
-        return self.y * 500
-
-    @property
-    def url(self):
-        return "http://pixelz.io/api/{0}_{1}/img".format(self.p_x, self.p_y)
-
-    @property
-    def width(self):
-        return 500
-
-    def is_in_bounds(self):
-        return -12 <= self.x < 12 and -12 <= self.y < 12
-
-    def load(self, data):
-        with io.BytesIO(data) as bio:
-            self._image = Image.open(bio).convert('RGB')
-
-    @staticmethod
-    def get_intersecting(x, y, dx, dy):
-        chunks = []
-        dx = (x + dx) // 500
-        dy = (y + dy) // 500
-        x = x // 500
-        y = y // 500
-        for iy in range(y, dy + 1):
-            for ix in range(x, dx + 1):
-                chunks.append(ChunkPzi(ix, iy))
-        return chunks, (dx - x + 1, dy - y + 1)
-
-
 class ChunkPz(Chunky):
     palette = [x for sub in colors.pixelzone for x in sub] * 16
 

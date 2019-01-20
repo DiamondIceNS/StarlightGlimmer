@@ -17,7 +17,6 @@ async def autoscan(ctx):
     cmd = None
     view = ""
     m_pc = re.search('pixelcanvas\.io/@(-?\d+),(-?\d+)(?:(?: |#| #)(-?\d+))?', ctx.message.content)
-    m_pzi = re.search('pixelz\.io/@(-?\d+),(-?\d+)(?:(?: |#| #)(-?\d+))?', ctx.message.content)
     m_pz = re.search('pixelzone\.io/\?p=(-?\d+),(-?\d+)(?:,(\d+))?(?:(?: |#| #)(-?\d+))?', ctx.message.content)
     m_ps = re.search('pxls\.space/#x=(\d+)&y=(\d+)(?:&scale=(\d+))?(?:(?: |#| #)(-?\d+))?', ctx.message.content)
     m_pre_def = re.search('@(-?\d+)(?: |,|, )(-?\d+)(?:(?: |#| #)(-?\d+))?', ctx.message.content)
@@ -25,9 +24,6 @@ async def autoscan(ctx):
     if m_pc:
         cmd = dget(dget(ctx.bot.commands, name='preview').commands, name='pixelcanvas')
         view = ' '.join(m_pc.groups(default='1'))
-    elif m_pzi:
-        cmd = dget(dget(ctx.bot.commands, name='preview').commands, name='pixelzio')
-        view = ' '.join(m_pzi.groups(default='1'))
     elif m_pz:
         cmd = dget(dget(ctx.bot.commands, name='preview').commands, name='pixelzone')
         view = '{} {} {}'.format(m_pz.group(1), m_pz.group(2), m_pz.group(4) or m_pz.group(3) or '1')

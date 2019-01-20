@@ -193,6 +193,13 @@ def _update_tables(v):
                 COMMIT;
                 PRAGMA FOREIGN_KEYS = ON; 
             """)
+        if v < 1.7:
+            c.executescript("""
+                BEGIN TRANSACTION;
+                UPDATE guilds SET canvas="pixelcanvas" WHERE canvas="pixelzio";
+                DELETE FROM templates WHERE canvas="pixelzio";
+                COMMIT;
+            """)
 
 
 # ================================

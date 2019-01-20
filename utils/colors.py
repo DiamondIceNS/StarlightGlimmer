@@ -17,25 +17,6 @@ pixelcanvas = [
     (130,   0, 128)   # Purple
 ]
 
-pixelzio = [
-    (255, 255, 255),  # White
-    (228, 228, 228),  # Light Grey
-    (136, 136, 136),  # Dark Grey
-    ( 34,  34,  34),  # Black
-    (255, 167, 209),  # Pink
-    (229,   0,   0),  # Red
-    (229, 149,   0),  # Orange
-    (160, 106,  66),  # Brown
-    (229, 217,   0),  # Yellow
-    (148, 224,  68),  # Light Green
-    (  2, 190,   1),  # Green
-    (  0, 211, 221),  # Cyan
-    (  0, 131, 199),  # Teal
-    (  0,   0, 234),  # Blue
-    (209,  89, 230),  # Light Purple
-    (130,   0, 128)   # Purple
-]
-
 pixelzone = [
     ( 38,  38,	38),  # Dark Grey
     (  0,	0,	 0),  # Black
@@ -84,7 +65,6 @@ pxlsspace = [
 
 by_name = {
     "pixelcanvas": pixelcanvas,
-    "pixelzio": pixelzio,
     "pixelzone": pixelzone,
     "pxlsspace": pxlsspace
 }

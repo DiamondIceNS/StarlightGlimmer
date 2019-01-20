@@ -80,14 +80,6 @@ class Configuration:
 
     @checks.admin_only()
     @commands.guild_only()
-    @canvas.command(name="pixelzio", aliases=["pzi"])
-    async def canvas_pixelzio(self, ctx):
-        sql.guild_update(ctx.guild.id, canvas="pixelzio")
-        self.log.info("Default canvas for {0.name} set to pixelzio (GID:{0.id})".format(ctx.guild))
-        await ctx.send(ctx.s("configuration.canvas_set").format("Pixelz.io"))
-
-    @checks.admin_only()
-    @commands.guild_only()
     @canvas.command(name="pixelzone", aliases=["pz"])
     async def canvas_pixelzone(self, ctx):
         sql.guild_update(ctx.guild.id, canvas="pixelzone")
