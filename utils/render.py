@@ -87,6 +87,24 @@ async def preview(x, y, zoom, fetch):
     return preview_img
 
 
+async def preview_template(t, zoom, fetch):
+    log.debug("(X:{0} | Y:{1} | Dim:{2}x{3} | Zoom:{4})".format(t.x, t.y, t.width, t.height, zoom))
+
+    dim = Coords(t.width, t.height)
+    if zoom < -1:
+        dim *= abs(zoom)
+
+    c = Coords(*t.center())
+
+    preview_img = await fetch(c.x - dim.x // 2, c.y - dim.y // 2, *dim)
+    if zoom > 1:
+        preview_img = preview_img.resize(tuple(zoom * x for x in preview_img.size), Image.NEAREST)
+        tlp = Coords(preview_img.width // 2 - cfg.preview_w // 2, preview_img.height // 2 - cfg.preview_h // 2)
+        preview_img = preview_img.crop((*tlp, tlp.x + cfg.preview_w, tlp.y + cfg.preview_h))
+
+    return preview_img
+
+
 async def quantize(data, palette):
     with data:
         template = Image.open(data).convert('RGBA')

@@ -55,50 +55,51 @@ class Canvas:
             zoom = 1
 
         if t:
-            log.debug("(T:{} | GID:{})".format(t.name, t.gid))
-            data = await http.get_template(t.url)
-            max_zoom = int(math.sqrt(4000000 // (t.width * t.height)))
-            zoom = max(1, min(zoom, max_zoom))
+            async with ctx.typing():
+                log.debug("(T:{} | GID:{})".format(t.name, t.gid))
+                data = await http.get_template(t.url)
+                max_zoom = int(math.sqrt(4000000 // (t.width * t.height)))
+                zoom = max(1, min(zoom, max_zoom))
 
-            fetchers = {
-                'pixelcanvas': render.fetch_pixelcanvas,
-                'pixelzone': render.fetch_pixelzone,
-                'pxlsspace': render.fetch_pxlsspace
-            }
+                fetchers = {
+                    'pixelcanvas': render.fetch_pixelcanvas,
+                    'pixelzone': render.fetch_pixelzone,
+                    'pxlsspace': render.fetch_pxlsspace
+                }
 
-            diff_img, tot, err, bad, err_list \
-                = await render.diff(t.x, t.y, data, zoom, fetchers[t.canvas], colors.by_name[t.canvas])
+                diff_img, tot, err, bad, err_list \
+                    = await render.diff(t.x, t.y, data, zoom, fetchers[t.canvas], colors.by_name[t.canvas])
 
-            done = tot - err
-            perc = done / tot
-            if perc < 0.00005 and done > 0:
-                perc = ">0.00%"
-            elif perc >= 0.99995 and err > 0:
-                perc = "<100.00%"
-            else:
-                perc = "{:.2f}%".format(perc * 100)
-            out = ctx.s("canvas.diff") if bad == 0 else ctx.s("canvas.diff_bad_color")
-            out = out.format(done, tot, err, perc, bad=bad)
+                done = tot - err
+                perc = done / tot
+                if perc < 0.00005 and done > 0:
+                    perc = ">0.00%"
+                elif perc >= 0.99995 and err > 0:
+                    perc = "<100.00%"
+                else:
+                    perc = "{:.2f}%".format(perc * 100)
+                out = ctx.s("canvas.diff") if bad == 0 else ctx.s("canvas.diff_bad_color")
+                out = out.format(done, tot, err, perc, bad=bad)
 
-            with io.BytesIO() as bio:
-                diff_img.save(bio, format="PNG")
-                bio.seek(0)
-                f = discord.File(bio, "diff.png")
-                await ctx.send(content=out, file=f)
+                with io.BytesIO() as bio:
+                    diff_img.save(bio, format="PNG")
+                    bio.seek(0)
+                    f = discord.File(bio, "diff.png")
+                    await ctx.send(content=out, file=f)
 
-            if list_pixels and len(err_list) > 0:
-                out = ["```xl"]
-                for p in err_list:
-                    x, y, current, target = p
-                    current = ctx.s("color.{}.{}".format(t.canvas, current))
-                    target = ctx.s("color.{}.{}".format(t.canvas, target))
-                    out.append("({}, {}) is {}, should be {}".format(x + t.x, y + t.y, current, target))
-                if err > 15:
-                    out.append("...")
-                out.append("```")
-                await ctx.send('\n'.join(out))
+                if list_pixels and len(err_list) > 0:
+                    out = ["```xl"]
+                    for p in err_list:
+                        x, y, current, target = p
+                        current = ctx.s("color.{}.{}".format(t.canvas, current))
+                        target = ctx.s("color.{}.{}".format(t.canvas, target))
+                        out.append("({}, {}) is {}, should be {}".format(x + t.x, y + t.y, current, target))
+                    if err > 15:
+                        out.append("...")
+                    out.append("```")
+                    await ctx.send('\n'.join(out))
 
-            return
+                return
         await ctx.invoke_default("diff")
 
     @commands.cooldown(1, 5, BucketType.guild)
@@ -122,7 +123,60 @@ class Canvas:
 
     @commands.cooldown(1, 5, BucketType.guild)
     @commands.group(name="preview", invoke_without_command=True, aliases=["p"])
-    async def preview(self, ctx):
+    async def preview(self, ctx, *args):
+        if len(args) < 1:
+            return
+        preview_template_region = False
+        iter_args = iter(args)
+        a = next(iter_args, None)
+        if a == "-t":
+            preview_template_region = True
+            a = next(iter_args, None)
+        if a == "-f":
+            f = sql.guild_get_by_faction_name_or_alias(next(iter_args, None))
+            if not f:
+                await ctx.send(ctx.s("error.faction_not_found"))
+                return
+            name = next(iter_args, None)
+            zoom = next(iter_args, 1)
+            t = sql.template_get_by_name(f.id, name)
+        else:
+            name = a
+            zoom = next(iter_args, 1)
+            t = sql.template_get_by_name(ctx.guild.id, name)
+
+        try:
+            if type(zoom) is not int:
+                if zoom.startswith("#"):
+                    zoom = zoom[1:]
+                zoom = int(zoom)
+        except ValueError:
+            zoom = 1
+
+        if t:
+            async with ctx.typing():
+                log.debug("(T:{} | GID:{})".format(t.name, t.gid))
+                max_zoom = int(math.sqrt(4000000 // (t.width * t.height)))
+                zoom = max(-8, min(zoom, max_zoom))
+
+                fetchers = {
+                    'pixelcanvas': render.fetch_pixelcanvas,
+                    'pixelzone': render.fetch_pixelzone,
+                    'pxlsspace': render.fetch_pxlsspace
+                }
+
+                if preview_template_region:
+                    preview_img = await render.preview(*t.center(), zoom, fetchers[t.canvas])
+                else:
+                    preview_img = await render.preview_template(t, zoom, fetchers[t.canvas])
+
+                with io.BytesIO() as bio:
+                    preview_img.save(bio, format="PNG")
+                    bio.seek(0)
+                    f = discord.File(bio, "preview.png")
+                    await ctx.send(file=f)
+
+                return
         await ctx.invoke_default("preview")
 
     @commands.cooldown(1, 5, BucketType.guild)
