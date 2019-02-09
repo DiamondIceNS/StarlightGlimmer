@@ -132,8 +132,18 @@ async def fetch_online_pixelzone():
                     break
             except aiohttp.client_exceptions.ClientOSError:
                 attempts += 1
-    if not sid:
-        raise errors.HttpCanvasError('pixelzone')
+
+        if not sid:
+            raise errors.HttpCanvasError('pixelzone')
+
+        attempts = 0
+        while attempts < 3:
+            try:
+                await session.post(socket_url.format("http", "polling") + "&sid=" + sid, data='11:42["hello"]',
+                                   headers={'User-Agent': 'Python/3.6 aiohttp/3.2.0'})
+                break
+            except aiohttp.client_exceptions.ClientOSError:
+                attempts += 1
     async with websockets.connect(socket_url.format("ws", "websocket&sid=") + sid,
                                   extra_headers={'User-Agent': 'Python/3.6 aiohttp/3.2.0'}) as ws:
         await ws.send("2probe")
