@@ -201,6 +201,8 @@ class PxlsBoard(Chunky):
 
 
 class BigChunkPP(BigChunk):
+    palette = [x for sub in colors.pixelplace for x in sub] * 16
+
     @property
     def url(self):
         return "https://pixelplace.fun/api/bigchunk/{0}.{1}.bmp".format(self.x * 15, self.y * 15)

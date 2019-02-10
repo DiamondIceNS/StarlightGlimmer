@@ -192,7 +192,7 @@ async def fetch_pxlsspace(x, y, dx, dy):
 
 async def fetch_pixelplace(x, y, dx, dy):
     bigchunks, shape = BigChunkPP.get_intersecting(x, y, dx, dy)
-    fetched = Image.new('RGB', tuple([960 * x for x in shape]), colors.pixelcanvas[1])
+    fetched = Image.new('RGB', tuple([960 * x for x in shape]), colors.pixelplace[1])
 
     await http.fetch_chunks(bigchunks)
 

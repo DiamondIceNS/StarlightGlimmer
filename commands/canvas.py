@@ -125,7 +125,7 @@ class Canvas:
     @commands.cooldown(1, 5, BucketType.guild)
     @diff.command(name="pixelplace", aliases=["pp"])
     async def diff_pixelplace(self, ctx, *args):
-        await _diff(ctx, args, "pixelplace", render.fetch_pixelcanvas, colors.pixelcanvas)
+        await _diff(ctx, args, "pixelplace", render.fetch_pixelcanvas, colors.pixelplace)
 
     # =======================
     #        PREVIEW
@@ -241,7 +241,7 @@ class Canvas:
     @commands.cooldown(1, 5, BucketType.guild)
     @quantize.command(name="pixelplace", aliases=["pp"])
     async def quantize_pixelcanvas(self, ctx, *args):
-        await _quantize(ctx, args, "pixelplace", colors.pixelcanvas)
+        await _quantize(ctx, args, "pixelplace", colors.pixelplace)
 
     # =======================
     #         GRIDIFY

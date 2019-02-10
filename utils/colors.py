@@ -16,7 +16,6 @@ pixelcanvas = [
     (207, 110, 228),  # Light Purple
     (130,   0, 128)   # Purple
 ]
-# (Also Pixelplace)
 
 pixelzone = [
     ( 38,  38,	38),  # Dark Grey
@@ -64,8 +63,28 @@ pxlsspace = [
     (102,   3,  60)   # Purple
 ]
 
+pixelplace = [
+    (255, 255, 255),  # White
+    (228, 228, 228),  # Light Grey
+    (136, 136, 136),  # Dark Grey
+    ( 34,  34,  34),  # Black
+    (255, 167, 209),  # Pink
+    (229,   0,   0),  # Red
+    (229, 149,   0),  # Orange
+    (160, 106,  66),  # Brown
+    (229, 217,   0),  # Yellow
+    (148, 224,  68),  # Light Green
+    (  2, 190,   1),  # Green
+    (  0, 211, 221),  # Cyan
+    (  0, 131, 199),  # Teal
+    (  0,   0, 234),  # Blue
+    (207, 110, 228),  # Light Purple
+    (130,   0, 128)   # Purple
+]
+
 by_name = {
     "pixelcanvas": pixelcanvas,
     "pixelzone": pixelzone,
-    "pxlsspace": pxlsspace
+    "pxlsspace": pxlsspace,
+    "pixelplace": pixelcanvas
 }
