@@ -1,7 +1,7 @@
 import numpy as np
 from PIL import Image, ImageChops, ImageDraw
 
-from objects.chunks import BigChunk, ChunkPz, PxlsBoard
+from objects.chunks import BigChunk, ChunkPz, PxlsBoard, BigChunkPP
 from objects.config import Config
 from objects.coords import Coords
 from objects.logger import Log
@@ -188,6 +188,20 @@ async def fetch_pxlsspace(x, y, dx, dy):
     await http.fetch_chunks([board])
     fetched.paste(board.image, (-x, -y, board.width - x, board.height - y))
     return fetched
+
+
+async def fetch_pixelplace(x, y, dx, dy):
+    bigchunks, shape = BigChunkPP.get_intersecting(x, y, dx, dy)
+    fetched = Image.new('RGB', tuple([960 * x for x in shape]), colors.pixelcanvas[1])
+
+    await http.fetch_chunks(bigchunks)
+
+    for i, bc in enumerate(bigchunks):
+        if bc.is_in_bounds():
+            fetched.paste(bc.image, ((i % shape[0]) * 960, (i // shape[0]) * 960))
+
+    x, y = x - (x + 448) // 960 * 960 + 448, y - (y + 448) // 960 * 960 + 448
+    return fetched.crop((x, y, x + dx, y + dy))
 
 
 def _quantize(t: Image, palette) -> Image:

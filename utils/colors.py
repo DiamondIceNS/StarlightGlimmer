@@ -16,6 +16,7 @@ pixelcanvas = [
     (207, 110, 228),  # Light Purple
     (130,   0, 128)   # Purple
 ]
+# (Also Pixelplace)
 
 pixelzone = [
     ( 38,  38,	38),  # Dark Grey

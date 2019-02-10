@@ -68,7 +68,8 @@ class Canvas:
                 fetchers = {
                     'pixelcanvas': render.fetch_pixelcanvas,
                     'pixelzone': render.fetch_pixelzone,
-                    'pxlsspace': render.fetch_pxlsspace
+                    'pxlsspace': render.fetch_pxlsspace,
+                    'pixelplace': render.fetch_pixelplace,
                 }
 
                 diff_img, tot, err, bad, err_list \
@@ -121,6 +122,11 @@ class Canvas:
     async def diff_pxlsspace(self, ctx, *args):
         await _diff(ctx, args, "pxlsspace", render.fetch_pxlsspace, colors.pxlsspace)
 
+    @commands.cooldown(1, 5, BucketType.guild)
+    @diff.command(name="pixelplace", aliases=["pp"])
+    async def diff_pixelcanvas(self, ctx, *args):
+        await _diff(ctx, args, "pixelplace", render.fetch_pixelcanvas, colors.pixelcanvas)
+
     # =======================
     #        PREVIEW
     # =======================
@@ -170,7 +176,8 @@ class Canvas:
                 fetchers = {
                     'pixelcanvas': render.fetch_pixelcanvas,
                     'pixelzone': render.fetch_pixelzone,
-                    'pxlsspace': render.fetch_pxlsspace
+                    'pxlsspace': render.fetch_pxlsspace,
+                    'pixelplace': render.fetch_pixelplace
                 }
 
                 if preview_template_region:
@@ -202,6 +209,11 @@ class Canvas:
     async def preview_pxlsspace(self, ctx, *args):
         await _preview(ctx, args, render.fetch_pxlsspace)
 
+    @commands.cooldown(1, 5, BucketType.guild)
+    @preview.command(name="pixelplace", aliases=["pp"])
+    async def preview_pixelplace(self, ctx, *args):
+        await _preview(ctx, args, render.fetch_pixelplace)
+
     # =======================
     #        QUANTIZE
     # =======================
@@ -225,6 +237,11 @@ class Canvas:
     @quantize.command(name="pxlsspace", aliases=["ps"])
     async def quantize_pxlsspace(self, ctx, *args):
         await _quantize(ctx, args, "pxlsspace", colors.pxlsspace)
+
+    @commands.cooldown(1, 5, BucketType.guild)
+    @quantize.command(name="pixelplace", aliases=["pp"])
+    async def quantize_pixelcanvas(self, ctx, *args):
+        await _quantize(ctx, args, "pixelplace", colors.pixelcanvas)
 
     # =======================
     #         GRIDIFY
@@ -309,6 +326,10 @@ class Canvas:
     async def ditherchart_pxlsspace(self, ctx):
         await ctx.send(file=discord.File("assets/dither_chart_pxlsspace.png", "dither_chart_pxlsspace.png"))
 
+    @ditherchart.command(name="pixelplace", aliases=["pp"])
+    async def ditherchart_pixelplace(self, ctx):
+        await ctx.send(file=discord.File("assets/dither_chart_pixelcanvas.png", "dither_chart_pixelcanvas.png"))
+
     # ======================
     #         REPEAT
     # ======================
@@ -356,6 +377,11 @@ class Canvas:
             msg = await ctx.send(ctx.s("canvas.online_await"))
             ct = await http.fetch_online_pxlsspace()
             await msg.edit(content=ctx.s("canvas.online").format(ct, "Pxls.space"))
+
+    @online.command(name="pixelplace", aliases=["pp"])
+    async def online_pixelplace(self, ctx):
+        ct = await http.fetch_online_pixelplace()
+        await ctx.send(ctx.s("canvas.online").format(ct, "Pixelplace"))
 
 
 async def _diff(ctx, args, canvas, fetch, palette):

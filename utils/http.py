@@ -8,12 +8,15 @@ import websockets
 from typing import Iterable
 
 from objects import errors, logger
-from objects.chunks import BigChunk, ChunkPz, PxlsBoard
+from objects.chunks import BigChunk, ChunkPz, PxlsBoard, BigChunkPP
 from objects.config import Config
+from utils.version import VERSION
 
 
 cfg = Config()
 log = logger.Log(__name__)
+
+useragent = {'User-Agent': 'StarlightGlimmer/{} (+https://github.com/DiamondIceNS/StarlightGlimmer)'.format(VERSION)}
 
 
 async def fetch_chunks(chunks: Iterable):
@@ -22,8 +25,10 @@ async def fetch_chunks(chunks: Iterable):
         await _fetch_chunks_pixelcanvas(chunks)
     elif type(c) is ChunkPz:
         await _fetch_chunks_pixelzone(chunks)
-    else:
+    elif type(c) is PxlsBoard:
         await _fetch_pxlsspace(chunks)
+    else:
+        await _fetch_chunks_pixelplace(chunks)
 
 
 async def _fetch_chunks_pixelcanvas(bigchunks: Iterable[BigChunk]):
@@ -36,7 +41,7 @@ async def _fetch_chunks_pixelcanvas(bigchunks: Iterable[BigChunk]):
             attempts = 0
             while attempts < 3:
                 try:
-                    async with session.get(bc.url) as resp:
+                    async with session.get(bc.url, headers=useragent) as resp:
                         data = await resp.read()
                         if len(data) == 460800:
                             break
@@ -59,7 +64,7 @@ async def _fetch_chunks_pixelzone(chunks: Iterable[ChunkPz]):
         attempts = 0
         while attempts < 3:
             try:
-                async with session.get(socket_url.format("http", "polling"), headers={'User-Agent': 'Python/3.6 aiohttp/3.2.0'}) as r:
+                async with session.get(socket_url.format("http", "polling"), headers=useragent) as r:
                     sid = json.loads(str((await r.read())[4:-4], "utf-8"))['sid']
                     break
             except aiohttp.client_exceptions.ClientOSError:
@@ -72,12 +77,12 @@ async def _fetch_chunks_pixelzone(chunks: Iterable[ChunkPz]):
         while attempts < 3:
             try:
                 await session.post(socket_url.format("http", "polling") + "&sid=" + sid, data='11:42["hello"]',
-                                   headers={'User-Agent': 'Python/3.6 aiohttp/3.2.0'})
+                                   headers=useragent)
                 break
             except aiohttp.client_exceptions.ClientOSError:
                 attempts += 1
 
-    async with websockets.connect(socket_url.format("ws", "websocket&sid=") + sid, extra_headers={'User-Agent': 'Python/3.6 aiohttp/3.2.0'}) as ws:
+    async with websockets.connect(socket_url.format("ws", "websocket&sid=") + sid, extra_headers=useragent) as ws:
         try:
             await ws.send("2probe")
             await ws.recv()
@@ -102,17 +107,40 @@ async def _fetch_chunks_pixelzone(chunks: Iterable[ChunkPz]):
 async def _fetch_pxlsspace(chunks: Iterable[PxlsBoard]):
     board = next(iter(chunks))
     async with aiohttp.ClientSession() as session:
-        async with session.get("http://pxls.space/info") as resp:
+        async with session.get("https://pxls.space/info", headers=useragent) as resp:
             info = json.loads(await resp.read())
         board.set_board_info(info)
 
-        async with session.get("http://pxls.space/boarddata?={0:.0f}".format(time())) as resp:
+        async with session.get("https://pxls.space/boarddata?={0:.0f}".format(time()), headers=useragent) as resp:
             board.load(await resp.read())
+
+
+async def _fetch_chunks_pixelplace(bigchunks: Iterable[BigChunkPP]):
+    async with aiohttp.ClientSession() as session:
+        for bc in bigchunks:
+            await asyncio.sleep(0)
+            if not bc.is_in_bounds():
+                continue
+            data = None
+            attempts = 0
+            while attempts < 3:
+                try:
+                    async with session.get(bc.url, headers=useragent) as resp:
+                        data = await resp.read()
+                        if len(data) == 460800:
+                            break
+                except aiohttp.ClientPayloadError:
+                    pass
+                data = None
+                attempts += 1
+            if not data:
+                raise errors.HttpCanvasError('pixelcanvas')
+            bc.load(data)
 
 
 async def fetch_online_pixelcanvas():
     async with aiohttp.ClientSession() as sess:
-        async with sess.get("http://pixelcanvas.io/api/online") as resp:
+        async with sess.get("https://pixelcanvas.io/api/online", headers=useragent) as resp:
             if resp.status != 200:
                 raise errors.HttpGeneralError
             data = json.loads(await resp.read())
@@ -126,8 +154,7 @@ async def fetch_online_pixelzone():
         attempts = 0
         while attempts < 3:
             try:
-                async with session.get(socket_url.format("http", "polling"),
-                                       headers={'User-Agent': 'Python/3.6 aiohttp/3.2.0'}) as r:
+                async with session.get(socket_url.format("http", "polling"), headers=useragent) as r:
                     sid = json.loads(str((await r.read())[4:-4], "utf-8"))['sid']
                     break
             except aiohttp.client_exceptions.ClientOSError:
@@ -140,12 +167,11 @@ async def fetch_online_pixelzone():
         while attempts < 3:
             try:
                 await session.post(socket_url.format("http", "polling") + "&sid=" + sid, data='11:42["hello"]',
-                                   headers={'User-Agent': 'Python/3.6 aiohttp/3.2.0'})
+                                   headers=useragent)
                 break
             except aiohttp.client_exceptions.ClientOSError:
                 attempts += 1
-    async with websockets.connect(socket_url.format("ws", "websocket&sid=") + sid,
-                                  extra_headers={'User-Agent': 'Python/3.6 aiohttp/3.2.0'}) as ws:
+    async with websockets.connect(socket_url.format("ws", "websocket&sid=") + sid, extra_headers=useragent) as ws:
         await ws.send("2probe")
         await ws.recv()
         await ws.send("5")
@@ -165,11 +191,20 @@ async def fetch_online_pixelzone():
 
 
 async def fetch_online_pxlsspace():
-    async with websockets.connect("wss://pxls.space/ws") as ws:
+    async with websockets.connect("wss://pxls.space/ws", extra_headers=useragent) as ws:
         async for msg in ws:
             d = json.loads(msg)
             if d['type'] == 'users':
                 return d['count']
+
+
+async def fetch_online_pixelplace():
+    async with aiohttp.ClientSession() as sess:
+        async with sess.get("https://pixelplace.fun/api/online", headers=useragent) as resp:
+            if resp.status != 200:
+                raise errors.HttpGeneralError
+            data = json.loads(await resp.read())
+            return data['online']
 
 
 async def get_changelog(version):

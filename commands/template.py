@@ -16,7 +16,7 @@ from discord.ext.commands import BucketType
 from PIL import Image, ImageChops
 
 from objects import errors
-from objects.chunks import BigChunk, ChunkPz, PxlsBoard
+from objects.chunks import BigChunk, ChunkPz, PxlsBoard, BigChunkPP
 from objects.config import Config
 from objects.dbtemplate import DbTemplate
 from objects.logger import Log
@@ -150,6 +150,13 @@ class Template:
         await self.add_template(ctx, "pxlsspace", name, x, y, url)
 
     @commands.guild_only()
+    @commands.cooldown(1, 5, BucketType.guild)
+    @checks.template_adder_only()
+    @template_add.command(name="pixelplace", aliases=['pp'])
+    async def template_add_pixelplace(self, ctx, name: str, x: int, y: int, url=None):
+        await self.add_template(ctx, "pixelplace", name, x, y, url)
+
+    @commands.guild_only()
     @commands.cooldown(1, 60, BucketType.guild)
     @template.group(name='check')
     async def template_check(self, ctx):
@@ -203,6 +210,18 @@ class Template:
             raise errors.NoTemplatesError(True)
         ts = sorted(ts, key=lambda tx: tx.name)
         msg = await _check_canvas(ctx, ts, "pxlsspace")
+        await msg.delete()
+        await _build_template_report(ctx, ts)
+
+    @commands.guild_only()
+    @template_check.command(name='pixelplace', aliases=['pp'])
+    async def template_check_pixelplace(self, ctx):
+        ts = [x for x in sql.template_get_all_by_guild_id(ctx.guild.id) if x.canvas == 'pixelplace']
+        if len(ts) <= 0:
+            ctx.command.parent.reset_cooldown(ctx)
+            raise errors.NoTemplatesError(True)
+        ts = sorted(ts, key=lambda tx: tx.name)
+        msg = await _check_canvas(ctx, ts, "pixelplace")
         await msg.delete()
         await _build_template_report(ctx, ts)
 
@@ -448,7 +467,8 @@ async def _check_canvas(ctx, templates, canvas, msg=None):
     chunk_classes = {
         'pixelcanvas': BigChunk,
         'pixelzone': ChunkPz,
-        'pxlsspace': PxlsBoard
+        'pxlsspace': PxlsBoard,
+        'pixelplace': BigChunkPP
     }
 
     chunks = set()

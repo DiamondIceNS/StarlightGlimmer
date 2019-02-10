@@ -75,7 +75,7 @@ class BigChunk(Chunky):
 
     @property
     def url(self):
-        return "http://pixelcanvas.io/api/bigchunk/{0}.{1}.bmp".format(self.x * 15, self.y * 15)
+        return "https://pixelcanvas.io/api/bigchunk/{0}.{1}.bmp".format(self.x * 15, self.y * 15)
 
     @property
     def width(self):
@@ -198,3 +198,21 @@ class PxlsBoard(Chunky):
     @staticmethod
     def get_intersecting(x, y, dx, dy):
         return [PxlsBoard()], (1, 1)
+
+
+class BigChunkPP(BigChunk):
+    @property
+    def url(self):
+        return "https://pixelplace.fun/api/bigchunk/{0}.{1}.bmp".format(self.x * 15, self.y * 15)
+
+    @staticmethod
+    def get_intersecting(x, y, dx, dy):
+        bigchunks = []
+        dx = (x + dx + 448) // 960
+        dy = (y + dy + 448) // 960
+        x = (x + 448) // 960
+        y = (y + 448) // 960
+        for iy in range(y, dy + 1):
+            for ix in range(x, dx + 1):
+                bigchunks.append(BigChunkPP(ix, iy))
+        return bigchunks, (dx - x + 1, dy - y + 1)
