@@ -1,20 +1,20 @@
 pixelcanvas = [
-    (255, 255, 255),  # White
-    (228, 228, 228),  # Light Grey
-    (136, 136, 136),  # Dark Grey
-    ( 34,  34,  34),  # Black
-    (255, 167, 209),  # Pink
-    (229,   0,   0),  # Red
-    (229, 149,   0),  # Orange
-    (160, 106,  66),  # Brown
-    (229, 217,   0),  # Yellow
-    (148, 224,  68),  # Light Green
-    (  2, 190,   1),  # Green
-    (  0, 211, 221),  # Cyan
-    (  0, 131, 199),  # Teal
-    (  0,   0, 234),  # Blue
-    (207, 110, 228),  # Light Purple
-    (130,   0, 128)   # Purple
+    (255 - 255, 255 - 255, 255 - 255),  # Inversed White
+    (255 - 228, 255 - 228, 255 - 228),  # Inversed Light Grey
+    (255 - 136, 255 - 136, 255 - 136),  # Inversed Dark Grey
+    ( 255 - 34,  255 - 34,  255 - 34),  # Inversed Black
+    (255 - 255, 255 - 167, 255 - 209),  # Inversed Pink
+    (255 - 229,   255 - 0,   255 - 0),  # Inversed Red
+    (255 - 229, 255 - 149,   255 - 0),  # Inversed Orange
+    (255 - 160, 255 - 106,  255 - 66),  # Inversed Brown
+    (255 - 229, 255 - 217,   255 - 0),  # Inversed Yellow
+    (255 - 148, 255 - 224,  255 - 68),  # Inversed Light Green
+    (  255 - 2, 255 - 190,   255 - 1),  # Inversed Green
+    (  255 - 0, 255 - 211, 255 - 221),  # Inversed Cyan
+    (  255 - 0, 255 - 131, 255 - 199),  # Inversed Teal
+    (  255 - 0,   255 - 0, 255 - 234),  # Inversed Blue
+    (255 - 207, 255 - 110, 255 - 228),  # Inversed Light Purple
+    (255 - 130,   255 - 0, 255 - 128)   # Inversed Purple
 ]
 
 pixelzone = [
