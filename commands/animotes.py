@@ -4,8 +4,6 @@ import discord
 from discord.ext import commands
 
 from utils import sqlite as sql
-from objects.channel_logger import ChannelLogger
-from objects.logger import Log
 
 
 #    Cog to reformat messages to allow for animated emotes, regardless of nitro status
@@ -29,8 +27,6 @@ from objects.logger import Log
 class Animotes:
     def __init__(self, bot):
         self.bot = bot
-        self.ch_log = ChannelLogger(bot)
-        self.log = Log(__name__)
 
     @commands.command()
     async def register(self, ctx):

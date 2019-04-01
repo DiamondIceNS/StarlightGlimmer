@@ -1,22 +1,20 @@
+import logging
 from time import time
 
 import discord
 from discord.ext import commands
 from discord.ext.commands import BucketType
 
-from objects.channel_logger import ChannelLogger
-from objects.config import Config
-from objects.logger import Log
-from utils import http
+import utils
+from utils import config, http
 from utils.version import VERSION
+
+log = logging.getLogger(__name__)
 
 
 class General:
     def __init__(self, bot):
         self.bot = bot
-        self.ch_log = ChannelLogger(bot)
-        self.cfg = Config()
-        self.log = Log(__name__)
 
     @commands.command()
     async def changelog(self, ctx):
@@ -81,23 +79,23 @@ class General:
 
     @commands.command()
     async def invite(self, ctx):
-        await ctx.send(self.cfg.invite)
+        await ctx.send(config.INVITE)
 
     @commands.command()
     async def ping(self, ctx):
         ping_start = time()
         ping_msg = await ctx.send(ctx.s("general.ping"))
         ping_time = time() - ping_start
-        self.log.debug("(Ping:{0}ms)".format(int(ping_time * 1000)))
+        log.info("(Ping:{0}ms)".format(int(ping_time * 1000)))
         await ping_msg.edit(content=ctx.s("general.pong").format(int(ping_time * 1000)))
 
     @commands.cooldown(1, 5, BucketType.guild)
     @commands.command()
     async def suggest(self, ctx, *, suggestion: str):
-        self.log.debug("Suggestion: {0}".format(suggestion))
-        await self.ch_log.log("New suggestion from **{0.name}#{0.discriminator}** (ID: `{0.id}`) in guild "
+        log.info("Suggestion: {0}".format(suggestion))
+        await utils.channel_log(ctx, "New suggestion from **{0.name}#{0.discriminator}** (ID: `{0.id}`) in guild "
                               "**{1.name}** (ID: `{1.id}`):".format(ctx.author, ctx.guild))
-        await self.ch_log.log("> `{}`".format(suggestion))
+        await utils.channel_log(ctx, "> `{}`".format(suggestion))
         await ctx.send(ctx.s("general.suggest"))
 
     @commands.command()

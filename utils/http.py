@@ -1,20 +1,20 @@
 import asyncio
 import io
 import json
+import logging
 from time import time
 
 import aiohttp
 import websockets
 from typing import Iterable
 
-from objects import errors, logger
-from objects.chunks import BigChunk, ChunkPz, PxlsBoard, BigChunkPP
-from objects.config import Config
+from objects.chunks import BigChunk, ChunkPz, PxlsBoard, ChunkPP
+from objects.errors import HttpCanvasError, HttpGeneralError, NoJpegsError, NotPngError, TemplateHttpError
+from utils import config
 from utils.version import VERSION
 
 
-cfg = Config()
-log = logger.Log(__name__)
+log = logging.getLogger(__name__)
 
 useragent = {'User-Agent': 'StarlightGlimmer/{} (+https://github.com/DiamondIceNS/StarlightGlimmer)'.format(VERSION)}
 
@@ -28,7 +28,7 @@ async def fetch_chunks(chunks: Iterable):
     elif type(c) is PxlsBoard:
         await _fetch_pxlsspace(chunks)
     else:
-        await _fetch_chunks_pixelplace(chunks)
+        await _fetch_chunks_pixelplanet(chunks)
 
 
 async def _fetch_chunks_pixelcanvas(bigchunks: Iterable[BigChunk]):
@@ -50,7 +50,7 @@ async def _fetch_chunks_pixelcanvas(bigchunks: Iterable[BigChunk]):
                 data = None
                 attempts += 1
             if not data:
-                raise errors.HttpCanvasError('pixelcanvas')
+                raise HttpCanvasError('pixelcanvas')
             bc.load(data)
 
 
@@ -71,7 +71,7 @@ async def _fetch_chunks_pixelzone(chunks: Iterable[ChunkPz]):
                 attempts += 1
 
         if not sid:
-            raise errors.HttpCanvasError('pixelzone')
+            raise HttpCanvasError('pixelzone')
 
         attempts = 0
         while attempts < 3:
@@ -87,7 +87,7 @@ async def _fetch_chunks_pixelzone(chunks: Iterable[ChunkPz]):
             await ws.send("2probe")
             await ws.recv()
             await ws.send("5")
-            await ws.send('42["useAPI", "{}"]'.format(cfg.pz_api_key))
+            await ws.send('42["useAPI", "{}"]'.format(config.PZ_API_KEY))
             for ch in chunks:
                 data = {}
                 await ws.send(ch.url)
@@ -101,7 +101,7 @@ async def _fetch_chunks_pixelzone(chunks: Iterable[ChunkPz]):
                 ch = next((x for x in chunks if x.x == data['cx'] and x.y == data['cy']))
                 ch.load(data['data'])
         except websockets.ConnectionClosed as e:
-            raise errors.HttpCanvasError('pixelzone')
+            raise HttpCanvasError('pixelzone')
 
 
 async def _fetch_pxlsspace(chunks: Iterable[PxlsBoard]):
@@ -115,7 +115,7 @@ async def _fetch_pxlsspace(chunks: Iterable[PxlsBoard]):
             board.load(await resp.read())
 
 
-async def _fetch_chunks_pixelplace(bigchunks: Iterable[BigChunkPP]):
+async def _fetch_chunks_pixelplanet(bigchunks: Iterable[ChunkPP]):
     async with aiohttp.ClientSession() as session:
         for bc in bigchunks:
             await asyncio.sleep(0)
@@ -127,14 +127,14 @@ async def _fetch_chunks_pixelplace(bigchunks: Iterable[BigChunkPP]):
                 try:
                     async with session.get(bc.url, headers=useragent) as resp:
                         data = await resp.read()
-                        if len(data) == 460800:
+                        if len(data) == 65536:
                             break
                 except aiohttp.ClientPayloadError:
                     pass
                 data = None
                 attempts += 1
             if not data:
-                raise errors.HttpCanvasError('pixelcanvas')
+                raise HttpCanvasError('pixelplanet')
             bc.load(data)
 
 
@@ -142,7 +142,7 @@ async def fetch_online_pixelcanvas():
     async with aiohttp.ClientSession() as sess:
         async with sess.get("https://pixelcanvas.io/api/online", headers=useragent) as resp:
             if resp.status != 200:
-                raise errors.HttpGeneralError
+                raise HttpGeneralError
             data = json.loads(await resp.read())
             return data['online']
 
@@ -161,7 +161,7 @@ async def fetch_online_pixelzone():
                 attempts += 1
 
         if not sid:
-            raise errors.HttpCanvasError('pixelzone')
+            raise HttpCanvasError('pixelzone')
 
         attempts = 0
         while attempts < 3:
@@ -176,7 +176,7 @@ async def fetch_online_pixelzone():
         await ws.recv()
         await ws.send("5")
         await ws.recv()
-        await ws.send("42['useAPI', '{}'".format(cfg.pz_api_key))
+        await ws.send("42['useAPI', '{}'".format(config.PZ_API_KEY))
         try:
             async for msg in ws:
                 d = json.loads(msg[msg.find('['):])
@@ -186,7 +186,7 @@ async def fetch_online_pixelzone():
                     data = d[1]
                     break
         except websockets.ConnectionClosed as e:
-            raise errors.HttpCanvasError('pixelzone')
+            raise HttpCanvasError('pixelzone')
     return data
 
 
@@ -198,11 +198,11 @@ async def fetch_online_pxlsspace():
                 return d['count']
 
 
-async def fetch_online_pixelplace():
+async def fetch_online_pixelplanet():
     async with aiohttp.ClientSession() as sess:
-        async with sess.get("https://pixelplace.fun/api/online", headers=useragent) as resp:
+        async with sess.get("https://pixelplanet.fun/api/online", headers=useragent) as resp:
             if resp.status != 200:
-                raise errors.HttpGeneralError
+                raise HttpGeneralError
             data = json.loads(await resp.read())
             return data['online']
 
@@ -212,18 +212,18 @@ async def get_changelog(version):
     async with aiohttp.ClientSession() as sess:
         async with sess.get(url) as resp:
             if resp.status != 200:
-                raise errors.HttpGeneralError
+                raise HttpGeneralError
             data = json.loads(await resp.read())
             return next((x for x in data if x['tag_name'] == "v{}".format(version)), None)
 
 
-async def get_template(url):
+async def get_template(url, name):
     async with aiohttp.ClientSession() as sess:
         async with sess.get(url) as resp:
             if resp.status != 200:
-                raise errors.TemplateHttpError
+                raise TemplateHttpError(name)
             if resp.content_type == "image/jpg" or resp.content_type == "image/jpeg":
-                raise errors.NoJpegsError
+                raise NoJpegsError
             if resp.content_type != "image/png":
-                raise errors.NotPngError
+                raise NotPngError
             return io.BytesIO(await resp.read())

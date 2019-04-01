@@ -1,29 +1,24 @@
+import logging
 import traceback
 
 import discord
 from discord import TextChannel
-from discord.ext import commands
 
-from objects import errors
-from objects.channel_logger import ChannelLogger
-from objects.config import Config
-from objects.glimcontext import GlimContext
-from objects.help_formatter import GlimmerHelpFormatter
-from objects.logger import Log
-from utils import canvases, http, render, sqlite as sql, utils
+from objects.bot_objects import GlimContext, GlimmerHelpFormatter
+from objects.errors import *
+import utils
+from utils import canvases, config, http, render, sqlite as sql
 from utils.version import VERSION
 
 
 def get_prefix(bot_, msg: discord.Message):
     return [sql.guild_get_prefix_by_id(msg.guild.id), bot_.user.mention + " "] \
-        if msg.guild else [cfg.prefix, bot_.user.mention + " "]
+        if msg.guild else [config.PREFIX, bot_.user.mention + " "]
 
 
-cfg = Config()
-log = Log(''.join(cfg.name.split()))
+log = logging.getLogger(__name__)
 bot = commands.Bot(command_prefix=get_prefix, formatter=GlimmerHelpFormatter())
 bot.remove_command('help')
-ch_log = ChannelLogger(bot)
 extensions = [
     "commands.animotes",
     "commands.canvas",
@@ -51,9 +46,9 @@ async def on_ready():
                 # Fix legacy templates not having a size
                 for t in sql.template_get_all():
                     try:
-                        t.size = await render.calculate_size(await http.get_template(t.url))
+                        t.size = await render.calculate_size(await http.get_template(t.url, t.name))
                         sql.template_update(t)
-                    except errors.TemplateHttpError:
+                    except TemplateHttpError:
                         log.error("Error retrieving template {0.name}. Skipping...".format(t))
 
     log.info("Loading extensions...")
@@ -68,10 +63,10 @@ async def on_ready():
         log.info("'{0.name}' (ID: {0.id})".format(g))
         db_g = sql.guild_get_by_id(g.id)
         if db_g:
-            prefix = db_g.prefix if db_g.prefix else cfg.prefix
+            prefix = db_g.prefix if db_g.prefix else config.PREFIX
             if g.name != db_g.name:
-                if cfg.channel_log_guild_renames:
-                    await ch_log.log("Guild **{1}** is now known as **{0.name}** `(ID:{0.id})`".format(g, db_g.name))
+                if config.CHANNEL_LOG_GUILD_RENAMES:
+                    await utils.channel_log(bot, "Guild **{1}** is now known as **{0.name}** `(ID:{0.id})`".format(g, db_g.name))
                 sql.guild_update(g.id, name=g.name)
             if is_new_version:
                 ch = next((x for x in g.channels if x.id == db_g.alert_channel), None)
@@ -91,8 +86,8 @@ async def on_ready():
                     log.info("- Could not send update message: alert channel not found.")
         else:
             j = g.me.joined_at
-            if cfg.channel_log_guild_joins:
-                await ch_log.log("Joined guild **{0.name}** (ID: `{0.id}`)".format(g, j.isoformat(' ')))
+            if config.CHANNEL_LOG_GUILD_JOINS:
+                await utils.channel_log(bot, "Joined guild **{0.name}** (ID: `{0.id}`)".format(g, j.isoformat(' ')))
             log.info("Joined guild '{0.name}' (ID: {0.id}) between sessions at {1}".format(g, j.timestamp()))
             sql.guild_add(g.id, g.name, int(j.timestamp()))
             await print_welcome_message(g)
@@ -102,20 +97,20 @@ async def on_ready():
         for g in db_guilds:
             if not any(x for x in bot.guilds if x.id == g.id):
                 log.info("Kicked from guild '{0}' (ID: {1}) between sessions".format(g.name, g.id))
-                if cfg.channel_log_guild_kicks:
-                    await ch_log.log("Kicked from guild **{0}** (ID: `{1}`)".format(g.name, g.id))
+                if config.CHANNEL_LOG_GUILD_KICKS:
+                    await utils.channel_log(bot, "Kicked from guild **{0}** (ID: `{1}`)".format(g.name, g.id))
                 sql.guild_delete(g.id)
 
     log.info('I am ready!')
-    await ch_log.log("I am ready!")
+    await utils.channel_log(bot, "I am ready!")
     print("I am ready!")
 
 
 @bot.event
 async def on_guild_join(guild):
     log.info("Joined new guild '{0.name}' (ID: {0.id})".format(guild))
-    if cfg.channel_log_guild_joins:
-        await ch_log.log("Joined new guild **{0.name}** (ID: `{0.id}`)".format(guild))
+    if config.CHANNEL_LOG_GUILD_JOINS:
+        await utils.channel_log(bot, "Joined new guild **{0.name}** (ID: `{0.id}`)".format(guild))
     sql.guild_add(guild.id, guild.name, int(guild.me.joined_at.timestamp()))
     await print_welcome_message(guild)
 
@@ -123,8 +118,8 @@ async def on_guild_join(guild):
 @bot.event
 async def on_guild_remove(guild):
     log.info("Kicked from guild '{0.name}' (ID: {0.id})".format(guild))
-    if cfg.channel_log_guild_kicks:
-        await ch_log.log("Kicked from guild **{0.name}** (ID: `{0.id}`)".format(guild))
+    if config.CHANNEL_LOG_GUILD_KICKS:
+        await utils.channel_log(bot, "Kicked from guild **{0.name}** (ID: `{0.id}`)".format(guild))
     sql.guild_delete(guild.id)
 
 
@@ -132,8 +127,8 @@ async def on_guild_remove(guild):
 async def on_guild_update(before, after):
     if before.name != after.name:
         log.info("Guild {0.name} is now known as {1.name} (ID: {1.id})")
-        if cfg.channel_log_guild_renames:
-            await ch_log.log("Guild **{0.name}** is now known as **{1.name}** (ID: `{1.id}`)".format(before, after))
+        if config.CHANNEL_LOG_GUILD_RENAMES:
+            await utils.channel_log(bot, "Guild **{0.name}** is now known as **{1.name}** (ID: `{1.id}`)".format(before, after))
         sql.guild_update(after.id, name=after.name)
 
 
@@ -144,7 +139,20 @@ async def on_guild_role_delete(role):
 
 @bot.before_invoke
 async def on_command_preprocess(ctx):
-    log.command(ctx)
+    invocation_type = "A" if ctx.is_autoscan else "I"
+    if ctx.is_default:
+        invocation_type += "D"
+    if ctx.is_template:
+        invocation_type += "T"
+    if ctx.is_repeat:
+        invocation_type += "R"
+    if ctx.guild:
+        log.info("[{0}] {1.name}#{1.discriminator} used '{2}' in {3.name} (UID:{1.id} GID:{3.id})"
+                  .format(invocation_type, ctx.author, ctx.command.qualified_name, ctx.guild))
+    else:
+        log.info("[{0}] {1.name}#{1.discriminator} used '{2}' in DM (UID:{1.id})"
+                  .format(invocation_type, ctx.author, ctx.command.qualified_name, ctx.guild))
+    log.info(ctx.message.content)
 
 
 @bot.event
@@ -166,54 +174,54 @@ async def on_command_error(ctx, error):
         await ctx.send(ctx.s("error.no_dm"))
 
     # Check errors
-    elif isinstance(error, errors.BadArgumentErrorWithMessage):
+    elif isinstance(error, BadArgumentErrorWithMessage):
         await ctx.send(error.message)
-    elif isinstance(error, errors.FactionNotFound):
+    elif isinstance(error, FactionNotFoundError):
         await ctx.send(ctx.s("error.faction_not_found"))
-    elif isinstance(error, errors.IdempotentActionError):
+    elif isinstance(error, IdempotentActionError):
         try:
             f = discord.File("assets/y_tho.png", "y_tho.png")
             await ctx.send(ctx.s("error.why"), file=f)
         except IOError:
             await ctx.send(ctx.s("error.why"))
-    elif isinstance(error, errors.NoAttachmentError):
+    elif isinstance(error, NoAttachmentError):
         await ctx.send(ctx.s("error.no_attachment"))
-    elif isinstance(error, errors.NoJpegsError):
+    elif isinstance(error, NoJpegsError):
         try:
             f = discord.File("assets/disdain_for_jpegs.gif", "disdain_for_jpegs.gif")
             await ctx.send(ctx.s("error.jpeg"), file=f)
         except IOError:
             await ctx.send(ctx.s("error.jpeg"))
-    elif isinstance(error, errors.NoSelfPermissionError):
+    elif isinstance(error, NoSelfPermissionError):
         await ctx.send(ctx.s("error.no_self_permission"))
-    elif isinstance(error, errors.NoTemplatesError):
+    elif isinstance(error, NoTemplatesError):
         if error.is_canvas_specific:
             await ctx.send(ctx.s("error.no_templates_for_canvas"))
         else:
             await ctx.send(ctx.s("error.no_templates"))
-    elif isinstance(error, errors.NoUserPermissionError):
+    elif isinstance(error, NoUserPermissionError):
         await ctx.send(ctx.s("error.no_user_permission"))
-    elif isinstance(error, errors.NotPngError):
+    elif isinstance(error, NotPngError):
         await ctx.send(ctx.s("error.not_png"))
-    elif isinstance(error, errors.PilImageError):
+    elif isinstance(error, PilImageError):
         await ctx.send(ctx.s("error.bad_image"))
-    elif isinstance(error, errors.TemplateHttpError):
-        await ctx.send(ctx.s("error.cannot_fetch_template"))
-    elif isinstance(error, errors.TemplateNotFound):
+    elif isinstance(error, TemplateHttpError):
+        await ctx.send(ctx.s("error.cannot_fetch_template").format(error.template_name))
+    elif isinstance(error, TemplateNotFoundError):
         await ctx.send(ctx.s("error.template_not_found"))
-    elif isinstance(error, errors.UrlError):
+    elif isinstance(error, UrlError):
         await ctx.send(ctx.s("error.non_discord_url"))
-    elif isinstance(error, errors.HttpCanvasError):
+    elif isinstance(error, HttpCanvasError):
         await ctx.send(ctx.s("error.http_canvas").format(canvases.pretty_print[error.canvas]))
-    elif isinstance(error, errors.HttpGeneralError):
+    elif isinstance(error, HttpGeneralError):
         await ctx.send(ctx.s("error.http"))
 
     # Uncaught error
     else:
         name = ctx.command.qualified_name if ctx.command else "None"
-        await ch_log.log(
+        await utils.channel_log(bot,
             "An error occurred executing `{0}` in server **{1.name}** (ID: `{1.id}`):".format(name, ctx.guild))
-        await ch_log.log("```{}```".format(error))
+        await utils.channel_log(bot, "```{}```".format(error))
         log.error("An error occurred executing '{}': {}\n{}"
                   .format(name, error, ''.join(traceback.format_exception(None, error, error.__traceback__))))
         await ctx.send(ctx.s("error.unknown"))
@@ -250,10 +258,10 @@ async def print_welcome_message(guild):
     c = next((x for x in channels if x.name == "general"), next(channels, None))
     if c:
         await c.send("Hi! I'm {0}. For a full list of commands, pull up my help page with `{1}help`. "
-                     "Happy pixel painting!".format(cfg.name, cfg.prefix))
+                     "Happy pixel painting!".format(config.NAME, config.PREFIX))
         log.info(" - Printed welcome message".format(guild))
     else:
         log.info("- Could not print welcome message: no default channel found".format(guild))
 
 
-bot.run(cfg.token)
+bot.run(config.TOKEN)

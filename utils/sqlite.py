@@ -3,16 +3,14 @@ import sqlite3
 import time
 from typing import List, Optional
 
-from objects.config import Config
-from objects.dbguild import DbGuild
-from objects.dbtemplate import DbTemplate
+from objects import DbGuild, DbTemplate
+from utils import config
 
 if not os.path.exists('data'):
     os.makedirs('data')
 conn = sqlite3.connect('data/glimmer.db')
 conn.row_factory = sqlite3.Row
 c = conn.cursor()
-cfg = Config()
 
 
 def _create_tables():
@@ -200,6 +198,13 @@ def _update_tables(v):
                 DELETE FROM templates WHERE canvas="pixelzio";
                 COMMIT;
             """)
+        if v < 1.9:
+            c.executescript("""
+                BEGIN TRANSACTION;
+                UPDATE guilds SET canvas='pixelplanet' WHERE canvas='pixelplace';
+                UPDATE templates SET canvas='pixelplanet' WHERE canvas='pixelplace';
+                COMMIT;
+            """)
 
 
 # ================================
@@ -346,7 +351,7 @@ def guild_get_language_by_id(gid) -> str:
 
 def guild_get_prefix_by_id(gid) -> Optional[str]:
     g = guild_get_by_id(gid)
-    return g.prefix if g and g.prefix else cfg.prefix
+    return g.prefix if g and g.prefix else config.PREFIX
 
 
 def guild_is_autoscan(gid) -> bool:

@@ -3,6 +3,7 @@ import datetime
 import hashlib
 import io
 import itertools
+import logging
 import math
 import re
 import time
@@ -15,15 +16,13 @@ from discord.ext import commands
 from discord.ext.commands import BucketType
 from PIL import Image, ImageChops
 
-from objects import errors
-from objects.chunks import BigChunk, ChunkPz, PxlsBoard, BigChunkPP
-from objects.config import Config
-from objects.dbtemplate import DbTemplate
-from objects.logger import Log
-from utils import canvases, checks, colors, http, render, sqlite as sql, utils
+from objects import DbTemplate
+from objects.chunks import BigChunk, ChunkPz, ChunkPP, PxlsBoard
+from objects.errors import FactionNotFoundError, NoTemplatesError, PilImageError, TemplateNotFoundError, UrlError
+import utils
+from utils import canvases, checks, colors, config, http, render, sqlite as sql
 
-log = Log(__name__)
-cfg = Config()
+log = logging.getLogger(__name__)
 
 
 class Template:
@@ -44,7 +43,7 @@ class Template:
                 return
             faction = sql.guild_get_by_faction_name_or_alias(fac)
             if not faction:
-                raise errors.FactionNotFound
+                raise FactionNotFoundError
             gid = faction.id
             page = next(iter_args, 1)
         try:
@@ -54,7 +53,7 @@ class Template:
 
         ts = sql.template_get_all_by_guild_id(gid)
         if len(ts) < 1:
-            raise errors.NoTemplatesError()
+            raise NoTemplatesError()
 
         pages = 1 + len(ts) // 10
         page = min(max(page, 1), pages)
@@ -152,9 +151,9 @@ class Template:
     @commands.guild_only()
     @commands.cooldown(1, 5, BucketType.guild)
     @checks.template_adder_only()
-    @template_add.command(name="pixelplace", aliases=['pp'])
-    async def template_add_pixelplace(self, ctx, name: str, x: int, y: int, url=None):
-        await self.add_template(ctx, "pixelplace", name, x, y, url)
+    @template_add.command(name="pixelplanet", aliases=['pp'])
+    async def template_add_pixelplanet(self, ctx, name: str, x: int, y: int, url=None):
+        await self.add_template(ctx, "pixelplanet", name, x, y, url)
 
     @commands.guild_only()
     @commands.cooldown(1, 60, BucketType.guild)
@@ -165,7 +164,7 @@ class Template:
 
             if len(ts) < 1:
                 ctx.command.parent.reset_cooldown(ctx)
-                raise errors.NoTemplatesError(False)
+                raise NoTemplatesError(False)
 
             msg = None
             ts = sorted(ts, key=lambda tx: tx.name)
@@ -183,7 +182,7 @@ class Template:
         ts = [x for x in sql.template_get_all_by_guild_id(ctx.guild.id) if x.canvas == 'pixelcanvas']
         if len(ts) <= 0:
             ctx.command.parent.reset_cooldown(ctx)
-            raise errors.NoTemplatesError(True)
+            raise NoTemplatesError(True)
         ts = sorted(ts, key=lambda tx: tx.name)
         msg = await _check_canvas(ctx, ts, "pixelcanvas")
         await msg.delete()
@@ -195,7 +194,7 @@ class Template:
         ts = [x for x in sql.template_get_all_by_guild_id(ctx.guild.id) if x.canvas == 'pixelzone']
         if len(ts) <= 0:
             ctx.command.parent.reset_cooldown(ctx)
-            raise errors.NoTemplatesError(True)
+            raise NoTemplatesError(True)
         ts = sorted(ts, key=lambda tx: tx.name)
         msg = await _check_canvas(ctx, ts, "pixelzone")
         await msg.delete()
@@ -207,21 +206,21 @@ class Template:
         ts = [x for x in sql.template_get_all_by_guild_id(ctx.guild.id) if x.canvas == 'pxlsspace']
         if len(ts) <= 0:
             ctx.command.parent.reset_cooldown(ctx)
-            raise errors.NoTemplatesError(True)
+            raise NoTemplatesError(True)
         ts = sorted(ts, key=lambda tx: tx.name)
         msg = await _check_canvas(ctx, ts, "pxlsspace")
         await msg.delete()
         await _build_template_report(ctx, ts)
 
     @commands.guild_only()
-    @template_check.command(name='pixelplace', aliases=['pp'])
-    async def template_check_pixelplace(self, ctx):
-        ts = [x for x in sql.template_get_all_by_guild_id(ctx.guild.id) if x.canvas == 'pixelplace']
+    @template_check.command(name='pixelplanet', aliases=['pp'])
+    async def template_check_pixelplanet(self, ctx):
+        ts = [x for x in sql.template_get_all_by_guild_id(ctx.guild.id) if x.canvas == 'pixelplanet']
         if len(ts) <= 0:
             ctx.command.parent.reset_cooldown(ctx)
-            raise errors.NoTemplatesError(True)
+            raise NoTemplatesError(True)
         ts = sorted(ts, key=lambda tx: tx.name)
-        msg = await _check_canvas(ctx, ts, "pixelplace")
+        msg = await _check_canvas(ctx, ts, "pixelplanet")
         await msg.delete()
         await _build_template_report(ctx, ts)
 
@@ -243,14 +242,14 @@ class Template:
                 return
             faction = sql.guild_get_by_faction_name_or_alias(fac)
             if not faction:
-                raise errors.FactionNotFound
+                raise FactionNotFoundError
             gid = faction.id
             name = next(iter_args, 1)
         else:
             faction = sql.guild_get_by_id(gid)
         t = sql.template_get_by_name(gid, name)
         if not t:
-            raise errors.TemplateNotFound
+            raise TemplateNotFoundError
 
         if image_only:
             zoom = next(iter_args, 1)
@@ -264,7 +263,7 @@ class Template:
             max_zoom = int(math.sqrt(4000000 // (t.width * t.height)))
             zoom = max(1, min(zoom, max_zoom))
 
-            img = render.zoom(await http.get_template(t.url), zoom)
+            img = render.zoom(await http.get_template(t.url, t.name), zoom)
 
             with io.BytesIO() as bio:
                 img.save(bio, format="PNG")
@@ -290,7 +289,7 @@ class Template:
                                             canvases.url_templates[t.canvas].format(*t.center()))
 
         if size == 0:
-            t.size = await render.calculate_size(await http.get_template(t.url))
+            t.size = await render.calculate_size(await http.get_template(t.url, t.name))
             sql.template_update(t)
 
         e = discord.Embed(title=t.name, color=color, description=description) \
@@ -316,8 +315,8 @@ class Template:
     async def template_remove(self, ctx, name):
         t = sql.template_get_by_name(ctx.guild.id, name)
         if not t:
-            raise errors.TemplateNotFound
-        log.debug("(T:{})".format(t.name, t.gid))
+            raise TemplateNotFoundError
+        log.info("(T:{})".format(t.name, t.gid))
         if t.owner_id != ctx.author.id and not utils.is_template_admin(ctx) and not utils.is_admin(ctx):
             await ctx.send(ctx.s("template.err.not_owner"))
             return
@@ -326,10 +325,10 @@ class Template:
 
     @staticmethod
     async def add_template(ctx, canvas, name, x, y, url):
-        if len(name) > cfg.max_template_name_length:
-            await ctx.send(ctx.s("template.err.name_too_long").format(cfg.max_template_name_length))
+        if len(name) > config.MAX_TEMPLATE_NAME_LENGTH:
+            await ctx.send(ctx.s("template.err.name_too_long").format(config.MAX_TEMPLATE_NAME_LENGTH))
             return
-        if sql.template_count_by_guild_id(ctx.guild.id) >= cfg.max_templates_per_guild:
+        if sql.template_count_by_guild_id(ctx.guild.id) >= config.MAX_TEMPLATES_PER_GUILD:
             await ctx.send(ctx.s("template.err.max_templates"))
             return
         url = await Template.select_url(ctx, url)
@@ -339,7 +338,7 @@ class Template:
         t = await Template.build_template(ctx, name, x, y, url, canvas)
         if not t:
             return
-        log.debug("(T:{} | X:{} | Y:{} | Dim:{})".format(t.name, t.x, t.y, t.size))
+        log.info("(T:{} | X:{} | Y:{} | Dim:{})".format(t.name, t.x, t.y, t.size))
         chk = await Template.check_for_duplicate_by_name(ctx, t)
         if chk is not None:
             if not chk or await Template.check_for_duplicates_by_md5(ctx, t) is False:
@@ -355,7 +354,7 @@ class Template:
     @staticmethod
     async def build_template(ctx, name, x, y, url, canvas):
         try:
-            with await http.get_template(url) as data:
+            with await http.get_template(url, name) as data:
                 size = await render.calculate_size(data)
                 md5 = hashlib.md5(data.getvalue()).hexdigest()
                 with Image.open(data).convert("RGBA") as tmp:
@@ -373,15 +372,15 @@ class Template:
                         new_msg = await ctx.send(ctx.s("canvas.quantize").format(bad_pixels), file=f)
 
                     url = new_msg.attachments[0].url
-                    with await http.get_template(url) as data2:
+                    with await http.get_template(url, name) as data2:
                         md5 = hashlib.md5(data2.getvalue()).hexdigest()
                 created = int(time.time())
                 return DbTemplate(ctx.guild.id, name, url, canvas, x, y, w, h, size, created, created, md5,
                                   ctx.author.id)
         except aiohttp.client_exceptions.InvalidURL:
-            raise errors.UrlError
+            raise UrlError
         except IOError:
-            raise errors.PilImageError
+            raise PilImageError
 
     @staticmethod
     async def check_colors(img, palette):
@@ -429,7 +428,7 @@ class Template:
         if input_url:
             if re.search('^(?:https?://)cdn\.discordapp\.com/', input_url):
                 return input_url
-            raise errors.UrlError
+            raise UrlError
         if len(ctx.message.attachments) > 0:
             return ctx.message.attachments[0].url
 
@@ -453,7 +452,7 @@ async def _build_template_report(ctx, ts: List[DbTemplate]):
     for t in ts:
         tot = t.size
         if tot == 0:
-            t.size = await render.calculate_size(await http.get_template(t.url))
+            t.size = await render.calculate_size(await http.get_template(t.url, t.name))
             sql.template_update(t)
         name = '"{}"'.format(t.name)
         perc = "{:>6.2f}%".format(100 * (tot - t.errors) / tot)
@@ -468,7 +467,7 @@ async def _check_canvas(ctx, templates, canvas, msg=None):
         'pixelcanvas': BigChunk,
         'pixelzone': ChunkPz,
         'pxlsspace': PxlsBoard,
-        'pixelplace': BigChunkPP
+        'pixelplanet': ChunkPP
     }
 
     chunks = set()
@@ -494,7 +493,7 @@ async def _check_canvas(ctx, templates, canvas, msg=None):
 
         x, y = t.x - empty_bcs[0].p_x, t.y - empty_bcs[0].p_y
         tmp = tmp.crop((x, y, x + t.width, y + t.height))
-        template = Image.open(await http.get_template(t.url)).convert('RGBA')
+        template = Image.open(await http.get_template(t.url, t.name)).convert('RGBA')
         alpha = Image.new('RGBA', template.size, (255, 255, 255, 0))
         template = Image.composite(template, alpha, template)
         tmp = Image.composite(tmp, alpha, template)

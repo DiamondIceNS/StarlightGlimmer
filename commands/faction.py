@@ -1,3 +1,4 @@
+import logging
 import io
 import re
 
@@ -5,13 +6,10 @@ import discord
 from discord.ext import commands
 from PIL import Image
 
-from objects import errors
-from objects.logger import Log
-from objects.config import Config
+from objects.errors import BadArgumentErrorWithMessage, NoSelfPermissionError, UrlError
 from utils import canvases, checks, sqlite as sql
 
-log = Log(__name__)
-cfg = Config()
+log = logging.getLogger(__name__)
 
 
 class Faction:
@@ -26,13 +24,13 @@ class Faction:
             return
         name = re.sub("[^\S ]+", "", name)
         if not (6 <= len(name) <= 32):
-            raise errors.BadArgumentErrorWithMessage(ctx.s("faction.err.name_length"))
+            raise BadArgumentErrorWithMessage(ctx.s("faction.err.name_length"))
         if sql.guild_get_by_faction_name(name):
             await ctx.send(ctx.s("faction.name_already_exists"))
             return
         alias = re.sub("[^A-Za-z]+", "", alias).lower()
         if alias and not (1 <= len(alias) <= 5):
-            raise errors.BadArgumentErrorWithMessage(ctx.s("faction.err.alias_length"))
+            raise BadArgumentErrorWithMessage(ctx.s("faction.err.alias_length"))
         if sql.guild_get_by_faction_alias(alias):
             await ctx.send(ctx.s("faction.alias_already_exists"))
             return
@@ -75,7 +73,7 @@ class Faction:
     async def faction_alias_set(self, ctx, new_alias):
         new_alias = re.sub("[^A-Za-z]+", "", new_alias).lower()
         if not (1 <= len(new_alias) <= 5):
-            raise errors.BadArgumentErrorWithMessage(ctx.s("faction.err.alias_length"))
+            raise BadArgumentErrorWithMessage(ctx.s("faction.err.alias_length"))
         if sql.guild_get_by_faction_alias(new_alias):
             await ctx.send(ctx.s("faction.alias_already_exists"))
             return
@@ -132,7 +130,7 @@ class Faction:
     async def faction_desc_set(self, ctx, *, description):
         description = re.sub("[^\S ]+", "", description)
         if not (len(description) <= 240):
-            raise errors.BadArgumentErrorWithMessage(ctx.s("faction.err.description_length"))
+            raise BadArgumentErrorWithMessage(ctx.s("faction.err.description_length"))
         sql.guild_faction_set(ctx.guild.id, desc=description)
         await ctx.send(ctx.s("faction.set_description"))
 
@@ -157,7 +155,7 @@ class Faction:
     async def faction_emblem_set(self, ctx, emblem_url=None):
         if emblem_url:
             if not re.search('^(?:https?://)cdn\.discordapp\.com/', emblem_url):
-                raise errors.UrlError
+                raise UrlError
         elif len(ctx.message.attachments) > 0:
             emblem_url = ctx.message.attachments[0].url
 
@@ -199,7 +197,7 @@ class Faction:
                 url = "https://discord.gg/" + url
         else:
             if not ctx.channel.permissions_for(ctx.guild.me).create_instant_invite:
-                raise errors.NoSelfPermissionError
+                raise NoSelfPermissionError
             invite = await ctx.channel.create_invite(reason="Invite for faction info page")
             url = invite.url
         sql.guild_faction_set(ctx.guild.id, invite=url)
@@ -217,7 +215,7 @@ class Faction:
     async def faction_name_set(self, ctx, new_name):
         new_name = re.sub("[^\S ]+", "", new_name)
         if not (6 <= len(new_name) <= 32):
-            raise errors.BadArgumentErrorWithMessage(ctx.s("faction.err.name_length"))
+            raise BadArgumentErrorWithMessage(ctx.s("faction.err.name_length"))
         if sql.guild_get_by_faction_name(new_name):
             await ctx.send(ctx.s("faction.name_already_exists"))
             return

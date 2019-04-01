@@ -1,11 +1,16 @@
 import asyncio
+import logging
 import re
+import time
 
+import discord
 from discord.ext.commands.view import StringView
 from discord.utils import get as dget
 
-from objects import errors
-from utils import sqlite as sql
+from objects.errors import NoAttachmentError, NoJpegsError, NotPngError
+from utils import config, sqlite as sql
+
+log = logging.getLogger(__name__)
 
 
 async def autoscan(ctx):
@@ -19,7 +24,7 @@ async def autoscan(ctx):
     m_pc = re.search('pixelcanvas\.io/@(-?\d+),(-?\d+)(?:(?: |#| #)(-?\d+))?', ctx.message.content)
     m_pz = re.search('pixelzone\.io/\?p=(-?\d+),(-?\d+)(?:,(\d+))?(?:(?: |#| #)(-?\d+))?', ctx.message.content)
     m_ps = re.search('pxls\.space/#x=(\d+)&y=(\d+)(?:&scale=(\d+))?(?:(?: |#| #)(-?\d+))?', ctx.message.content)
-    m_pp = re.search('pixelplace\.fun/@(-?\d+),(-?\d+)(?:(?: |#| #)(-?\d+))?', ctx.message.content)
+    m_pp = re.search('pixelplanet\.fun/#(-?\d+),(-?\d+)(?:,(-?\d+))?', ctx.message.content)
     m_pre_def = re.search('@(-?\d+)(?: |,|, )(-?\d+)(?:(?: |#| #)(-?\d+))?', ctx.message.content)
     m_dif_def = re.search('(?:(-l) )?(-?\d+)(?: |,|, )(-?\d+)(?:(?: |#| #)(-?\d+))?', ctx.message.content)
     if m_pc:
@@ -32,7 +37,7 @@ async def autoscan(ctx):
         cmd = dget(dget(ctx.bot.commands, name='preview').commands, name='pxlsspace')
         view = '{} {} {}'.format(m_ps.group(1), m_ps.group(2), m_ps.group(4) or m_ps.group(3) or '1')
     if m_pp:
-        cmd = dget(dget(ctx.bot.commands, name='preview').commands, name='pixelplace')
+        cmd = dget(dget(ctx.bot.commands, name='preview').commands, name='pixelplanet')
         view = ' '.join(m_pp.groups(default='1'))
     elif m_pre_def:
         cmd = dget(dget(ctx.bot.commands, name='preview').commands, name=canvas)
@@ -48,6 +53,18 @@ async def autoscan(ctx):
         ctx.is_autoscan = True
         await ctx.bot.invoke(ctx)
         return True
+
+
+async def channel_log(bot, msg):
+    if config.LOGGING_CHANNEL_ID:
+        channel = bot.get_channel(config.LOGGING_CHANNEL_ID)
+        if not channel:
+            log.warning("Can't find logging channel")
+        else:
+            try:
+                await channel.send("`{}` {}".format(time.strftime('%H:%M:%S', time.localtime()), msg))
+            except discord.errors.Forbidden:
+                log.warning("Forbidden from logging channel!")
 
 
 def get_botadmin_role(ctx):
@@ -97,12 +114,12 @@ def is_template_adder(ctx):
 
 async def verify_attachment(ctx):
     if len(ctx.message.attachments) < 1:
-        raise errors.NoAttachmentError
+        raise NoAttachmentError
     att = ctx.message.attachments[0]
     if att.filename[-4:].lower() != ".png":
         if att.filename[-4:].lower() == ".jpg" or att.filename[-5:].lower() == ".jpeg":
-            raise errors.NoJpegsError
-        raise errors.NotPngError
+            raise NoJpegsError
+        raise NotPngError
     return att
 
 

@@ -6,7 +6,7 @@ class BadArgumentErrorWithMessage(commands.CommandError):
         self.message = message
 
 
-class FactionNotFound(commands.CommandError):
+class FactionNotFoundError(commands.CommandError):
     pass
 
 
@@ -53,10 +53,11 @@ class PilImageError(commands.CommandError):
 
 
 class TemplateHttpError(commands.CommandError):
-    pass
+    def __init__(self, template_name):
+        self.template_name = template_name
 
 
-class TemplateNotFound(commands.CommandError):
+class TemplateNotFoundError(commands.CommandError):
     pass
 
 

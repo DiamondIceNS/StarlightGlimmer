@@ -14,5 +14,7 @@
     "debug": false,
     "channel_log_guild_renames": false,
     "channel_log_guild_joins": false,
-    "channel_log_guild_kicks": false
+    "channel_log_guild_kicks": false,
+
+    "invert": false
 }

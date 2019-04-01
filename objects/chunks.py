@@ -3,6 +3,7 @@ import io
 import json
 
 import lz4.frame
+import numpy as np
 from PIL import Image
 
 from utils import colors
@@ -200,21 +201,49 @@ class PxlsBoard(Chunky):
         return [PxlsBoard()], (1, 1)
 
 
-class BigChunkPP(BigChunk):
-    palette = [x for sub in colors.pixelplace for x in sub] * 16
+class ChunkPP(Chunky):
+    palette = [x for sub in colors.pixelplanet for x in sub]
+
+    @property
+    def height(self):
+        return 256
+
+    @property
+    def p_x(self):
+        return self.x
+
+    @property
+    def p_y(self):
+        return self.y
 
     @property
     def url(self):
-        return "https://pixelplace.fun/api/bigchunk/{0}.{1}.bmp".format(self.x * 15, self.y * 15)
+        return "https://pixelplanet.fun/chunks/{0}/{1}.bin".format(self.x, self.y)
+
+    @property
+    def width(self):
+        return 256
+
+    def is_in_bounds(self):
+        return 0 <= self.x < 256 and 0 <= self.y < 256
+
+    def load(self, data):
+        data = np.frombuffer(data, dtype=np.int8).reshape((256, 256))
+        data = np.bitwise_and(data, 31) - 1
+        data = np.maximum(data, 0)
+        self._image = Image.frombytes('P', (256, 256), data, 'raw', 'P', 0, 1)
+        self._image.putpalette(self.palette)
 
     @staticmethod
     def get_intersecting(x, y, dx, dy):
-        bigchunks = []
-        dx = (x + dx + 448) // 960
-        dy = (y + dy + 448) // 960
-        x = (x + 448) // 960
-        y = (y + 448) // 960
+        x += 32768
+        y += 32768
+        chunks = []
+        dx = (x + dx) // 256
+        dy = (y + dy) // 256
+        x = x // 256
+        y = y // 256
         for iy in range(y, dy + 1):
             for ix in range(x, dx + 1):
-                bigchunks.append(BigChunkPP(ix, iy))
-        return bigchunks, (dx - x + 1, dy - y + 1)
+                chunks.append(ChunkPP(ix, iy))
+        return chunks, (dx - x + 1, dy - y + 1)

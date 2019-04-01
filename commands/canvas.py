@@ -1,3 +1,4 @@
+import logging
 import io
 import math
 import re
@@ -6,12 +7,12 @@ import discord
 from discord.ext import commands
 from discord.ext.commands import BucketType
 
-from objects.glimcontext import GlimContext
-from utils import colors, http, render, sqlite as sql, utils
-from objects.logger import Log
-from objects import errors
+from objects.bot_objects import GlimContext
+from objects.errors import FactionNotFoundError, IdempotentActionError
+import utils
+from utils import colors, http, render, sqlite as sql
 
-log = Log(__name__)
+log = logging.getLogger(__name__)
 
 
 class Canvas:
@@ -60,8 +61,8 @@ class Canvas:
 
         if t:
             async with ctx.typing():
-                log.debug("(T:{} | GID:{})".format(t.name, t.gid))
-                data = await http.get_template(t.url)
+                log.info("(T:{} | GID:{})".format(t.name, t.gid))
+                data = await http.get_template(t.url, t.name)
                 max_zoom = int(math.sqrt(4000000 // (t.width * t.height)))
                 zoom = max(1, min(zoom, max_zoom))
 
@@ -69,7 +70,7 @@ class Canvas:
                     'pixelcanvas': render.fetch_pixelcanvas,
                     'pixelzone': render.fetch_pixelzone,
                     'pxlsspace': render.fetch_pxlsspace,
-                    'pixelplace': render.fetch_pixelplace,
+                    'pixelplanet': render.fetch_pixelplanet,
                 }
 
                 diff_img, tot, err, bad, err_list \
@@ -123,9 +124,9 @@ class Canvas:
         await _diff(ctx, args, "pxlsspace", render.fetch_pxlsspace, colors.pxlsspace)
 
     @commands.cooldown(1, 5, BucketType.guild)
-    @diff.command(name="pixelplace", aliases=["pp"])
-    async def diff_pixelplace(self, ctx, *args):
-        await _diff(ctx, args, "pixelplace", render.fetch_pixelplace, colors.pixelplace)
+    @diff.command(name="pixelplanet", aliases=["pp"])
+    async def diff_pixelplanet(self, ctx, *args):
+        await _diff(ctx, args, "pixelplanet", render.fetch_pixelplanet, colors.pixelplanet)
 
     # =======================
     #        PREVIEW
@@ -169,7 +170,7 @@ class Canvas:
 
         if t:
             async with ctx.typing():
-                log.debug("(T:{} | GID:{})".format(t.name, t.gid))
+                log.info("(T:{} | GID:{})".format(t.name, t.gid))
                 max_zoom = int(math.sqrt(4000000 // (t.width * t.height)))
                 zoom = max(-8, min(zoom, max_zoom))
 
@@ -177,7 +178,7 @@ class Canvas:
                     'pixelcanvas': render.fetch_pixelcanvas,
                     'pixelzone': render.fetch_pixelzone,
                     'pxlsspace': render.fetch_pxlsspace,
-                    'pixelplace': render.fetch_pixelplace
+                    'pixelplanet': render.fetch_pixelplanet
                 }
 
                 if preview_template_region:
@@ -210,9 +211,9 @@ class Canvas:
         await _preview(ctx, args, render.fetch_pxlsspace)
 
     @commands.cooldown(1, 5, BucketType.guild)
-    @preview.command(name="pixelplace", aliases=["pp"])
-    async def preview_pixelplace(self, ctx, *args):
-        await _preview(ctx, args, render.fetch_pixelplace)
+    @preview.command(name="pixelplanet", aliases=["pp"])
+    async def preview_pixelplanet(self, ctx, *args):
+        await _preview(ctx, args, render.fetch_pixelplanet)
 
     # =======================
     #        QUANTIZE
@@ -239,9 +240,9 @@ class Canvas:
         await _quantize(ctx, args, "pxlsspace", colors.pxlsspace)
 
     @commands.cooldown(1, 5, BucketType.guild)
-    @quantize.command(name="pixelplace", aliases=["pp"])
-    async def quantize_pixelcanvas(self, ctx, *args):
-        await _quantize(ctx, args, "pixelplace", colors.pixelplace)
+    @quantize.command(name="pixelplanet", aliases=["pp"])
+    async def quantize_pixelplanet(self, ctx, *args):
+        await _quantize(ctx, args, "pixelplanet", colors.pixelplanet)
 
     # =======================
     #         GRIDIFY
@@ -287,8 +288,8 @@ class Canvas:
 
         t = sql.template_get_by_name(faction.id, name) if faction else sql.template_get_by_name(ctx.guild.id, name)
         if t:
-            log.debug("(T:{} | GID:{})".format(t.name, t.gid))
-            data = await http.get_template(t.url)
+            log.info("(T:{} | GID:{})".format(t.name, t.gid))
+            data = await http.get_template(t.url, t.name)
             max_zoom = int(math.sqrt(4000000 // (t.width * t.height)))
             zoom = max(1, min(parse_zoom(next(iter_args, 1)), max_zoom))
             template = await render.gridify(data, color, zoom)
@@ -326,8 +327,8 @@ class Canvas:
     async def ditherchart_pxlsspace(self, ctx):
         await ctx.send(file=discord.File("assets/dither_chart_pxlsspace.png", "dither_chart_pxlsspace.png"))
 
-    @ditherchart.command(name="pixelplace", aliases=["pp"])
-    async def ditherchart_pixelplace(self, ctx):
+    @ditherchart.command(name="pixelplanet", aliases=["pp"])
+    async def ditherchart_pixelplanet(self, ctx):
         await ctx.send(file=discord.File("assets/dither_chart_pixelcanvas.png", "dither_chart_pixelcanvas.png"))
 
     # ======================
@@ -378,10 +379,10 @@ class Canvas:
             ct = await http.fetch_online_pxlsspace()
             await msg.edit(content=ctx.s("canvas.online").format(ct, "Pxls.space"))
 
-    @online.command(name="pixelplace", aliases=["pp"])
-    async def online_pixelplace(self, ctx):
-        ct = await http.fetch_online_pixelplace()
-        await ctx.send(ctx.s("canvas.online").format(ct, "Pixelplace"))
+    @online.command(name="pixelplanet", aliases=["pp"])
+    async def online_pixelplanet(self, ctx):
+        ct = await http.fetch_online_pixelplanet()
+        await ctx.send(ctx.s("canvas.online").format(ct, "Pixelplanet"))
 
 
 async def _diff(ctx, args, canvas, fetch, palette):
@@ -498,17 +499,17 @@ async def _quantize(ctx, args, canvas, palette):
             return
         faction = sql.guild_get_by_faction_name_or_alias(fac)
         if not faction:
-            raise errors.FactionNotFound
+            raise FactionNotFoundError
         gid = faction.id
         name = next(iter_args, None)
     t = sql.template_get_by_name(gid, name)
 
     data = None
     if t:
-        log.debug("(T:{} | GID:{})".format(t.name, t.gid))
+        log.info("(T:{} | GID:{})".format(t.name, t.gid))
         if t.canvas == canvas:
-            raise errors.IdempotentActionError
-        data = await http.get_template(t.url)
+            raise IdempotentActionError
+        data = await http.get_template(t.url, t.name)
     else:
         att = await utils.verify_attachment(ctx)
         if att:

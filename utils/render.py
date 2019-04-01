@@ -1,14 +1,12 @@
+import logging
 import numpy as np
-from PIL import Image, ImageChops, ImageDraw
+from PIL import Image, ImageChops, ImageDraw, ImageOps
 
-from objects.chunks import BigChunk, ChunkPz, PxlsBoard, BigChunkPP
-from objects.config import Config
-from objects.coords import Coords
-from objects.logger import Log
-from utils import colors, http
+from objects import Coords
+from objects.chunks import BigChunk, ChunkPz, ChunkPP, PxlsBoard
+from utils import colors, http, config
 
-cfg = Config()
-log = Log(__name__)
+log = logging.getLogger(__name__)
 
 
 async def calculate_size(data):
@@ -24,7 +22,7 @@ async def diff(x, y, data, zoom, fetch, palette):
         template = Image.open(data).convert('RGBA')
 
     with template:
-        log.debug("(X:{0} | Y:{1} | Dim:{2}x{3} | Z:{4})".format(x, y, template.width, template.height, zoom))
+        log.info("(X:{0} | Y:{1} | Dim:{2}x{3} | Z:{4})".format(x, y, template.width, template.height, zoom))
         diff_img = await fetch(x, y, template.width, template.height)
 
         black = Image.new('1', template.size, 0)
@@ -72,23 +70,26 @@ async def diff(x, y, data, zoom, fetch, palette):
 
 
 async def preview(x, y, zoom, fetch):
-    log.debug("(X:{0} | Y:{1} | Zoom:{2})".format(x, y, zoom))
+    log.info("(X:{0} | Y:{1} | Zoom:{2})".format(x, y, zoom))
 
-    dim = Coords(cfg.preview_w, cfg.preview_h)
+    dim = Coords(config.PREVIEW_W, config.PREVIEW_H)
     if zoom < -1:
         dim *= abs(zoom)
 
     preview_img = await fetch(x - dim.x // 2, y - dim.y // 2, *dim)
     if zoom > 1:
         preview_img = preview_img.resize(tuple(zoom * x for x in preview_img.size), Image.NEAREST)
-        tlp = Coords(preview_img.width // 2 - cfg.preview_w // 2, preview_img.height // 2 - cfg.preview_h // 2)
-        preview_img = preview_img.crop((*tlp, tlp.x + cfg.preview_w, tlp.y + cfg.preview_h))
+        tlp = Coords(preview_img.width // 2 - config.PREVIEW_W // 2, preview_img.height // 2 - config.PREVIEW_H // 2)
+        preview_img = preview_img.crop((*tlp, tlp.x + config.PREVIEW_W, tlp.y + config.PREVIEW_H))
+
+    if config.INVERT:
+        preview_img = ImageOps.invert(preview_img)
 
     return preview_img
 
 
 async def preview_template(t, zoom, fetch):
-    log.debug("(X:{0} | Y:{1} | Dim:{2}x{3} | Zoom:{4})".format(t.x, t.y, t.width, t.height, zoom))
+    log.info("(X:{0} | Y:{1} | Dim:{2}x{3} | Zoom:{4})".format(t.x, t.y, t.width, t.height, zoom))
 
     dim = Coords(t.width, t.height)
     if zoom < -1:
@@ -99,8 +100,8 @@ async def preview_template(t, zoom, fetch):
     preview_img = await fetch(c.x - dim.x // 2, c.y - dim.y // 2, *dim)
     if zoom > 1:
         preview_img = preview_img.resize(tuple(zoom * x for x in preview_img.size), Image.NEAREST)
-        tlp = Coords(preview_img.width // 2 - cfg.preview_w // 2, preview_img.height // 2 - cfg.preview_h // 2)
-        preview_img = preview_img.crop((*tlp, tlp.x + cfg.preview_w, tlp.y + cfg.preview_h))
+        tlp = Coords(preview_img.width // 2 - config.PREVIEW_W // 2, preview_img.height // 2 - config.PREVIEW_H // 2)
+        preview_img = preview_img.crop((*tlp, tlp.x + config.PREVIEW_W, tlp.y + config.PREVIEW_H))
 
     return preview_img
 
@@ -109,7 +110,7 @@ async def quantize(data, palette):
     with data:
         template = Image.open(data).convert('RGBA')
 
-    log.debug("(Dim:{0}x{1})".format(template.width, template.height))
+    log.info("(Dim:{0}x{1})".format(template.width, template.height))
 
     black = Image.new('1', template.size, 0)
     white = Image.new('1', template.size, 1)
@@ -136,7 +137,7 @@ async def gridify(data, color, zoom):
     zoom += 1
     with data:
         template = Image.open(data).convert('RGBA')
-        log.debug("(Dim:{0}x{1} | Zoom:{2})".format(template.width, template.height, zoom))
+        log.info("(Dim:{0}x{1} | Zoom:{2})".format(template.width, template.height, zoom))
         template = template.resize((template.width * zoom, template.height * zoom), Image.NEAREST)
         draw = ImageDraw.Draw(template)
         for i in range(1, template.height):
@@ -150,7 +151,7 @@ async def gridify(data, color, zoom):
 def zoom(data, zoom):
     with data:
         template = Image.open(data).convert('RGBA')
-        log.debug("(Dim:{0}x{1} | Zoom:{2})".format(template.width, template.height, zoom))
+        log.info("(Dim:{0}x{1} | Zoom:{2})".format(template.width, template.height, zoom))
         template = template.resize((template.width * zoom, template.height * zoom), Image.NEAREST)
         return template
 
@@ -190,23 +191,22 @@ async def fetch_pxlsspace(x, y, dx, dy):
     return fetched
 
 
-async def fetch_pixelplace(x, y, dx, dy):
-    bigchunks, shape = BigChunkPP.get_intersecting(x, y, dx, dy)
-    fetched = Image.new('RGB', tuple([960 * x for x in shape]), colors.pixelplace[1])
+async def fetch_pixelplanet(x, y, dx, dy):
+    bigchunks, shape = ChunkPP.get_intersecting(x, y, dx, dy)
+    fetched = Image.new('RGB', tuple([256 * x for x in shape]), colors.pixelplanet[1])
 
     await http.fetch_chunks(bigchunks)
 
     for i, bc in enumerate(bigchunks):
         if bc.is_in_bounds():
-            fetched.paste(bc.image, ((i % shape[0]) * 960, (i // shape[0]) * 960))
+            fetched.paste(bc.image, ((i % shape[0]) * 256, (i // shape[0]) * 256))
 
-    x, y = x - (x + 448) // 960 * 960 + 448, y - (y + 448) // 960 * 960 + 448
-    return fetched.crop((x, y, x + dx, y + dy))
+    return fetched.crop((x % 256, y % 256, (x % 256) + dx, (y % 256) + dy))
 
 
 def _quantize(t: Image, palette) -> Image:
     with Image.new('P', (1, 1)) as palette_img:
-        p = [x for sub in palette for x in sub] * (768 // (3 * len(palette)))
+        p = [x for sub in palette for x in sub] + [0] * (768 - 3 * len(palette))
         palette_img.putpalette(p)
         palette_img.load()
         im = t.im.convert('P', 0, palette_img.im)
