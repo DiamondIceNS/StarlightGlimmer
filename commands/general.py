@@ -93,9 +93,9 @@ class General:
     @commands.command()
     async def suggest(self, ctx, *, suggestion: str):
         log.info("Suggestion: {0}".format(suggestion))
-        await utils.channel_log(ctx, "New suggestion from **{0.name}#{0.discriminator}** (ID: `{0.id}`) in guild "
+        await utils.channel_log(self.bot, "New suggestion from **{0.name}#{0.discriminator}** (ID: `{0.id}`) in guild "
                               "**{1.name}** (ID: `{1.id}`):".format(ctx.author, ctx.guild))
-        await utils.channel_log(ctx, "> `{}`".format(suggestion))
+        await utils.channel_log(self.bot, "> `{}`".format(suggestion))
         await ctx.send(ctx.s("general.suggest"))
 
     @commands.command()
