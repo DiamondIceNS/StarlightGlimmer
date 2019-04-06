@@ -64,7 +64,7 @@ async def _fetch_chunks_pixelzone(chunks: Iterable[ChunkPz]):
         attempts = 0
         while attempts < 3:
             try:
-                async with session.get(socket_url.format("http", "polling"), headers=useragent) as r:
+                async with session.get(socket_url.format("https", "polling"), headers=useragent) as r:
                     sid = json.loads(str((await r.read())[4:-4], "utf-8"))['sid']
                     break
             except aiohttp.client_exceptions.ClientOSError:
@@ -76,13 +76,13 @@ async def _fetch_chunks_pixelzone(chunks: Iterable[ChunkPz]):
         attempts = 0
         while attempts < 3:
             try:
-                await session.post(socket_url.format("http", "polling") + "&sid=" + sid, data='11:42["hello"]',
+                await session.post(socket_url.format("https", "polling") + "&sid=" + sid, data='11:42["hello"]',
                                    headers=useragent)
                 break
             except aiohttp.client_exceptions.ClientOSError:
                 attempts += 1
 
-    async with websockets.connect(socket_url.format("ws", "websocket&sid=") + sid, extra_headers=useragent) as ws:
+    async with websockets.connect(socket_url.format("wss", "websocket&sid=") + sid, extra_headers=useragent) as ws:
         try:
             await ws.send("2probe")
             await ws.recv()

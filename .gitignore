@@ -10,6 +10,7 @@ __pycache__/
 # Bot files
 config.json
 *.log
+*.log.*
 *.db
 
 # Scripts
