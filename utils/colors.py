@@ -64,6 +64,8 @@ pxlsspace = [
 ]
 
 pixelplanet = [
+    (202,227,255),    # Sky Blue (virgin)
+	(255,255,255),    # White    (virgin)
     (255, 255, 255),  # White
     (228, 228, 228),  # Light Grey
     (136, 136, 136),  # Dark Grey
