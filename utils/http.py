@@ -140,7 +140,7 @@ async def _fetch_chunks_pixelplanet(bigchunks: Iterable[ChunkPP]):
 
 async def fetch_online_pixelcanvas():
     async with aiohttp.ClientSession() as sess:
-        async with sess.get("https://europe-west1-pixelcanvasv2.cloudfunctions.net/online", headers=useragent) as resp:
+        async with sess.get("https://pixelcanvas.io/api/online", headers=useragent) as resp:
             if resp.status != 200:
                 raise HttpGeneralError
             data = json.loads(await resp.read())
