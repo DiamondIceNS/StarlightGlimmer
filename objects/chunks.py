@@ -76,7 +76,7 @@ class BigChunk(Chunky):
 
     @property
     def url(self):
-        return "https://pixelcanvas.io/api/bigchunk/{0}.{1}.bmp".format(self.x * 15, self.y * 15)
+        return "https://api.pixelcanvas.io/api/bigchunk/{0}.{1}.bmp".format(self.x * 15, self.y * 15)
 
     @property
     def width(self):
