@@ -85,21 +85,27 @@ async def _fetch_chunks_pixelzone(chunks: Iterable[ChunkPz]):
     async with websockets.connect(socket_url.format("wss", "websocket&sid=") + sid, extra_headers=useragent) as ws:
         try:
             await ws.send("2probe")
-            await ws.recv()
+            await ws.recv() #3probe response
             await ws.send("5")
+            await ws.send("42hello")
+            await ws.recv() #welcome response
             await ws.send('42["useAPI", "{}"]'.format(config.PZ_API_KEY))
+            await ws.recv() #useAPICallback response
             for ch in chunks:
-                data = {}
                 await ws.send(ch.url)
+                packet = None
                 async for msg in ws:
-                    d = json.loads(msg[msg.find('['):])
-                    if type(d) == int:
-                        continue
-                    if d[0] == "c":
-                        data = d[1]
+                    if packet is None:
+                        if msg[:2] == '45': #binary data response
+                            packet = {}
+                            data = json.loads(msg[msg.find('-')+1:])[1]
+                            packet['cx'] = data['cx']
+                            packet['cy'] = data['cy']
+                    else:
+                        packet['data'] = msg[1:]
                         break
-                ch = next((x for x in chunks if x.x == data['cx'] and x.y == data['cy']))
-                ch.load(data['data'])
+                ch = next((x for x in chunks if x.x == packet['cx'] and x.y == packet['cy']))
+                ch.load(packet['data'])
         except websockets.ConnectionClosed as e:
             raise HttpCanvasError('pixelzone')
 

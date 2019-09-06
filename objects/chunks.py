@@ -1,13 +1,14 @@
 import abc
 import io
 import json
+import zlib
 
-import lz4.frame
+#import lz4.frame
 import numpy as np
 from PIL import Image
 
 from utils import colors
-from utils.lzstring import LZString
+#from utils.lzstring import LZString
 
 
 class Chunky(abc.ABC):
@@ -128,7 +129,7 @@ class ChunkPz(Chunky):
 
     @property
     def url(self):
-        return "42[\"r\", {{\"cx\": {0}, \"cy\": {1}}}]".format(self.x, self.y)
+        return "42[\"getChunk\", {{\"x\": {0}, \"y\": {1}}}]".format(self.x, self.y)
 
     @property
     def width(self):
@@ -138,10 +139,8 @@ class ChunkPz(Chunky):
         return 0 <= self.x < 16 and 0 <= self.y < 16
 
     def load(self, data):
-        tmp = LZString().decompressFromBase64(data)
-        tmp = json.loads("[" + tmp + "]")
-        tmp = lz4.frame.decompress(bytes(tmp))
-        self._image = Image.frombytes('P', (512, 512), tmp, 'raw', 'P;4')
+        data = zlib.decompress(data)
+        self._image = Image.frombytes('P', (512, 512), data, 'raw', 'P;4')
         self._image.putpalette(self.palette)
 
     @staticmethod
