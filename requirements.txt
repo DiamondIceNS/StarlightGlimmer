@@ -1,7 +1,5 @@
 git+https://github.com/Rapptz/discord.py@7f4c57dd5ad20b7fa10aea485f674a4bc24b9547
-git+https://github.com/marcel-dancak/lz-string-python
 aiohttp==3.2.0
-lz4==1.1.0
 numpy==1.14.4
 pillow==5.1.0
 websockets==4.0.1

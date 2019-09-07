@@ -14,7 +14,6 @@ Currently supports [Pixelcanvas.io](https://pixelcanvas.io/), [Pixelzone.io](htt
 - [aiohttp](https://aiohttp.readthedocs.io/en/stable/) 3.2.0
 - [numpy](https://www.scipy.org/scipylib/download.html) 1.14.4
 - [websockets](https://pypi.org/project/websockets/) 4.0.1
-- [lz4](https://github.com/python-lz4/python-lz4) 1.1.0
 
 #### Installation:
 1. Install Python 3.6

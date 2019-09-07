@@ -4,9 +4,6 @@ as described in GPL3.txt.
 "animotes.py" and its contents copyright (C) 2017 Valentijn <ev1l0rd> and DiamondIceNS
 and distributed under the GNU Public License 3.0 as described in GPL3.txt.
 
-"lzstring.py" and its contents copyright (C) 2017 Marcel Dancak and distributed
-under the Do What The Fuck You Want To Public License as described in WTFPL2.txt.
-
 All other code is authored by DiamondIceNS and may be individually distributed without
 the above works under the Creative Commons Public Domain Dedication 0 as described
 in CCO.txt.

@@ -1,14 +1,11 @@
 import abc
 import io
-import json
 import zlib
 
-#import lz4.frame
 import numpy as np
 from PIL import Image
 
 from utils import colors
-#from utils.lzstring import LZString
 
 
 class Chunky(abc.ABC):
