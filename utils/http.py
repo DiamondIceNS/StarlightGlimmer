@@ -85,18 +85,24 @@ async def _fetch_chunks_pixelzone(chunks: Iterable[ChunkPz]):
     async with websockets.connect(socket_url.format("wss", "websocket&sid=") + sid, extra_headers=useragent) as ws:
         try:
             await ws.send("2probe")
-            await ws.recv() #3probe response
+            async for msg in ws:
+                if msg == '3probe':
+                    break
             await ws.send("5")
             await ws.send("42hello")
-            await ws.recv() #welcome response
+            async for msg in ws:
+                if msg[4:11] == 'welcome':
+                    break
             await ws.send('42["useAPI", "{}"]'.format(config.PZ_API_KEY))
-            await ws.recv() #useAPICallback response
+            async for msg in ws:
+                if msg[4:18] == 'useAPICallback':
+                    break
             for ch in chunks:
                 await ws.send(ch.url)
                 packet = None
                 async for msg in ws:
                     if packet is None:
-                        if msg[:2] == '45': #binary data response
+                        if msg[:2] == '45':
                             packet = {}
                             data = json.loads(msg[msg.find('-')+1:])[1]
                             packet['cx'] = data['cx']
@@ -106,6 +112,7 @@ async def _fetch_chunks_pixelzone(chunks: Iterable[ChunkPz]):
                         break
                 ch = next((x for x in chunks if x.x == packet['cx'] and x.y == packet['cy']))
                 ch.load(packet['data'])
+                await asyncio.sleep(0.4)  # avoid the rate limit
         except websockets.ConnectionClosed as e:
             raise HttpCanvasError('pixelzone')
 
