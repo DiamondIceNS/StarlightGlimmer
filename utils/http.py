@@ -167,7 +167,7 @@ async def fetch_online_pixelzone():
         attempts = 0
         while attempts < 3:
             try:
-                async with session.get(socket_url.format("http", "polling"), headers=useragent) as r:
+                async with session.get(socket_url.format("https", "polling"), headers=useragent) as r:
                     sid = json.loads(str((await r.read())[4:-4], "utf-8"))['sid']
                     break
             except aiohttp.client_exceptions.ClientOSError:
@@ -179,23 +179,25 @@ async def fetch_online_pixelzone():
         attempts = 0
         while attempts < 3:
             try:
-                await session.post(socket_url.format("http", "polling") + "&sid=" + sid, data='11:42["hello"]',
+                await session.post(socket_url.format("https", "polling") + "&sid=" + sid, data='11:42["hello"]',
                                    headers=useragent)
                 break
             except aiohttp.client_exceptions.ClientOSError:
                 attempts += 1
-    async with websockets.connect(socket_url.format("ws", "websocket&sid=") + sid, extra_headers=useragent) as ws:
+    async with websockets.connect(socket_url.format("wss", "websocket&sid=") + sid, extra_headers=useragent) as ws:
         await ws.send("2probe")
-        await ws.recv()
+        async for msg in ws:
+            if msg == '3probe':
+                break
         await ws.send("5")
-        await ws.recv()
-        await ws.send("42['useAPI', '{}'".format(config.PZ_API_KEY))
+        await ws.send("42hello")
+        async for msg in ws:
+            if msg[4:11] == 'welcome':
+                break
         try:
             async for msg in ws:
-                d = json.loads(msg[msg.find('['):])
-                if type(d) == int:
-                    continue
-                if d[0] == "g":
+                if msg[4:17] == 'playerCounter':
+                    d = json.loads(msg[2:])
                     data = d[1]
                     break
         except websockets.ConnectionClosed as e:
