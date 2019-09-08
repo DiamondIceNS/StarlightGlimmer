@@ -12,7 +12,7 @@ from utils import canvases, checks, sqlite as sql
 log = logging.getLogger(__name__)
 
 
-class Faction:
+class Faction(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
@@ -318,7 +318,3 @@ class Faction:
             return
         sql.faction_hides_remove(ctx.guild.id, other_fac.id)
         await ctx.send(ctx.s("faction.clear_hide").format(other_fac.faction_name))
-
-
-def setup(bot):
-    bot.add_cog(Faction(bot))

@@ -4,7 +4,8 @@ import traceback
 import discord
 from discord import TextChannel
 
-from objects.bot_objects import GlimContext, GlimmerHelpFormatter
+from commands import *
+from objects.bot_objects import GlimContext
 from objects.errors import *
 import utils
 from utils import canvases, config, http, render, sqlite as sql
@@ -17,16 +18,7 @@ def get_prefix(bot_, msg: discord.Message):
 
 
 log = logging.getLogger(__name__)
-bot = commands.Bot(command_prefix=get_prefix, formatter=GlimmerHelpFormatter())
-bot.remove_command('help')
-extensions = [
-    "commands.animotes",
-    "commands.canvas",
-    "commands.configuration",
-    "commands.faction",
-    "commands.general",
-    "commands.template",
-]
+bot = commands.Bot(command_prefix=get_prefix)
 sql.menu_locks_delete_all()
 
 
@@ -51,12 +43,20 @@ async def on_ready():
                     except TemplateHttpError:
                         log.error("Error retrieving template {0.name}. Skipping...".format(t))
 
-    log.info("Loading extensions...")
-    for extension in extensions:
+    log.info("Loading cogs...")
+    cogs = [
+        Animotes(bot),
+        Canvas(bot),
+        Configuration(bot),
+        Faction(bot),
+        General(bot),
+        Template(bot),
+    ]
+    for c in cogs:
         try:
-            bot.load_extension(extension)
+            bot.add_cog(c)
         except Exception as e:
-            log.error("Failed to load extension {}\n{}: {}".format(extension, type(e).__name__, e))
+            log.error("Failed to load a cog: {}\n{}: {}".format(c, type(e).__name__, e))
 
     log.info("Performing guilds check...")
     for g in bot.guilds:

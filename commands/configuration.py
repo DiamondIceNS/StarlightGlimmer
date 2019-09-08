@@ -11,7 +11,7 @@ from utils import checks, sqlite as sql
 log = logging.getLogger(__name__)
 
 
-class Configuration:
+class Configuration(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
@@ -223,7 +223,3 @@ class Configuration:
     async def role_templateadmin_clear(self, ctx):
         sql.guild_update(ctx.guild.id, template_admin=None)
         await ctx.send(ctx.s("configuration.role_template_admin_cleared"))
-
-
-def setup(bot):
-    bot.add_cog(Configuration(bot))

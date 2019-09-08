@@ -25,7 +25,7 @@ from utils import canvases, checks, colors, config, http, render, sqlite as sql
 log = logging.getLogger(__name__)
 
 
-class Template:
+class Template(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
@@ -501,7 +501,3 @@ async def _check_canvas(ctx, templates, canvas, msg=None):
         t.errors = np.array(tmp).any(axis=-1).sum()
 
     return msg
-
-
-def setup(bot):
-    bot.add_cog(Template(bot))

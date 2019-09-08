@@ -24,7 +24,7 @@ from utils import sqlite as sql
 #    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
-class Animotes:
+class Animotes(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
@@ -79,7 +79,3 @@ def emote_corrector(message):
     temp = '**<{}>** '.format(message.author.name) + temp
 
     return temp
-
-
-def setup(bot):
-    bot.add_cog(Animotes(bot))

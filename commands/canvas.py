@@ -15,7 +15,7 @@ from utils import colors, http, render, sqlite as sql
 log = logging.getLogger(__name__)
 
 
-class Canvas:
+class Canvas(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
@@ -524,7 +524,3 @@ async def _quantize(ctx, args, canvas, palette):
             bio.seek(0)
             f = discord.File(bio, "template.png")
             return await ctx.send(ctx.s("canvas.quantize").format(bad_pixels), file=f)
-
-
-def setup(bot):
-    bot.add_cog(Canvas(bot))
