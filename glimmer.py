@@ -224,7 +224,6 @@ async def on_command_error(ctx, error):
         await utils.channel_log(bot, "```{}```".format(error))
         log.error("An error occurred executing '{}': {}\n{}"
                   .format(name, error, ''.join(traceback.format_exception(None, error, error.__traceback__))))
-        print(ctx.s("error.unknown"))
         await ctx.send(ctx.s("error.unknown"))
 
 
