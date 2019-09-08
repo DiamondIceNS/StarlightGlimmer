@@ -39,6 +39,7 @@ For a more in-depth walkthrough of Glimmer's core functions, see [the wiki page]
 #### Languages:
 - English (US)
 - Portuguese (BR) - Special thanks to Ataribr / ✠ /#6703
+- Turkish (TR) (partial) - Special thanks to furkan#3251
 
 If you happen to know a language that is not listed and would be willing to translate, please translate the strings in `lang/en_US.py` and submit a pull request.
 
