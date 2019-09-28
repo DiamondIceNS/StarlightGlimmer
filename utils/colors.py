@@ -63,36 +63,8 @@ pxlsspace = [
     (102,   3,  60)   # Purple
 ]
 
-pixelplanet = [
-    (255, 255, 255),  # White
-    (228, 228, 228),  # Light Grey
-    (136, 136, 136),  # Dark Grey
-    ( 78,  78,  78),  # Darker Grey
-    (  0,   0,   0),  # Black
-    (244, 179, 174),  # Light Pink
-    (255, 167, 209),  # Pink
-    (255, 101, 101),  # Peach
-    (229,   0,   0),  # Red
-    (254, 164,  96),  # Light Brown
-    (229, 149,   0),  # Orange
-    (160, 106,  66),  # Brown
-    (245, 223, 176),  # Sand
-    (229, 217,   0),  # Yellow
-    (148, 224,  68),  # Light Green
-    (  2, 190,   1),  # Green
-    (  0, 101,  19),  # Dark Green
-    (202, 227, 255),  # Sky Blue
-    (  0, 211, 221),  # Cyan
-    (  0, 131, 199),  # Teal
-    (  0,   0, 234),  # Blue
-    ( 25,  25, 115),  # Dark Blue
-    (207, 110, 228),  # Light Purple
-    (130,   0, 128)   # Purple
-]
-
 by_name = {
     "pixelcanvas": pixelcanvas,
     "pixelzone": pixelzone,
-    "pxlsspace": pxlsspace,
-    "pixelplanet": pixelcanvas
+    "pxlsspace": pxlsspace
 }

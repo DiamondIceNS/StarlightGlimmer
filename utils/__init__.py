@@ -24,7 +24,6 @@ async def autoscan(ctx):
     m_pc = re.search('pixelcanvas\.io/@(-?\d+),(-?\d+)(?:(?: |#| #)(-?\d+))?', ctx.message.content)
     m_pz = re.search('pixelzone\.io/\?p=(-?\d+),(-?\d+)(?:,(\d+))?(?:(?: |#| #)(-?\d+))?', ctx.message.content)
     m_ps = re.search('pxls\.space/#x=(\d+)&y=(\d+)(?:&scale=(\d+))?(?:(?: |#| #)(-?\d+))?', ctx.message.content)
-    m_pp = re.search('pixelplanet\.fun/#(-?\d+),(-?\d+)(?:,(-?\d+))?', ctx.message.content)
     m_pre_def = re.search('@(-?\d+)(?: |,|, )(-?\d+)(?:(?: |#| #)(-?\d+))?', ctx.message.content)
     m_dif_def = re.search('(?:(-l) )?(-?\d+)(?: |,|, )(-?\d+)(?:(?: |#| #)(-?\d+))?', ctx.message.content)
     if m_pc:
@@ -36,9 +35,6 @@ async def autoscan(ctx):
     elif m_ps:
         cmd = dget(dget(ctx.bot.commands, name='preview').commands, name='pxlsspace')
         view = '{} {} {}'.format(m_ps.group(1), m_ps.group(2), m_ps.group(4) or m_ps.group(3) or '1')
-    if m_pp:
-        cmd = dget(dget(ctx.bot.commands, name='preview').commands, name='pixelplanet')
-        view = ' '.join(m_pp.groups(default='1'))
     elif m_pre_def:
         cmd = dget(dget(ctx.bot.commands, name='preview').commands, name=canvas)
         view = ' '.join(m_pre_def.groups(default='1'))

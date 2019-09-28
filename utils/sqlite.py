@@ -205,6 +205,13 @@ def _update_tables(v):
                 UPDATE templates SET canvas='pixelplanet' WHERE canvas='pixelplace';
                 COMMIT;
             """)
+        if v < 1.10:
+            c.executescript("""
+                BEGIN TRANSACTION;
+                UPDATE guilds SET canvas='pixelcanvas' WHERE canvas='pixelplanet';
+                UPDATE guilds SET canvas='pixelcanvas' WHERE canvas='pixelplanet';
+                COMMIT;
+            """)
 
 
 # ================================

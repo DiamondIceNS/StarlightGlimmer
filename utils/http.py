@@ -9,7 +9,7 @@ import aiohttp
 import websockets
 from typing import Iterable
 
-from objects.chunks import BigChunk, ChunkPz, PxlsBoard, ChunkPP
+from objects.chunks import BigChunk, ChunkPz, PxlsBoard
 from objects.errors import HttpCanvasError, HttpGeneralError, NoJpegsError, NotPngError, TemplateHttpError
 from utils import config
 from utils.version import VERSION
@@ -32,8 +32,6 @@ async def fetch_chunks(chunks: Iterable):
         await _fetch_chunks_pixelzone(chunks)
     elif type(c) is PxlsBoard:
         await _fetch_pxlsspace(chunks)
-    else:
-        await _fetch_chunks_pixelplanet(chunks)
 
 
 async def _fetch_chunks_pixelcanvas(bigchunks: Iterable[BigChunk]):
@@ -136,29 +134,6 @@ async def _fetch_pxlsspace(chunks: Iterable[PxlsBoard]):
             board.load(await resp.read())
 
 
-async def _fetch_chunks_pixelplanet(bigchunks: Iterable[ChunkPP]):
-    async with aiohttp.ClientSession() as session:
-        for bc in bigchunks:
-            await asyncio.sleep(0)
-            if not bc.is_in_bounds():
-                continue
-            data = None
-            attempts = 0
-            while attempts < 3:
-                try:
-                    async with session.get(bc.url, headers=useragent) as resp:
-                        data = await resp.read()
-                        if len(data) == 65536:
-                            break
-                except aiohttp.ClientPayloadError:
-                    pass
-                data = None
-                attempts += 1
-            if not data:
-                raise HttpCanvasError('pixelplanet')
-            bc.load(data)
-
-
 async def fetch_online_pixelcanvas():
     async with aiohttp.ClientSession() as sess:
         async with sess.get("https://pixelcanvas.io/api/online", headers=useragent) as resp:
@@ -219,15 +194,6 @@ async def fetch_online_pxlsspace():
             d = json.loads(msg)
             if d['type'] == 'users':
                 return d['count']
-
-
-async def fetch_online_pixelplanet():
-    async with aiohttp.ClientSession() as sess:
-        async with sess.get("https://pixelplanet.fun/api/online", headers=useragent) as resp:
-            if resp.status != 200:
-                raise HttpGeneralError
-            data = json.loads(await resp.read())
-            return data['online']
 
 
 async def get_changelog(version):

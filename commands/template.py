@@ -17,7 +17,7 @@ from discord.ext.commands import BucketType
 from PIL import Image, ImageChops
 
 from objects import DbTemplate
-from objects.chunks import BigChunk, ChunkPz, ChunkPP, PxlsBoard
+from objects.chunks import BigChunk, ChunkPz, PxlsBoard
 from objects.errors import FactionNotFoundError, NoTemplatesError, PilImageError, TemplateNotFoundError, UrlError
 import utils
 from utils import canvases, checks, colors, config, http, render, sqlite as sql
@@ -149,13 +149,6 @@ class Template(commands.Cog):
         await self.add_template(ctx, "pxlsspace", name, x, y, url)
 
     @commands.guild_only()
-    @commands.cooldown(1, 5, BucketType.guild)
-    @checks.template_adder_only()
-    @template_add.command(name="pixelplanet", aliases=['pp'])
-    async def template_add_pixelplanet(self, ctx, name: str, x: int, y: int, url=None):
-        await self.add_template(ctx, "pixelplanet", name, x, y, url)
-
-    @commands.guild_only()
     @commands.cooldown(1, 60, BucketType.guild)
     @template.group(name='check')
     async def template_check(self, ctx):
@@ -209,18 +202,6 @@ class Template(commands.Cog):
             raise NoTemplatesError(True)
         ts = sorted(ts, key=lambda tx: tx.name)
         msg = await _check_canvas(ctx, ts, "pxlsspace")
-        await msg.delete()
-        await _build_template_report(ctx, ts)
-
-    @commands.guild_only()
-    @template_check.command(name='pixelplanet', aliases=['pp'])
-    async def template_check_pixelplanet(self, ctx):
-        ts = [x for x in sql.template_get_all_by_guild_id(ctx.guild.id) if x.canvas == 'pixelplanet']
-        if len(ts) <= 0:
-            ctx.command.parent.reset_cooldown(ctx)
-            raise NoTemplatesError(True)
-        ts = sorted(ts, key=lambda tx: tx.name)
-        msg = await _check_canvas(ctx, ts, "pixelplanet")
         await msg.delete()
         await _build_template_report(ctx, ts)
 
@@ -466,8 +447,7 @@ async def _check_canvas(ctx, templates, canvas, msg=None):
     chunk_classes = {
         'pixelcanvas': BigChunk,
         'pixelzone': ChunkPz,
-        'pxlsspace': PxlsBoard,
-        'pixelplanet': ChunkPP
+        'pxlsspace': PxlsBoard
     }
 
     chunks = set()

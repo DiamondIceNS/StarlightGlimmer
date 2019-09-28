@@ -98,14 +98,6 @@ class Configuration(commands.Cog):
 
     @checks.admin_only()
     @commands.guild_only()
-    @canvas.command(name="pixelplanet", aliases=["pp"])
-    async def canvas_pixelplanet(self, ctx):
-        sql.guild_update(ctx.guild.id, canvas="pixelplanet")
-        log.info("Default canvas for {0.name} set to pixelplanet (GID:{0.id})".format(ctx.guild))
-        await ctx.send(ctx.s("configuration.canvas_set").format("Pixelplanet.fun"))
-
-    @checks.admin_only()
-    @commands.guild_only()
     @commands.command()
     async def language(self, ctx, option=None):
         if not option:
